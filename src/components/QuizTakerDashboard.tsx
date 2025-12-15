@@ -96,6 +96,7 @@ const QuizTakerDashboard: React.FC = () => {
           quizTaker: dashboardData.quizTaker.id,
         }),
       });
+      console.log('Start quiz response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();

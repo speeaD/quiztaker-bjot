@@ -54,7 +54,7 @@ export async function GET(
     }
 
     const data = await response.json();
-    console.log('Submission API - Success');
+    console.log('Submission API - Success:', data);
     
     return NextResponse.json(data);
 

@@ -3,21 +3,24 @@ import { NextRequest, NextResponse } from "next/server";
 interface StartQuizBody {
   quizTaker: string;
 }
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quizId = await params.id;
-
-    // Get the auth token from cookies
+    const { id: quizId } = await params;
     const authToken = request.cookies.get("auth-token")?.value;
+
+    console.log("Auth token exists:", !!authToken);
+    console.log("Quiz ID:", quizId);
 
     if (!authToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body: StartQuizBody = await request.json();
+    console.log("Request body:", body);
 
     if (!body.quizTaker) {
       return NextResponse.json(
@@ -26,9 +29,8 @@ export async function POST(
       );
     }
 
-    // Make request to your backend
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/quiztaker/quiz/${quizId}/start`,
+      `http://localhost:5004/api/quiztaker/quiz/${quizId}/start`,
       {
         method: 'POST',
         headers: {
@@ -40,16 +42,18 @@ export async function POST(
         }),
       }
     );
-
+    
+    console.log("Backend response status:", response.status);
+    const data = await response.json();
+    console.log("Backend response data:", data);
+    
     if (!response.ok) {
-      const errorData = await response.json();
       return NextResponse.json(
-        { error: errorData.message || "Failed to start quiz" },
+        { error: data.message || data.error || "Failed to start quiz" },
         { status: response.status }
       );
     }
 
-    const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error starting quiz:", error);

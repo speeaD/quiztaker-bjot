@@ -41,7 +41,7 @@ export async function POST(
       );
     }
 
-    const backendUrl = `http://localhost:5000/api/quiztaker/quiz/${quizId}/submit`;
+    const backendUrl = `http://localhost:5004/api/quiztaker/quiz/${quizId}/submit`;
     console.log('Submit API - Calling backend:', backendUrl);
 
     // Make request to your backend

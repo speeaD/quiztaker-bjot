@@ -1,7 +1,7 @@
 import { DashboardResponse } from "@/types/global";
 import { cookies } from "next/headers";
 
-const baseUrl: string = process.env.BACKEND_URL || "http://localhost:5000/api";
+const baseUrl: string = process.env.BACKEND_URL || "http://localhost:5004/api";
 const token = (await cookies()).get("auth-token")?.value || "";
 
 export const getDashboardData = async () => {
