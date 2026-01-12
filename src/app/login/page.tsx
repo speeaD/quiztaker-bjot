@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
+import { Quicksand } from 'next/font/google';
 
 export default function Login() {
-    const backend_url = process.env.BACKEND_URL || 'http://localhost:5004/api';
+    const backend_url = process.env.BACKEND_URL;
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -63,8 +64,10 @@ export default function Login() {
                     },
                     body: JSON.stringify({
                         token: data.token,
+                    
                     }),
                 });
+                localStorage.setItem('quizTaker', data.quizTaker.id);
                 // In production, redirect to dashboard
                 window.location.href = '/';
             } else {

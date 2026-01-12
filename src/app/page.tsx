@@ -1,4 +1,4 @@
-import QuizTakerDashboard from "@/components/QuizTakerDashboard";
+import QuizTakerDashboard from "@/app/dashboard/QuizTakerDashboard";
 
 
 export default function Home() {

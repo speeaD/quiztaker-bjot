@@ -11,6 +11,7 @@ export async function POST(
   try {
     const { id: quizId } = await params;
     const authToken = request.cookies.get("auth-token")?.value;
+    const quizTaker = request.cookies.get("quizTaker")?.value;
 
     console.log("Auth token exists:", !!authToken);
     console.log("Quiz ID:", quizId);
@@ -38,7 +39,7 @@ export async function POST(
           'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
-          quizTaker: body.quizTaker,
+          quizTaker: `${quizTaker}`,
         }),
       }
     );

@@ -41,7 +41,7 @@ export async function POST(
       );
     }
 
-    const backendUrl = `http://localhost:5004/api/quiztaker/quiz/${quizId}/submit`;
+    const backendUrl = `${process.env.BACKEND_URL}/quiztaker/quiz/${quizId}/submit`;
     console.log('Submit API - Calling backend:', backendUrl);
 
     // Make request to your backend
@@ -51,9 +51,7 @@ export async function POST(
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
       },
-      body: JSON.stringify({
-        answers: body.answers,
-      }),
+      body: JSON.stringify(body),
     });
 
     console.log('Submit API - Backend response status:', response.status);

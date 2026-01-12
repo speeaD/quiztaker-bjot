@@ -19,7 +19,7 @@ export async function POST(request: Request) {
         // Optionally store admin info in a separate readable cookie
         (await
             // Optionally store admin info in a separate readable cookie
-            cookies()).set('quizTakert', JSON.stringify(quizTaker), {
+            cookies()).set('quizTaker', JSON.stringify(quizTaker), {
             httpOnly: false, // Accessible by JavaScript if needed
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',

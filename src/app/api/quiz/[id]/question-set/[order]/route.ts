@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string; order: string }> }
 ) {
   try {
-    const quizId = params.id;
+    const { id: quizId, order: questionSetOrder } = await params;
     
-    // Get the auth token from cookies
     const authToken = request.cookies.get('auth-token')?.value;
     
     if (!authToken) {
@@ -17,37 +16,22 @@ export async function GET(
       );
     }
 
-    // Get quizTaker ID from query params
-    const quizTakerId = localStorage.getItem('quizTakerId');
-    
-    if (!quizTakerId) {
-      return NextResponse.json(
-        { error: 'Quiz taker ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Make request to your backend - Note: Using POST instead of GET to send body
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/quiztaker/quiz/${quizId}`,
+      `http://localhost:5004/api/quiztaker/quiz/${quizId}/question-set/${questionSetOrder}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({
-          quizTaker: quizTakerId,
-        }),
+        credentials: 'include',
         cache: 'no-store',
       }
     );
-    console.log('Fetch quiz response:', response);
 
     if (!response.ok) {
       const errorData = await response.json();
       return NextResponse.json(
-        { error: errorData.message || 'Failed to fetch quiz' },
+        { error: errorData.message || 'Failed to fetch question set' },
         { status: response.status }
       );
     }
@@ -56,7 +40,7 @@ export async function GET(
     return NextResponse.json(data);
 
   } catch (error) {
-    console.error('Error fetching quiz:', error);
+    console.error('Error fetching question set:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

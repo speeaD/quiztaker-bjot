@@ -1,13 +1,100 @@
 @import "tailwindcss";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/dm-sans/700.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+    --blue-bg: #52a2c2;
+    --background: rgb(246 247 249);
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom stat card colors */
+    --stat-blue: 217 91% 60%;
+    --stat-blue-bg: 217 91% 95%;
+    --stat-yellow: 38 92% 50%;
+    --stat-yellow-bg: 38 92% 95%;
+    --stat-cyan: 187 85% 53%;
+    --stat-cyan-bg: 187 85% 95%;
+    --stat-green: 142 71% 45%;
+    --stat-green-bg: 142 71% 95%;
+    --stat-purple: 280 65% 60%;
+    --stat-purple-bg: 280 65% 95%;
+
+    /* Status colors */
+    --status-pending: 12 76% 61%;
+    --status-pending-bg: 12 76% 95%;
+    --status-completed: 142 71% 45%;
+    --status-completed-bg: 142 71% 92%;
+    --status-progress: 217 91% 60%;
+    --status-progress-bg: 217 91% 95%;
+
+    /* Shadows */
+    --shadow-card: 0 2px 8px -2px hsl(220 20% 80% / 0.5);
+    --shadow-card-hover: 0 8px 24px -4px hsl(220 20% 70% / 0.3);
+  }
+
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 212 27% 84%;
+  }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-blue-bg: var(--blue-bg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -17,10 +104,4 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

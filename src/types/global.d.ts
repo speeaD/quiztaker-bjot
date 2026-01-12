@@ -109,11 +109,7 @@ interface Quiz {
   totalPoints: number;
 }
 
-interface Answer {
-  questionId: string;
-  answer: any;
-  flagged: boolean;
-}
+
 
 export interface ApiError {
   error: string;
@@ -166,4 +162,121 @@ export interface QuizResultsResponse {
   quiz: Quiz;
   results: QuestionResult[];
   quizSettings: QuizSettings;
+}
+// types/quiz.ts
+
+export type QuestionType = 'multiple-choice' | 'essay' | 'true-false' | 'fill-in-the-blanks';
+
+export type QuestionSetStatus = 'not-started' | 'in-progress' | 'completed';
+
+export interface Question {
+  _id: string;
+  type: QuestionType;
+  question: string;
+  options?: string[];
+  points: number;
+  order: number;
+}
+
+export interface QuestionSet {
+  _id: string;
+  title: string;
+  order: number;
+  totalPoints: number;
+  questions: Question[];
+}
+
+export interface QuestionSetOverview {
+  _id: string;
+  questionSetId: string;
+  title: string;
+  order: number;
+  totalPoints: number;
+  questionCount: number;
+}
+
+export interface QuestionSetProgress {
+  questionSetOrder: number;
+  selectedOrder?: number;
+  status: QuestionSetStatus;
+  startedAt?: string;
+  completedAt?: string;
+  score: number;
+  totalPoints: number;
+  percentage?: number;
+}
+
+export interface QuizSettings {
+  coverImage?: string;
+  title: string;
+  isQuizChallenge: boolean;
+  description?: string;
+  instructions?: string;
+  duration: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+  };
+  multipleAttempts: boolean;
+  looseFocus: boolean;
+  viewAnswer: boolean;
+  viewResults: boolean;
+  displayCalculator: boolean;
+}
+
+export interface Quiz {
+  _id: string;
+  settings: QuizSettings;
+  questionSets: QuestionSetOverview[];
+  totalPoints: number;
+}
+
+export interface QuizProgress {
+  quizId: string;
+  quizTitle: string;
+  status: 'pending' | 'in-progress' | 'completed';
+  startedAt?: string;
+  completedAt?: string;
+  selectedQuestionSetOrder: number[];
+  currentQuestionSetOrder?: number;
+  questionSets: QuestionSetProgress[];
+  overallProgress: {
+    completed: number;
+    total: number;
+    percentage: number;
+  };
+}
+
+export interface Answer {
+  questionId: string;
+  answer: string | boolean;
+}
+
+export interface SubmitQuestionSetRequest {
+  answers: Answer[];
+  questionSetOrder: number;
+  isFinalSubmission: boolean;
+}
+
+export interface SubmitQuestionSetResponse {
+  success: boolean;
+  message: string;
+  submission: {
+    id: string;
+    questionSetScore: number;
+    questionSetTotalPoints: number;
+    overallScore: number;
+    overallTotalPoints: number;
+    percentage: number;
+    timeTaken: number;
+    status: string;
+    isFinalSubmission: boolean;
+  };
+}
+
+export interface QuizApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  error?: string;
 }
