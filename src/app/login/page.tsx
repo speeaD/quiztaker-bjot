@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
-import { Quicksand } from 'next/font/google';
 
 export default function Login() {
-    const backend_url = process.env.BACKEND_URL;
+    const backend_url = process.env.BACKEND_URL || 'https://bjot-backend.vercel.app/api';
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -68,6 +67,7 @@ export default function Login() {
                     }),
                 });
                 localStorage.setItem('quizTaker', data.quizTaker.id);
+                localStorage.setItem('quizTakerEmail', data.quizTaker.email);
                 // In production, redirect to dashboard
                 window.location.href = '/';
             } else {
