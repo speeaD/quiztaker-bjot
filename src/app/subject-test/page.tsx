@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { Clock, Calendar, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
 import DashboardHeader from '@/components/DashboardHeader';
-import router from 'next/router';
 
 const API_BASE_URL = 'https://bjot-backend.vercel.app/api';
 

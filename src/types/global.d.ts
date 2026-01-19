@@ -280,3 +280,58 @@ export interface QuizApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+
+export interface Subject {
+  id: string;
+  name: string;
+  questionCount: number;
+}
+
+export interface GameSession {
+  id: string;
+  subject: string;
+  currentScore: number;
+  goalScore: number;
+  questionsAnswered: number;
+  correctAnswers: number;
+  status: 'active' | 'won' | 'lost' | 'abandoned';
+  totalQuestions?: number;
+}
+
+export interface Question {
+  id: string;
+  text: string;
+  options: string[];
+}
+
+export interface QuestionResponse {
+  success: boolean;
+  question: Question;
+  currentScore: number;
+  goalScore: number;
+  questionsAnswered: number;
+  questionsRemaining: number;
+  gameOver?: boolean;
+  finalScore?: number;
+  status?: string;
+}
+
+export interface AnswerResult {
+  isCorrect: boolean;
+  correctAnswer: string;
+  pointsChange: number;
+  newScore: number;
+  status: string;
+}
+
+export interface GameHistory {
+  questionId: string;
+  question: string;
+  selectedAnswer: string;
+  correctAnswer: string;
+  wager: number;
+  isCorrect: boolean;
+  pointsChange: number;
+  timestamp: string;
+}

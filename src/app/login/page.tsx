@@ -109,7 +109,7 @@ export default function Login() {
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                        BJOT QuizTaker
+                        BJOT Student
                     </h1>
                     <p className="text-slate-600">
                         Enter your access code to sign in.

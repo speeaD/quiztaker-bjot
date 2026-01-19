@@ -5,7 +5,6 @@ import {AlertCircle, Award, Calendar, Clock, Loader2, Lock, TrendingUp } from 'l
 import Link from 'next/link';
 import { JSX, useEffect, useState } from 'react';
 
-const API_BASE_URL = 'https://bjot-backend.vercel.app/api';
 
 interface Submission {
   id: string;
@@ -242,7 +241,7 @@ const QuizTakerDashboard = () => {
               }
               title="Game Hub"
               subtitle="Time Attack, Sudden Death & Wager"
-              locked={true}
+              link="/game-hub"
               iconColor="text-red-500"
             />
           </div>
