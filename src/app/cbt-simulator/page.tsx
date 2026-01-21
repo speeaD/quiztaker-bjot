@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { Clock, Calendar, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
 import DashboardHeader from '@/components/DashboardHeader';
+import CalculatorWidget from '@/components/CalculatorComponent';
 
 const API_BASE_URL = 'https://bjot-backend.vercel.app/api';
 
@@ -25,9 +27,10 @@ interface Question {
 
 const CBTSimulator = () => {
   const [phase, setPhase] = useState< 'selection' | 'exam' | 'result'>('selection');
+  const [showCalculator, setShowCalculator] = useState(false);
   const {email}= localStorage.getItem('quizTakerEmail') ? {email: localStorage.getItem('quizTakerEmail') as string} : {email: 'Guest'};
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [ , setError] = useState('');
   const [availableQuestionSets, setAvailableQuestionSets] = useState<QuestionSet[]>([]);
   const [selectedQuestionSetIds, setSelectedQuestionSetIds] = useState<string[]>([]);
   const [sessionId, setSessionId] = useState('');
@@ -313,9 +316,12 @@ const CBTSimulator = () => {
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg"></div>
+            <div className="w-10 h-10 bg-blue-bg rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-lg">B</span>
+          </div>
             <span className="font-semibold">BJOT CBT Simulator</span>
           </div>
+          <CalculatorWidget  onClose={() => setShowCalculator(!showCalculator)}/>
           <button onClick={() => handleSubmit()} className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700">
             Submit
           </button>

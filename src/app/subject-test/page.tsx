@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, Calendar, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
 import DashboardHeader from '@/components/DashboardHeader';
+import CalculatorWidget from '@/components/CalculatorComponent';
 
 const API_BASE_URL = 'https://bjot-backend.vercel.app/api';
 
@@ -25,6 +26,7 @@ interface Question {
 
 const CBTSimulator = () => {
   const [phase, setPhase] = useState<'selection' | 'exam' | 'result'>('selection');
+  const [showCalculator, setShowCalculator] = useState(false);
   const email = typeof window !== 'undefined' && localStorage.getItem('quizTakerEmail') 
     ? localStorage.getItem('quizTakerEmail') as string 
     : 'Guest';
@@ -388,10 +390,15 @@ const CBTSimulator = () => {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg"></div>
-            <span className="font-semibold text-gray-900">BJOT CBT Simulator</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-bg rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-lg">B</span>
           </div>
+            <span className="font-semibold text-gray-900">BJOT Subject Simulator</span>
+          </div>
+          
+              <CalculatorWidget  onClose={() => setShowCalculator(!showCalculator)}/>
+         
           <button 
             onClick={() => handleSubmit()} 
             className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
