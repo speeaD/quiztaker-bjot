@@ -27,7 +27,9 @@ type GameState = 'wager' | 'question' | 'result' | 'loading';
 
 export default function GamePlay({ sessionId }: GamePlayProps) {
   const router = useRouter();
-  const userId = localStorage.getItem('quizTaker') as string;
+ const userId = typeof window !== 'undefined' && localStorage.getItem('quizTaker') 
+    ? localStorage.getItem('quizTaker') as string 
+    : 'Guest';
   const [gameState, setGameState] = useState<GameState>('loading');
   const [currentScore, setCurrentScore] = useState(100);
   const [goalScore] = useState(1000);

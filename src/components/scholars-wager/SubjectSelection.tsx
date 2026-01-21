@@ -13,7 +13,9 @@ interface Subject {
 
 export default function SubjectSelection() {
   const router = useRouter();
-  const userId = localStorage.getItem('quizTaker') as string;
+  const userId = typeof window !== 'undefined' && localStorage.getItem('quizTaker') 
+    ? localStorage.getItem('quizTaker') as string 
+    : 'Guest';
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
