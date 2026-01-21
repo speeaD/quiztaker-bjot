@@ -28,7 +28,9 @@ interface Question {
 const CBTSimulator = () => {
   const [phase, setPhase] = useState< 'selection' | 'exam' | 'result'>('selection');
   const [showCalculator, setShowCalculator] = useState(false);
-  const {email}= localStorage.getItem('quizTakerEmail') ? {email: localStorage.getItem('quizTakerEmail') as string} : {email: 'Guest'};
+  const email = typeof window !== 'undefined' && localStorage.getItem('quizTakerEmail') 
+    ? localStorage.getItem('quizTakerEmail') as string 
+    : 'Guest';
   const [loading, setLoading] = useState(false);
   const [ , setError] = useState('');
   const [availableQuestionSets, setAvailableQuestionSets] = useState<QuestionSet[]>([]);
