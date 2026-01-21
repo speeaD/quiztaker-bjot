@@ -3,9 +3,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
-import DashboardHeader from '@/components/DashboardHeader';
-import CalculatorWidget from '@/components/CalculatorComponent';
+import { Clock, Calendar, ChevronLeft, ChevronRight, Check, Loader2, Calculator, XCircle } from 'lucide-react';
 
 const API_BASE_URL = 'https://bjot-backend.vercel.app/api';
 
@@ -25,14 +23,143 @@ interface Question {
   order: number;
 }
 
+// Calculator Component
+const CalculatorWidget: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [display, setDisplay] = useState('0');
+  const [prevValue, setPrevValue] = useState<number | null>(null);
+  const [operation, setOperation] = useState<string | null>(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+  const inputDigit = (digit: string) => {
+    if (waitingForOperand) {
+      setDisplay(digit);
+      setWaitingForOperand(false);
+    } else {
+      setDisplay(display === '0' ? digit : display + digit);
+    }
+  };
+
+  const inputDecimal = () => {
+    if (waitingForOperand) {
+      setDisplay('0.');
+      setWaitingForOperand(false);
+    } else if (display.indexOf('.') === -1) {
+      setDisplay(display + '.');
+    }
+  };
+
+  const clear = () => {
+    setDisplay('0');
+    setPrevValue(null);
+    setOperation(null);
+    setWaitingForOperand(false);
+  };
+
+  const performOperation = (nextOperation: string) => {
+    const inputValue = parseFloat(display);
+
+    if (prevValue === null) {
+      setPrevValue(inputValue);
+    } else if (operation) {
+      const currentValue = prevValue || 0;
+      let newValue = currentValue;
+
+      switch (operation) {
+        case '+':
+          newValue = currentValue + inputValue;
+          break;
+        case '-':
+          newValue = currentValue - inputValue;
+          break;
+        case '*':
+          newValue = currentValue * inputValue;
+          break;
+        case '/':
+          newValue = currentValue / inputValue;
+          break;
+        case '=':
+          newValue = inputValue;
+          break;
+      }
+
+      setDisplay(String(newValue));
+      setPrevValue(newValue);
+    }
+
+    setWaitingForOperand(true);
+    setOperation(nextOperation);
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-2xl border border-gray-300 p-3 sm:p-4 w-56 sm:w-64 z-50 max-w-[calc(100vw-2rem)]">
+      <div className="flex justify-between items-center mb-2 sm:mb-3">
+        <h3 className="font-semibold text-gray-800 text-sm sm:text-base">Calculator</h3>
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 p-1">
+          <XCircle size={18} className="sm:w-5 sm:h-5" />
+        </button>
+      </div>
+      <div className="bg-gray-100 p-2 sm:p-3 rounded mb-2 sm:mb-3 text-right text-xl sm:text-2xl font-mono overflow-x-auto">
+        {display}
+      </div>
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+        {['7', '8', '9', '/'].map(btn => (
+          <button
+            key={btn}
+            onClick={() => ['/', '*', '-', '+'].includes(btn) ? performOperation(btn) : inputDigit(btn)}
+            className="bg-gray-200 active:bg-gray-400 hover:bg-gray-300 p-2 sm:p-3 rounded font-semibold text-sm sm:text-base touch-manipulation"
+          >
+            {btn}
+          </button>
+        ))}
+        {['4', '5', '6', '*'].map(btn => (
+          <button
+            key={btn}
+            onClick={() => ['/', '*', '-', '+'].includes(btn) ? performOperation(btn) : inputDigit(btn)}
+            className="bg-gray-200 active:bg-gray-400 hover:bg-gray-300 p-2 sm:p-3 rounded font-semibold text-sm sm:text-base touch-manipulation"
+          >
+            {btn}
+          </button>
+        ))}
+        {['1', '2', '3', '-'].map(btn => (
+          <button
+            key={btn}
+            onClick={() => ['/', '*', '-', '+'].includes(btn) ? performOperation(btn) : inputDigit(btn)}
+            className="bg-gray-200 active:bg-gray-400 hover:bg-gray-300 p-2 sm:p-3 rounded font-semibold text-sm sm:text-base touch-manipulation"
+          >
+            {btn}
+          </button>
+        ))}
+        {['0', '.', '=', '+'].map(btn => (
+          <button
+            key={btn}
+            onClick={() => {
+              if (btn === '.') inputDecimal();
+              else if (btn === '=') performOperation('=');
+              else if (['+', '-', '*', '/'].includes(btn)) performOperation(btn);
+              else inputDigit(btn);
+            }}
+            className={`${btn === '=' ? 'bg-blue-600 text-white active:bg-blue-800 hover:bg-blue-700' : 'bg-gray-200 active:bg-gray-400 hover:bg-gray-300'} p-2 sm:p-3 rounded font-semibold text-sm sm:text-base touch-manipulation`}
+          >
+            {btn}
+          </button>
+        ))}
+        <button
+          onClick={clear}
+          className="col-span-4 bg-red-500 text-white active:bg-red-700 hover:bg-red-600 p-2 sm:p-3 rounded font-semibold text-sm sm:text-base touch-manipulation"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const CBTSimulator = () => {
-  const [phase, setPhase] = useState< 'selection' | 'exam' | 'result'>('selection');
+  const [phase, setPhase] = useState<'selection' | 'exam' | 'result'>('selection');
   const [showCalculator, setShowCalculator] = useState(false);
-  const email = typeof window !== 'undefined' && localStorage.getItem('quizTakerEmail') 
-    ? localStorage.getItem('quizTakerEmail') as string 
-    : 'Guest';
+  const email = 'student@example.com'; // Replace with actual email logic
   const [loading, setLoading] = useState(false);
-  const [ , setError] = useState('');
+  const [, setError] = useState('');
   const [availableQuestionSets, setAvailableQuestionSets] = useState<QuestionSet[]>([]);
   const [selectedQuestionSetIds, setSelectedQuestionSetIds] = useState<string[]>([]);
   const [sessionId, setSessionId] = useState('');
@@ -89,15 +216,6 @@ const CBTSimulator = () => {
     }
   };
 
-  const handleEmailSubmit = () => {
-    if (email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('');
-      setPhase('selection');
-    } else {
-      setError('Please enter a valid email');
-    }
-  };
-
   const toggleQuestionSet = (id: string) => {
     if (selectedQuestionSetIds.includes(id)) {
       setSelectedQuestionSetIds(selectedQuestionSetIds.filter(x => x !== id));
@@ -115,7 +233,6 @@ const CBTSimulator = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questionSetIds: selectedQuestionSetIds, email }),
       });
-      console.log('sessionResponse', sessionResponse);
       const sessionData = await sessionResponse.json();
       if (!sessionData.success) {
         setError(sessionData.message);
@@ -204,109 +321,124 @@ const CBTSimulator = () => {
   const currentGlobalIndex = selectedQuestionSetIds.slice(0, currentQuestionSetIndex)
     .reduce((sum, id) => sum + (questionsBySetId[id]?.length || 0), 0) + currentQuestionIndex;
 
-  
-
+  // Selection Phase
   if (phase === 'selection') {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto space-y-4 py-8 px-6">
-        <DashboardHeader studentName={email} />
-        <main className="flex items-center justify-center px-6 py-2">
-          <div className="w-full max-w-3xl bg-white rounded-lg shadow-sm p-8">
-            <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-600 mb-6">
-              <ChevronLeft className="w-4 h-4" />BACK
-            </button>
-            <h1 className="text-2xl font-bold mb-2">Select {maxSubjects} Subjects</h1>
-            <p className="text-gray-600 mb-8">Choose subjects to be tested on</p>
-            {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-blue-600 animate-spin" /></div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  {availableQuestionSets.map((qs) => {
-                    const selected = selectedQuestionSetIds.includes(qs._id);
-                    const disabled = !selected && selectedQuestionSetIds.length >= maxSubjects;
-                    return (
-                      <button
-                        key={qs._id}
-                        onClick={() => toggleQuestionSet(qs._id)}
-                        disabled={disabled}
-                        className={`relative p-4 rounded-lg border-2 text-left ${
-                          selected ? 'bg-blue-600 border-blue-600 text-white' :
-                          disabled ? 'bg-gray-50 border-gray-200 text-gray-400' :
-                          'bg-white border-gray-200 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="font-medium">{qs.title}</div>
-                        <div className={`text-sm ${selected ? 'text-blue-100' : 'text-gray-500'}`}>
-                          {qs.questionCount} questions
-                        </div>
-                        {selected && <Check className="w-5 h-5 absolute top-3 right-3" />}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-center text-sm text-gray-600 mb-6">
-                  {selectedQuestionSetIds.length} of {maxSubjects} selected
-                </p>
-                <button
-                  onClick={handleStartExam}
-                  disabled={selectedQuestionSetIds.length !== maxSubjects || loading}
-                  className={`w-full py-4 rounded-lg font-semibold text-lg ${
-                    selectedQuestionSetIds.length === maxSubjects ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-blue-400 text-white cursor-not-allowed'
-                  }`}
-                >
-                  {loading ? 'Starting...' : 'Start Exam'}
-                </button>
-              </>
-            )}
+        <div className="max-w-4xl mx-auto space-y-4 py-4 sm:py-8 px-4 sm:px-6">
+          <header className="bg-white border-b border-gray-200 p-3 sm:p-4 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-blue-bg rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-lg">B</span>
           </div>
-        </main>
+              <span className="font-semibold text-gray-900 text-sm sm:text-base">BJOT CBT Simulator</span>
+            </div>
+          </header>
+          
+          <main className="flex items-center justify-center px-2 sm:px-6 py-2">
+            <div className="w-full max-w-3xl bg-white rounded-lg shadow-sm p-4 sm:p-8">
+              <h1 className="text-xl sm:text-2xl font-bold mb-2">Select {maxSubjects} Subjects</h1>
+              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Choose subjects to be tested on</p>
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                    {availableQuestionSets.map((qs) => {
+                      const selected = selectedQuestionSetIds.includes(qs._id);
+                      const disabled = !selected && selectedQuestionSetIds.length >= maxSubjects;
+                      return (
+                        <button
+                          key={qs._id}
+                          onClick={() => toggleQuestionSet(qs._id)}
+                          disabled={disabled}
+                          className={`relative p-4 rounded-lg border-2 text-left transition-all touch-manipulation ${
+                            selected ? 'bg-blue-600 border-blue-600 text-white' :
+                            disabled ? 'bg-gray-50 border-gray-200 text-gray-400' :
+                            'bg-white border-gray-200 hover:bg-gray-50 active:bg-gray-100'
+                          }`}
+                        >
+                          <div className="font-medium text-sm sm:text-base">{qs.title}</div>
+                          <div className={`text-xs sm:text-sm ${selected ? 'text-blue-100' : 'text-gray-500'}`}>
+                            {qs.questionCount} questions
+                          </div>
+                          {selected && <Check className="w-4 h-4 sm:w-5 sm:h-5 absolute top-3 right-3" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-center text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
+                    {selectedQuestionSetIds.length} of {maxSubjects} selected
+                  </p>
+                  <button
+                    onClick={handleStartExam}
+                    disabled={selectedQuestionSetIds.length !== maxSubjects || loading}
+                    className={`w-full py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all touch-manipulation ${
+                      selectedQuestionSetIds.length === maxSubjects ? 'bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900' : 'bg-blue-400 text-white cursor-not-allowed'
+                    }`}
+                  >
+                    {loading ? 'Starting...' : 'Start Exam'}
+                  </button>
+                </>
+              )}
+            </div>
+          </main>
         </div>
       </div>
     );
   }
 
+  // Result Phase
   if (phase === 'result' && submissionResult) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto space-y-4 py-8 px-6">
-        <DashboardHeader studentName={email} />
-        <main className="max-w-4xl mx-auto px-6 py-12">
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className={`w-24 h-24 rounded-full mx-auto flex items-center justify-center mb-6 ${
-              submissionResult.percentage >= 70 ? 'bg-green-100' : 'bg-yellow-100'
-            }`}>
-              <span className={`text-3xl font-bold ${
-                submissionResult.percentage >= 70 ? 'text-green-600' : 'text-yellow-600'
-              }`}>
-                {submissionResult.percentage}%
-              </span>
-            </div>
-            <h1 className="text-3xl font-bold mb-2">Exam Completed!</h1>
-            <p className="text-gray-600 mb-8">Here are your results</p>
-            <div className="grid grid-cols-3 gap-6 mb-8">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{submissionResult.score}</div>
-                <div className="text-sm text-gray-600">Score</div>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{submissionResult.totalPoints}</div>
-                <div className="text-sm text-gray-600">Total Points</div>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{Math.floor(submissionResult.timeTaken / 60)}m</div>
-                <div className="text-sm text-gray-600">Time Taken</div>
-              </div>
-            </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700"
-            >
-              Take Another Exam
-            </button>
+        <div className="max-w-4xl mx-auto space-y-4 py-4 sm:py-8 px-4 sm:px-6">
+          <header className="bg-white border-b border-gray-200 p-3 sm:p-4 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-blue-bg rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-lg">B</span>
           </div>
-        </main>
+              <span className="font-semibold text-gray-900 text-sm sm:text-base">BJOT CBT Simulator</span>
+            </div>
+          </header>
+          
+          <main className="px-2 sm:px-6 py-2">
+            <div className="bg-white rounded-lg shadow-sm p-6 sm:p-8 text-center">
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto flex items-center justify-center mb-4 sm:mb-6 ${
+                submissionResult.percentage >= 70 ? 'bg-green-100' : 'bg-yellow-100'
+              }`}>
+                <span className={`text-2xl sm:text-3xl font-bold ${
+                  submissionResult.percentage >= 70 ? 'text-green-600' : 'text-yellow-600'
+                }`}>
+                  {submissionResult.percentage}%
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Exam Completed!</h1>
+              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Here are your results</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">{submissionResult.score}</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Score</div>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">{submissionResult.totalPoints}</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Total Points</div>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">{Math.floor(submissionResult.timeTaken / 60)}m</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Time Taken</div>
+                </div>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation"
+              >
+                Take Another Exam
+              </button>
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -315,41 +447,58 @@ const CBTSimulator = () => {
   // Exam Phase
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-blue-bg rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-lg">B</span>
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm sm:text-lg">B</span>
+            </div>
+            <span className="font-semibold text-sm sm:text-base">BJOT CBT</span>
           </div>
-            <span className="font-semibold">BJOT CBT Simulator</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button 
+              onClick={() => setShowCalculator(!showCalculator)}
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors ${
+                showCalculator 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              <Calculator className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Calculator</span>
+            </button>
+            <button 
+              onClick={() => handleSubmit()} 
+              className="bg-red-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-red-700 active:bg-red-800 transition-colors touch-manipulation"
+            >
+              Submit
+            </button>
           </div>
-          <CalculatorWidget  onClose={() => setShowCalculator(!showCalculator)}/>
-          <button onClick={() => handleSubmit()} className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700">
-            Submit
-          </button>
         </div>
       </header>
-      <div className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex gap-6">
+
+      {/* Timer Bar */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex flex-wrap gap-3 sm:gap-6">
           <div className="flex items-center gap-2 text-blue-600 font-semibold">
-            <Clock className="w-5 h-5" />
-            <span className="text-lg">{formatTime(timeRemaining)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600">
-            <Calendar className="w-5 h-5" />
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-base sm:text-lg">{formatTime(timeRemaining)}</span>
           </div>
         </div>
       </div>
-      <div className="bg-blue-900">
-        <div className="max-w-7xl mx-auto px-6 flex gap-1">
+
+      {/* Subject Tabs */}
+      <div className="bg-blue-900 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 min-w-max">
           {selectedQuestionSetIds.map((id, i) => {
             const qs = availableQuestionSets.find(q => q._id === id);
             return (
               <button
                 key={id}
                 onClick={() => { setCurrentQuestionSetIndex(i); setCurrentQuestionIndex(0); }}
-                className={`px-6 py-3 font-medium ${
-                  currentQuestionSetIndex === i ? 'bg-blue-700 text-white' : 'bg-blue-900 text-blue-200 hover:bg-blue-800'
+                className={`px-3 sm:px-6 py-2 sm:py-3 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors touch-manipulation ${
+                  currentQuestionSetIndex === i ? 'bg-blue-700 text-white' : 'bg-blue-900 text-blue-200 hover:bg-blue-800 active:bg-blue-700'
                 }`}
               >
                 {qs?.title}
@@ -358,57 +507,71 @@ const CBTSimulator = () => {
           })}
         </div>
       </div>
-      <main className="max-w-4xl mx-auto px-6 py-8">
+
+      {/* Question Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {currentQuestion && (
-          <div className="bg-white rounded-lg shadow-sm  p-8">
-            <div className="flex justify-between mb-6 pb-4 border-b">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-8">
+            {/* Question Header */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200 gap-2">
+              <h2 className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wide">
                 {availableQuestionSets.find(qs => qs._id === selectedQuestionSetIds[currentQuestionSetIndex])?.title}
               </h2>
-              <span className="text-sm font-semibold text-gray-500">
+              <span className="text-xs sm:text-sm font-semibold text-gray-500">
                 {currentGlobalIndex + 1} / {getAllQuestions().length}
               </span>
             </div>
-            <p className="text-lg mb-8">{currentQuestion.question}</p>
-            <div className="space-y-3 mb-8">
+
+            {/* Question Text */}
+            <p className="text-base sm:text-lg mb-6 sm:mb-8 text-gray-900 leading-relaxed">{currentQuestion.question}</p>
+
+            {/* Options */}
+            <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
               {(currentQuestion.options || []).map((opt, i) => (
                 <button
                   key={i}
                   onClick={() => handleOptionSelect(opt)}
-                  className={`w-full text-left p-4 rounded-lg border-2 ${
-                    answers[currentQuestion._id] === opt ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                  className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${
+                    answers[currentQuestion._id] === opt ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <span className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${
                       answers[currentQuestion._id] === opt ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
                     }`}>
                       {String.fromCharCode(65 + i)}
                     </span>
-                    <span className="pt-1">{opt}</span>
+                    <span className="text-gray-900 pt-0.5 sm:pt-1 text-sm sm:text-base">{opt}</span>
                   </div>
                 </button>
               ))}
             </div>
-            <div className="flex justify-between pt-4 border-t">
+
+            {/* Navigation */}
+            <div className="flex justify-between pt-3 sm:pt-4 border-t border-gray-200">
               <button
                 onClick={handlePrev}
                 disabled={currentQuestionSetIndex === 0 && currentQuestionIndex === 0}
-                className="flex items-center gap-2 px-5 py-2 rounded-lg border text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50"
+                className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium text-xs sm:text-sm hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
               >
-                <ChevronLeft className="w-4 h-4" />Prev
+                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                Prev
               </button>
               <button
                 onClick={handleNext}
                 disabled={currentQuestionSetIndex === selectedQuestionSetIds.length - 1 && currentQuestionIndex === getCurrentQuestions().length - 1}
-                className="flex items-center gap-2 px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg bg-blue-600 text-white font-medium text-xs sm:text-sm hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
               >
-                Next<ChevronRight className="w-4 h-4" />
+                Next
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
         )}
       </main>
+
+      {/* Calculator Widget */}
+      {showCalculator && <CalculatorWidget onClose={() => setShowCalculator(false)} />}
     </div>
   );
 };

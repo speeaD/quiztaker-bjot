@@ -42,7 +42,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ studentName = "Studen
             {getInitials(studentName)}
           </span>
         </div>
-        <span className="font-medium text-[hsl(var(--foreground))]">{studentName}</span>
       </div>
     </header>
   );
