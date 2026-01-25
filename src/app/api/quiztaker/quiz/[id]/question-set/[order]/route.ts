@@ -15,9 +15,9 @@ export async function GET(
         { status: 401 }
       );
     }
-
+    const backendUrl = `${process.env.BACKEND_URL}`;
     const response = await fetch(
-      `http://localhost:5004/api/quiztaker/quiz/${quizId}/question-set/${questionSetOrder}`,
+      `${backendUrl}/quiztaker/quiz/${quizId}/question-set/${questionSetOrder}`,
       {
         method: 'GET',
         headers: {

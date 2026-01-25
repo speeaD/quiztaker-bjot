@@ -92,7 +92,7 @@ const DashboardCard = ({
 const QuizTakerDashboard = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [assignedQuizzes, setAssignedQuizzes] = useState<AssignedQuiz[]>([]);
-  const [profile, setProfile] = useState<QuizTakerProfile | null>(null);
+  const [ , setProfile] = useState<QuizTakerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignedLoading, setAssignedLoading] = useState(true);
   const [error, setError] = useState('');

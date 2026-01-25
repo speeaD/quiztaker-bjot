@@ -27,11 +27,11 @@ interface Testimonial {
     image: string;
 }
 
-interface Category {
-    name: string;
-    icon: React.ReactNode;
-    color: string;
-}
+// interface Category {
+//     name: string;
+//     icon: React.ReactNode;
+//     color: string;
+// }
 
 interface Step {
     number: number;

@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+    { params }: { params: Promise<{ id: string; order: string }> }
 ) {
   try {
-    const { id: quizId } = await params;
-    const body = await request.json();
+    const { id: quizId, order: questionSetOrder } = await params;
     
     const authToken = request.cookies.get('auth-token')?.value;
     
@@ -17,31 +16,37 @@ export async function POST(
       );
     }
 
+    const backendUrl = `${process.env.BACKEND_URL}`;
+
     const response = await fetch(
-      `http://localhost:5004/api/quiztaker/quiz/${quizId}/set-question-order`,
+      `${backendUrl}/quiztaker/quiz/${quizId}/question-set/${questionSetOrder}/start`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify(body),
+        credentials: 'include',
       }
     );
 
+    
+
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('Backend error starting question set:', errorData);
       return NextResponse.json(
-        { error: errorData.message || 'Failed to set question order' },
+        { error: errorData.message || 'Failed to start question set' },
         { status: response.status }
       );
     }
 
     const data = await response.json();
+
     return NextResponse.json(data);
 
   } catch (error) {
-    console.error('Error setting question order:', error);
+    console.error('Error starting question set:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

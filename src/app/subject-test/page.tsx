@@ -187,6 +187,7 @@ const CBTSimulator = () => {
       });
     }, 1000);
     return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, timeRemaining]);
 
   const formatTime = (seconds: number) => {

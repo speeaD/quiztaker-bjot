@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
+export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: quizId } = await params;
+    const body = await request.json();
     
     const authToken = request.cookies.get('auth-token')?.value;
     
@@ -16,22 +17,24 @@ export async function GET(
       );
     }
 
+    const backendUrl = `${process.env.BACKEND_URL}`;
+
     const response = await fetch(
-      `http://localhost:5004/api/quiztaker/quiz/${quizId}/progress`,
+      `${backendUrl}/quiztaker/quiz/${quizId}/set-question-order`,
       {
-        method: 'GET',
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        cache: 'no-store',
-        credentials: 'include',
+        body: JSON.stringify(body),
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json();
       return NextResponse.json(
-        { error: errorData.message || 'Failed to fetch progress' },
+        { error: errorData.message || 'Failed to set question order' },
         { status: response.status }
       );
     }
@@ -40,7 +43,7 @@ export async function GET(
     return NextResponse.json(data);
 
   } catch (error) {
-    console.error('Error fetching progress:', error);
+    console.error('Error setting question order:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

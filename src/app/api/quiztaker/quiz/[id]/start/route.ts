@@ -11,7 +11,7 @@ export async function POST(
   try {
     const { id: quizId } = await params;
     const authToken = request.cookies.get("auth-token")?.value;
-    const quizTaker = request.cookies.get("quizTaker")?.value;
+    const body = await request.json();
 
     console.log("Auth token exists:", !!authToken);
     console.log("Quiz ID:", quizId);
@@ -20,27 +20,25 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body: StartQuizBody = await request.json();
-    console.log("Request body:", body);
+  
 
-    if (!body.quizTaker) {
+    if (!body) {
       return NextResponse.json(
         { error: 'Quiz taker ID is required' },
         { status: 400 }
       );
     }
+    const backendUrl = `${process.env.BACKEND_URL}`;
 
     const response = await fetch(
-      `http://localhost:5004/api/quiztaker/quiz/${quizId}/start`,
+      `${backendUrl}/quiztaker/quiz/${quizId}/start`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({
-          quizTaker: `${quizTaker}`,
-        }),
+        body: JSON.stringify(body),
       }
     );
     

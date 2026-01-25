@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(
+export async function GET(
   request: NextRequest,
-    { params }: { params: Promise<{ id: string; order: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: quizId, order: questionSetOrder } = await params;
-    
+    const { id: quizId } = await params;
     const authToken = request.cookies.get('auth-token')?.value;
     
     if (!authToken) {
@@ -15,36 +14,32 @@ export async function POST(
         { status: 401 }
       );
     }
+    const backendUrl = `${process.env.BACKEND_URL}`
 
     const response = await fetch(
-      `http://localhost:5004/api/quiztaker/quiz/${quizId}/question-set/${questionSetOrder}/start`,
+      `${backendUrl}/quiztaker/quiz/${quizId}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        credentials: 'include',
+        cache: 'no-store',
       }
     );
 
-    
-
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Backend error starting question set:', errorData);
       return NextResponse.json(
-        { error: errorData.message || 'Failed to start question set' },
+        { error: errorData.message || 'Failed to fetch quiz' },
         { status: response.status }
       );
     }
 
     const data = await response.json();
-
     return NextResponse.json(data);
 
   } catch (error) {
-    console.error('Error starting question set:', error);
+    console.error('Error fetching quiz:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
