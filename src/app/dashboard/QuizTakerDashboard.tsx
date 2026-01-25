@@ -69,20 +69,20 @@ const DashboardCard = ({
   iconColor?: string;
   link?: string;
 }) => (
-  <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative">
+  <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative">
     <Link href={locked ? "#" : link || "/cbt-simulator"} className="block">
       {locked && (
-        <div className="absolute top-4 right-4">
-          <Lock className="w-4 h-4 text-gray-300" />
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+          <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300" />
         </div>
       )}
-      <div className="flex items-start gap-4">
-        <div className={`${iconColor} p-2`}>
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className={`${iconColor} p-1.5 sm:p-2`}>
           {Icon}
         </div>
-        <div>
-          <h3 className="font-semibold text-gray-900 text-lg mb-1">{title}</h3>
-          <p className="text-gray-500 text-sm">{subtitle}</p>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-gray-900 text-sm sm:text-lg mb-0.5 sm:mb-1 truncate">{title}</h3>
+          <p className="text-gray-500 text-xs sm:text-sm line-clamp-2">{subtitle}</p>
         </div>
       </div>
     </Link>
@@ -126,7 +126,6 @@ const QuizTakerDashboard = () => {
       }
 
       if (data.success && data.quizTaker) {
-        console.log('Fetched assigned quizzes:', data.quizTaker);
         setProfile(data.quizTaker);
         setAssignedQuizzes(data.quizTaker.assignedQuizzes || []);
       }
@@ -246,43 +245,43 @@ const QuizTakerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto space-y-6 py-8 px-6">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 py-4 sm:py-8 px-4 sm:px-6">
         {/* Header */}
         <DashboardHeader studentName={email} />
 
         {/* Statistics Cards */}
         {totalExams > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <Award className="w-5 h-5 text-blue-600" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-blue-50 rounded-lg">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{totalExams}</p>
-                  <p className="text-sm text-gray-600">Total Exams</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{totalExams}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Total Exams</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-green-50 rounded-lg">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{averageScore}%</p>
-                  <p className="text-sm text-gray-600">Average Score</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{averageScore}%</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Average Score</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-50 rounded-lg">
-                  <Award className="w-5 h-5 text-purple-600" />
+            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-purple-50 rounded-lg">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{highestScore}%</p>
-                  <p className="text-sm text-gray-600">Highest Score</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{highestScore}%</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Highest Score</p>
                 </div>
               </div>
             </div>
@@ -290,15 +289,15 @@ const QuizTakerDashboard = () => {
         )}
 
         {/* Assigned Quizzes Section */}
-   
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-6">
+       
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-blue-600" />
-                <h2 className="font-semibold text-gray-900 text-lg">Assigned Mock Exams</h2>
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <h2 className="font-semibold text-gray-900 text-base sm:text-lg">Assigned Exams</h2>
               </div>
               {assignedQuizzes.length > 0 && (
-                <div className="flex items-center gap-3 text-sm text-gray-500">
+                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 flex-wrap">
                   <span>{pendingQuizzes} pending</span>
                   <span>•</span>
                   <span>{inProgressQuizzes} in progress</span>
@@ -309,46 +308,46 @@ const QuizTakerDashboard = () => {
             </div>
 
             {assignedLoading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-                <p className="text-gray-500 text-sm">Loading assigned exams...</p>
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-spin mb-2 sm:mb-3" />
+                <p className="text-gray-500 text-xs sm:text-sm">Loading assigned exams...</p>
               </div>
             ) : assignedError ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-8 h-8 text-red-400" />
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
                 </div>
-                <p className="text-gray-700 font-medium text-sm mb-2">{assignedError}</p>
+                <p className="text-gray-700 font-medium text-xs sm:text-sm mb-2">{assignedError}</p>
                 <button
                   onClick={fetchAssignedQuizzes}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Try Again
                 </button>
               </div>
             ) : assignedQuizzes.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-8 h-8 text-gray-400" />
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                 </div>
-                <p className="text-gray-500 text-sm mb-2">No assigned exams</p>
+                <p className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">No assigned Exams</p>
                 <p className="text-gray-400 text-xs">Your instructor hasn&apos;t assigned any exams yet</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {assignedQuizzes.map((quiz) => (
                   <div 
                     key={quiz._id}
-                    className="flex items-center justify-between bg-gray-50 px-6 py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 sm:px-6 sm:py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors gap-3 sm:gap-4"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-semibold text-gray-900">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-1 sm:mb-1 flex-wrap">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                           {quiz.quizId.settings.title}
                         </h3>
                         {getStatusBadge(quiz.status)}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           Assigned: {formatDate(quiz.assignedAt)}
@@ -362,30 +361,30 @@ const QuizTakerDashboard = () => {
                       </div>
                       {quiz.status === 'completed' && quiz.submissionId && (
                         <div className="mt-2 flex items-center gap-2">
-                          <span className={`text-sm font-semibold ${getPercentageColor(quiz.submissionId.percentage)}`}>
+                          <span className={`text-xs sm:text-sm font-semibold ${getPercentageColor(quiz.submissionId.percentage)}`}>
                             Score: {quiz.submissionId.percentage}%
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-xs sm:text-sm text-gray-500">
                             ({quiz.submissionId.score}/{quiz.submissionId.totalPoints})
                           </span>
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 sm:flex-shrink-0">
                       {quiz.status === 'completed' && quiz.submissionId ? (
                         <button
                           onClick={() => handleViewResults(quiz.submissionId!._id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                           View Results
                         </button>
                       ) : (
                         <button
                           onClick={() => handleTakeQuiz(quiz.quizId._id, quiz.status)}
-                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto"
                         >
-                          <PlayCircle className="w-4 h-4" />
+                          <PlayCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                           {quiz.status === 'in-progress' ? 'Continue' : 'Start Exam'}
                         </button>
                       )}
@@ -395,12 +394,11 @@ const QuizTakerDashboard = () => {
               </div>
             )}
           </div>
-        
 
         {/* Main Content */}
-        <main className="space-y-6">
+        <main className="space-y-4 sm:space-y-6">
           {/* Dashboard Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <DashboardCard
               icon={
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -456,18 +454,18 @@ const QuizTakerDashboard = () => {
           </div>
 
           {/* Recent History */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-gray-600" />
-                <h2 className="font-semibold text-gray-900 text-lg">Recent History</h2>
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                <h2 className="font-semibold text-gray-900 text-base sm:text-lg">Recent History</h2>
               </div>
               {totalExams > 0 && (
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500">{totalExams} exam{totalExams !== 1 ? 's' : ''}</span>
+                  <span className="text-xs sm:text-sm text-gray-500">{totalExams} exam{totalExams !== 1 ? 's' : ''}</span>
                   <button 
                     onClick={fetchSubmissions}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
                   >
                     Refresh
                   </button>
@@ -476,56 +474,56 @@ const QuizTakerDashboard = () => {
             </div>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-                <p className="text-gray-500 text-sm">Loading history...</p>
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-spin mb-2 sm:mb-3" />
+                <p className="text-gray-500 text-xs sm:text-sm">Loading history...</p>
               </div>
             ) : error ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-8 h-8 text-red-400" />
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
                 </div>
-                <p className="text-gray-700 font-medium text-sm mb-2">{error}</p>
-                <p className="text-gray-400 text-xs mb-4">Make sure you&apos;re logged in to view your history</p>
+                <p className="text-gray-700 font-medium text-xs sm:text-sm mb-2">{error}</p>
+                <p className="text-gray-400 text-xs mb-3 sm:mb-4">Make sure you&apos;re logged in to view your history</p>
                 <button
                   onClick={fetchSubmissions}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Try Again
                 </button>
               </div>
             ) : submissions.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-8 h-8 text-gray-400" />
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                 </div>
-                <p className="text-gray-500 text-sm mb-2">No exam history yet</p>
-                <p className="text-gray-400 text-xs mb-4">Take your first exam to see results here</p>
+                <p className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">No exam history yet</p>
+                <p className="text-gray-400 text-xs mb-3 sm:mb-4">Take your first exam to see results here</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {submissions.slice(0, 10).map((submission) => (
                   <div 
                     key={submission.id}
-                    className="flex items-center justify-between bg-gray-50 px-6 py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 sm:px-6 sm:py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors gap-3 sm:gap-0"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-semibold text-gray-900">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                           {submission.quizTitle}
                         </h3>
                         {submission.examType === 'multi-subject' && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded whitespace-nowrap">
                             Multi-Subject
                           </span>
                         )}
                         {submission.examType === 'single-subject' && (
-                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded">
+                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded whitespace-nowrap">
                             Single Subject
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {formatDate(submission.completedAt)}
@@ -538,11 +536,11 @@ const QuizTakerDashboard = () => {
                         )}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-lg font-bold ${getPercentageColor(submission.percentage)}`}>
+                    <div className="text-left sm:text-right">
+                      <div className={`text-base sm:text-lg font-bold ${getPercentageColor(submission.percentage)}`}>
                         {submission.percentage}%
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs sm:text-sm text-gray-500">
                         {submission.score}/{submission.totalPoints}
                       </div>
                     </div>
@@ -550,7 +548,7 @@ const QuizTakerDashboard = () => {
                 ))}
                 
                 {submissions.length > 10 && (
-                  <button className="w-full py-3 text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <button className="w-full py-2 sm:py-3 text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium">
                     View all {submissions.length} exams →
                   </button>
                 )}
