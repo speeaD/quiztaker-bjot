@@ -1,10 +1,9 @@
 'use client';
 
 import DashboardHeader from '@/components/DashboardHeader';
-import {AlertCircle, Award, Calendar, Clock, Loader2, Lock, TrendingUp } from 'lucide-react';
+import { AlertCircle, Award, Calendar, Clock, Loader2, Lock, TrendingUp, CheckCircle, PlayCircle, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { JSX, useEffect, useState } from 'react';
-
 
 interface Submission {
   id: string;
@@ -21,7 +20,39 @@ interface Submission {
   }>;
 }
 
+interface AssignedQuiz {
+  _id: string;
+  quizId: {
+    _id: string;
+    settings: {
+      title: string;
+      description?: string;
+      duration?: {
+        hours: number;
+        minutes: number;
+        seconds: number;
+      };
+    };
+  };
+  status: 'pending' | 'in-progress' | 'completed';
+  assignedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  submissionId?: {
+    _id: string;
+    score: number;
+    totalPoints: number;
+    percentage: number;
+  };
+}
 
+interface QuizTakerProfile {
+  id: string;
+  email: string;
+  accessCode?: string;
+  accountType: 'premium' | 'regular';
+  assignedQuizzes: AssignedQuiz[];
+}
 
 const DashboardCard = ({ 
   icon: Icon, 
@@ -40,28 +71,32 @@ const DashboardCard = ({
 }) => (
   <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative">
     <Link href={locked ? "#" : link || "/cbt-simulator"} className="block">
-    {locked && (
-      <div className="absolute top-4 right-4">
-        <Lock className="w-4 h-4 text-gray-300" />
+      {locked && (
+        <div className="absolute top-4 right-4">
+          <Lock className="w-4 h-4 text-gray-300" />
+        </div>
+      )}
+      <div className="flex items-start gap-4">
+        <div className={`${iconColor} p-2`}>
+          {Icon}
+        </div>
+        <div>
+          <h3 className="font-semibold text-gray-900 text-lg mb-1">{title}</h3>
+          <p className="text-gray-500 text-sm">{subtitle}</p>
+        </div>
       </div>
-    )}
-    <div className="flex items-start gap-4">
-      <div className={`${iconColor} p-2`}>
-        {Icon}
-      </div>
-      <div>
-        <h3 className="font-semibold text-gray-900 text-lg mb-1">{title}</h3>
-        <p className="text-gray-500 text-sm">{subtitle}</p>
-      </div>
-    </div>
     </Link>
   </div>
 );
 
 const QuizTakerDashboard = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [assignedQuizzes, setAssignedQuizzes] = useState<AssignedQuiz[]>([]);
+  const [profile, setProfile] = useState<QuizTakerProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [assignedLoading, setAssignedLoading] = useState(true);
   const [error, setError] = useState('');
+  const [assignedError, setAssignedError] = useState('');
   
   const email = typeof window !== 'undefined' && localStorage.getItem('quizTakerEmail') 
     ? localStorage.getItem('quizTakerEmail') as string 
@@ -69,15 +104,45 @@ const QuizTakerDashboard = () => {
 
   useEffect(() => {
     fetchSubmissions();
+    fetchAssignedQuizzes();
   }, []);
+
+  const fetchAssignedQuizzes = async () => {
+    try {
+      setAssignedLoading(true);
+      setAssignedError('');
+
+      const response = await fetch('/api/quiztaker/dashboard', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch assigned quizzes');
+      }
+
+      if (data.success && data.quizTaker) {
+        console.log('Fetched assigned quizzes:', data.quizTaker);
+        setProfile(data.quizTaker);
+        setAssignedQuizzes(data.quizTaker.assignedQuizzes || []);
+      }
+    } catch (err) {
+      console.error('Error fetching assigned quizzes:', err);
+      setAssignedError(err instanceof Error ? err.message : 'Unable to load assigned quizzes');
+    } finally {
+      setAssignedLoading(false);
+    }
+  };
 
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
       setError('');
 
-
-      // Fetch from Next.js API route
       const response = await fetch('/api/quiztaker/submission', {
         method: 'GET',
         headers: {
@@ -86,7 +151,6 @@ const QuizTakerDashboard = () => {
       });
 
       const data = await response.json();
-      console.log('Fetched submissions data:', data);
       
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch submissions');
@@ -122,15 +186,47 @@ const QuizTakerDashboard = () => {
     return `${mins}m ${secs}s`;
   };
 
+  const formatDuration = (duration?: { hours: number; minutes: number; seconds: number }) => {
+    if (!duration) return 'N/A';
+    const { hours, minutes } = duration;
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
   const getPercentageColor = (percentage: number) => {
     if (percentage >= 70) return 'text-green-600';
     if (percentage >= 50) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const handleNavigation = (path: string) => {
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">Completed</span>;
+      case 'in-progress':
+        return <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">In Progress</span>;
+      case 'pending':
+        return <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded">Not Started</span>;
+      default:
+        return null;
+    }
+  };
+
+  const handleTakeQuiz = (quizId: string, status: string) => {
     if (typeof window !== 'undefined') {
-      window.location.href = path;
+      if (status === 'pending') {
+        window.location.href = `/assigned-quiz/${quizId}`;
+      } else if (status === 'in-progress') {
+        window.location.href = `/assigned-quiz/${quizId}/continue`;
+      }
+    }
+  };
+
+  const handleViewResults = (submissionId: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.href = `/results/${submissionId}`;
     }
   };
 
@@ -142,6 +238,11 @@ const QuizTakerDashboard = () => {
   const highestScore = totalExams > 0
     ? Math.max(...submissions.map(s => s.percentage))
     : 0;
+
+  // Assigned quiz statistics
+  const pendingQuizzes = assignedQuizzes.filter(q => q.status === 'pending').length;
+  const inProgressQuizzes = assignedQuizzes.filter(q => q.status === 'in-progress').length;
+  const completedQuizzes = assignedQuizzes.filter(q => q.status === 'completed').length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -188,6 +289,114 @@ const QuizTakerDashboard = () => {
           </div>
         )}
 
+        {/* Assigned Quizzes Section */}
+   
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-blue-600" />
+                <h2 className="font-semibold text-gray-900 text-lg">Assigned Mock Exams</h2>
+              </div>
+              {assignedQuizzes.length > 0 && (
+                <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <span>{pendingQuizzes} pending</span>
+                  <span>•</span>
+                  <span>{inProgressQuizzes} in progress</span>
+                  <span>•</span>
+                  <span>{completedQuizzes} completed</span>
+                </div>
+              )}
+            </div>
+
+            {assignedLoading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
+                <p className="text-gray-500 text-sm">Loading assigned exams...</p>
+              </div>
+            ) : assignedError ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="w-8 h-8 text-red-400" />
+                </div>
+                <p className="text-gray-700 font-medium text-sm mb-2">{assignedError}</p>
+                <button
+                  onClick={fetchAssignedQuizzes}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : assignedQuizzes.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-gray-500 text-sm mb-2">No assigned exams</p>
+                <p className="text-gray-400 text-xs">Your instructor hasn&apos;t assigned any exams yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {assignedQuizzes.map((quiz) => (
+                  <div 
+                    key={quiz._id}
+                    className="flex items-center justify-between bg-gray-50 px-6 py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="font-semibold text-gray-900">
+                          {quiz.quizId.settings.title}
+                        </h3>
+                        {getStatusBadge(quiz.status)}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Assigned: {formatDate(quiz.assignedAt)}
+                        </span>
+                        {quiz.quizId.settings.duration && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatDuration(quiz.quizId.settings.duration)}
+                          </span>
+                        )}
+                      </div>
+                      {quiz.status === 'completed' && quiz.submissionId && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className={`text-sm font-semibold ${getPercentageColor(quiz.submissionId.percentage)}`}>
+                            Score: {quiz.submissionId.percentage}%
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            ({quiz.submissionId.score}/{quiz.submissionId.totalPoints})
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {quiz.status === 'completed' && quiz.submissionId ? (
+                        <button
+                          onClick={() => handleViewResults(quiz.submissionId!._id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View Results
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleTakeQuiz(quiz.quizId._id, quiz.status)}
+                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          <PlayCircle className="w-4 h-4" />
+                          {quiz.status === 'in-progress' ? 'Continue' : 'Start Exam'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        
+
         {/* Main Content */}
         <main className="space-y-6">
           {/* Dashboard Cards Grid */}
@@ -203,7 +412,7 @@ const QuizTakerDashboard = () => {
               title="CBT Simulator"
               subtitle="Full exam mode - 4 subjects"
               iconColor="text-blue-500"
-              link ="/cbt-simulator"
+              link="/cbt-simulator"
             />
             <DashboardCard
               icon={
