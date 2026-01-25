@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Calendar, ChevronLeft, ChevronRight, Check, Loader2, Calculator, XCircle } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, Check, Loader2, Calculator, XCircle } from 'lucide-react';
 
 const API_BASE_URL = 'https://bjot-backend.vercel.app/api';
 

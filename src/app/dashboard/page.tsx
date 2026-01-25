@@ -5,3 +5,4 @@ export default async function DashboardPage() {
   // const dashboardData = await getDashboardData();
   return <QuizTakerDashboard />;
 }
+
