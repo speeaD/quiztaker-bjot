@@ -136,7 +136,7 @@ export default function HomePage() {
                     <div className="flex items-center gap-4">
 
                         <Link className="flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-lg shadow-blue-500/30 transition-transform hover:scale-105 active:scale-95" href="/login">
-                            Student Login
+                            Login
                         </Link>
                         <button
                             className="md:hidden"
