@@ -1,7 +1,7 @@
 'use client';
 
 import DashboardHeader from '@/components/DashboardHeader';
-import { AlertCircle, Award, Calendar, Clock, Loader2, Lock, TrendingUp, CheckCircle, PlayCircle, Eye } from 'lucide-react';
+import { AlertCircle, Award, Calendar, Clock, Loader2, Lock, TrendingUp, CheckCircle, PlayCircle, Eye, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { JSX, useEffect, useState } from 'react';
 
@@ -15,6 +15,7 @@ interface Submission {
   completedAt: string;
   timeTaken?: number;
   examType?: 'single-subject' | 'multi-subject';
+  attemptNumber?: number;
   questionSets?: Array<{
     title: string;
   }>;
@@ -27,6 +28,7 @@ interface AssignedQuiz {
     settings: {
       title: string;
       description?: string;
+      multipleAttempts?: boolean;
       duration?: {
         hours: number;
         minutes: number;
@@ -38,12 +40,21 @@ interface AssignedQuiz {
   assignedAt: string;
   startedAt?: string;
   completedAt?: string;
+  attemptCount?: number;
   submissionId?: {
     _id: string;
     score: number;
     totalPoints: number;
     percentage: number;
   };
+  allSubmissions?: Array<{
+    _id: string;
+    score: number;
+    totalPoints: number;
+    percentage: number;
+    completedAt: string;
+    attemptNumber: number;
+  }>;
 }
 
 interface QuizTakerProfile {
@@ -92,11 +103,13 @@ const DashboardCard = ({
 const QuizTakerDashboard = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [assignedQuizzes, setAssignedQuizzes] = useState<AssignedQuiz[]>([]);
-  const [ , setProfile] = useState<QuizTakerProfile | null>(null);
+  const [profile, setProfile] = useState<QuizTakerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignedLoading, setAssignedLoading] = useState(true);
   const [error, setError] = useState('');
   const [assignedError, setAssignedError] = useState('');
+  const [submitNotification, setSubmitNotification] = useState<string | null>(null);
+  const [expandedQuizzes, setExpandedQuizzes] = useState<Set<string>>(new Set())
   
   const email = typeof window !== 'undefined' && localStorage.getItem('quizTakerEmail') 
     ? localStorage.getItem('quizTakerEmail') as string 
@@ -105,6 +118,17 @@ const QuizTakerDashboard = () => {
   useEffect(() => {
     fetchSubmissions();
     fetchAssignedQuizzes();
+    
+    // Check for quiz submit notification
+    if (typeof window !== 'undefined') {
+      const reason = sessionStorage.getItem('quizSubmitReason');
+      if (reason) {
+        setSubmitNotification(reason);
+        sessionStorage.removeItem('quizSubmitReason');
+        // Auto-hide after 10 seconds
+        setTimeout(() => setSubmitNotification(null), 10000);
+      }
+    }
   }, []);
 
   const fetchAssignedQuizzes = async () => {
@@ -215,10 +239,10 @@ const QuizTakerDashboard = () => {
 
   const handleTakeQuiz = (quizId: string, status: string) => {
     if (typeof window !== 'undefined') {
-      if (status === 'pending') {
+      if (status === 'pending' || status === 'completed') {
         window.location.href = `/assigned-quiz/${quizId}`;
       } else if (status === 'in-progress') {
-        window.location.href = `/assigned-quiz/${quizId}/continue`;
+        window.location.href = `/assigned-quiz/${quizId}`;
       }
     }
   };
@@ -227,6 +251,25 @@ const QuizTakerDashboard = () => {
     if (typeof window !== 'undefined') {
       window.location.href = `/results/${submissionId}`;
     }
+  };
+
+  const toggleQuizExpanded = (quizId: string) => {
+    const newExpanded = new Set(expandedQuizzes);
+    if (newExpanded.has(quizId)) {
+      newExpanded.delete(quizId);
+    } else {
+      newExpanded.add(quizId);
+    }
+    setExpandedQuizzes(newExpanded);
+  };
+
+  const getBestAttempt = (quiz: AssignedQuiz) => {
+    if (!quiz.allSubmissions || quiz.allSubmissions.length === 0) {
+      return quiz.submissionId;
+    }
+    return quiz.allSubmissions.reduce((best, current) => 
+      current.percentage > best.percentage ? current : best
+    );
   };
 
   // Calculate statistics
@@ -248,6 +291,25 @@ const QuizTakerDashboard = () => {
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 py-4 sm:py-8 px-4 sm:px-6">
         {/* Header */}
         <DashboardHeader studentName={email} />
+
+        {/* Auto-Submit Notification */}
+        {submitNotification && (
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-orange-800 mb-1">Quiz Auto-Submitted</h3>
+                <p className="text-sm text-orange-700">{submitNotification}</p>
+              </div>
+              <button
+                onClick={() => setSubmitNotification(null)}
+                className="text-orange-600 hover:text-orange-800"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Statistics Cards */}
         {totalExams > 0 && (
@@ -330,7 +392,7 @@ const QuizTakerDashboard = () => {
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                   <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                 </div>
-                <p className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">No assigned Exams</p>
+                <p className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">No assigned exams</p>
                 <p className="text-gray-400 text-xs">Your instructor hasn&apos;t assigned any exams yet</p>
               </div>
             ) : (
@@ -394,6 +456,7 @@ const QuizTakerDashboard = () => {
               </div>
             )}
           </div>
+      
 
         {/* Main Content */}
         <main className="space-y-4 sm:space-y-6">
