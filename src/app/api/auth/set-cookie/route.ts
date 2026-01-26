@@ -35,3 +35,18 @@ export async function POST(request: Request) {
         );
     }
 }
+
+export async function DELETE() {
+    try {
+        // Delete the cookies
+        (await cookies()).delete('auth-token');
+        (await cookies()).delete('quizTaker');
+
+        return NextResponse.json({ success: true });
+    } catch (e) {
+        return NextResponse.json(
+            { success: false, message: `Failed to delete cookie: ${e}` },
+            { status: 500 }
+        );
+    }
+}

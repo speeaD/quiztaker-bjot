@@ -150,6 +150,7 @@ const QuizTakerDashboard = () => {
       }
 
       if (data.success && data.quizTaker) {
+        console.log(data.quizTaker);
         setProfile(data.quizTaker);
         setAssignedQuizzes(data.quizTaker.assignedQuizzes || []);
       }

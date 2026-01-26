@@ -1,8 +1,23 @@
+
+
 interface DashboardHeaderProps {
   studentName?: string;
 }
 
+import { deleteCookie } from 'cookies-next/client';
+
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ studentName = "Student Name" }) => {
+  const handleDelete = async () => {
+    await fetch('/api/auth/set-cookie', {
+      method: 'DELETE',
+    }).then(() => {
+      localStorage.clear();
+      console.log('Cookies deleted');
+      window.location.href = '/';
+    });
+    deleteCookie('auth-token'); // Replace with your cookie name
+  };
+
   // Get initials from student name
   const getInitials = (name: string): string => {
     const parts = name.split(' ');
@@ -42,6 +57,14 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ studentName = "Studen
             {getInitials(studentName)}
           </span>
         </div>
+        {/* Logout button */}
+        <button
+          className="text-sm text-red-600 hover:underline"
+          onClick={() => { handleDelete();
+          }}
+        >
+          Logout
+        </button>
       </div>
     </header>
   );

@@ -125,7 +125,7 @@ export default function Login() {
                        
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-                                Access Code
+                                Email
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
