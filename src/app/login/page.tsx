@@ -1,24 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Mail } from 'lucide-react';
 
 export default function Login() {
     const backend_url = process.env.BACKEND_URL || 'https://bjot-backend.vercel.app/api';
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
-        accessCode: '',
+        email: '',
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.accessCode) {
-            newErrors.accessCode = 'Access code is required';
-        } else if (formData.accessCode.length < 9) {
-            newErrors.accessCode = 'Access code must be at least 9 characters';
+        if (!formData.email) {
+            newErrors.email = 'Access code is required';
         }
 
         setErrors(newErrors);
@@ -40,7 +38,7 @@ export default function Login() {
                 },
                 body: JSON.stringify({
                    
-                    accessCode: formData.accessCode,
+                    email: formData.email,
                 }),
             });
 
@@ -109,10 +107,10 @@ export default function Login() {
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                        BJOT Student
+                        BJOT Portal
                     </h1>
                     <p className="text-slate-600">
-                        Enter your access code to sign in.
+                        Enter your email address to sign in.
                     </p>
                 </div>
 
@@ -130,12 +128,11 @@ export default function Login() {
                                 Access Code
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    id="accessCode"
-                                    name="accessCode"
-                                    value={formData.accessCode}
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
                                     onChange={handleChange}
                                     onKeyPress={handleKeyPress}
                                     disabled={isLoading}
@@ -144,23 +141,12 @@ export default function Login() {
                                             ? 'border-red-300 focus:ring-red-200'
                                             : 'border-slate-300 focus:ring-slate-200'
                                     }`}
-                                    placeholder="••••••••"
+                                    placeholder="email address"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    disabled={isLoading}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 disabled:opacity-50"
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="w-5 h-5" />
-                                    ) : (
-                                        <Eye className="w-5 h-5" />
-                                    )}
-                                </button>
+                                
                             </div>
                             {errors.accessCode && (
-                                <p className="mt-1 text-sm text-red-600">{errors.accessCode}</p>
+                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                             )}
                         </div>
 
