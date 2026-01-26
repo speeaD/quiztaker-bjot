@@ -5,9 +5,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: submissionId } = await params;
+    const { id } = await params;
     
-    console.log('Fetching submission results for:', submissionId);
+    console.log('Fetching submission results for:', id);
     
     // Get the auth token from cookies
     const authToken = request.cookies.get('auth-token')?.value;
@@ -20,7 +20,7 @@ export async function GET(
       );
     }
 
-    const backendUrl = `${process.env.BACKEND_URL}/quiztaker/submission/${submissionId}`;
+    const backendUrl = `${process.env.BACKEND_URL}/quiztaker/submission/${id}`;
     console.log('Submission API - Calling backend:', backendUrl);
 
     // Make request to your backend

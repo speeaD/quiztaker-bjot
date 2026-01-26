@@ -186,7 +186,9 @@ const AssignedQuizPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [completedSets, setCompletedSets] = useState<number[]>([]);
-  const quizTaker = typeof window !== 'undefined' && localStorage.getItem('quizTaker') 
+  const [looseFocusEnabled, setLooseFocusEnabled] = useState(false);
+  const [hasLostFocus, setHasLostFocus] = useState(false);
+  const userId = typeof window !== 'undefined' && localStorage.getItem('quizTaker') 
     ? localStorage.getItem('quizTaker') as string 
     : 'Guest';
 
@@ -199,7 +201,7 @@ const AssignedQuizPage = () => {
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
-          handleSubmitQuiz(true);
+          handleSubmitQuiz(true, 'Time expired');
           return 0;
         }
         return prev - 1;
@@ -207,6 +209,52 @@ const AssignedQuizPage = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, [phase, timeRemaining]);
+
+  // Focus loss detection - AUTO SUBMIT
+  useEffect(() => {
+    if (phase !== 'exam' || !looseFocusEnabled || hasLostFocus) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('Tab switched - triggering auto-submit');
+        setHasLostFocus(true);
+        handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
+      }
+    };
+
+    const handleBlur = () => {
+      // Small delay to prevent false positives when clicking within the page
+      setTimeout(() => {
+        if (!document.hasFocus()) {
+          console.log('Window blur - triggering auto-submit');
+          setHasLostFocus(true);
+          handleSubmitQuiz(true, 'Focus lost - clicked outside window');
+        }
+      }, 100);
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Warn user before closing/refreshing
+      e.preventDefault();
+      e.returnValue = 'Your quiz will be auto-submitted if you leave this page. Are you sure?';
+      return e.returnValue;
+    };
+
+    // Add event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    console.log('Focus loss detection enabled');
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      console.log('Focus loss detection disabled');
+    };
+  }, [phase, looseFocusEnabled, hasLostFocus]);
 
   const fetchQuizDetails = async () => {
     try {
@@ -219,6 +267,11 @@ const AssignedQuizPage = () => {
       }
 
       setQuiz(data.quiz);
+      
+      // Enable loose focus detection if quiz settings allow
+      if (data.quiz.settings.looseFocus === false) {
+        setLooseFocusEnabled(true);
+      }
       
       // Check if custom order already set
       if (data.selectedQuestionSetOrder && data.selectedQuestionSetOrder.length === 4) {
@@ -261,12 +314,12 @@ const AssignedQuizPage = () => {
       const startResponse = await fetch(`${API_BASE_URL}/quiz/${quizId}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizTaker:  quizTaker}),
+        body: JSON.stringify({quizTaker:  userId }),
       });
 
       const startData = await startResponse.json();
       if (!startData.success) {
-        setError(startData.message)
+        setError(startData.message);
         return;
       }
 
@@ -373,9 +426,18 @@ const AssignedQuizPage = () => {
     }
   };
 
-  const handleSubmitQuiz = async (isAuto = false) => {
+  const handleSubmitQuiz = async (isAuto = false, reason?: string) => {
     const all = getAllQuestions();
-    if (!isAuto && !window.confirm(`Submit ${Object.keys(answers).length}/${all.length} answered questions?`)) return;
+    
+    // Show different messages based on reason
+    if (!isAuto) {
+      if (!window.confirm(`Submit ${Object.keys(answers).length}/${all.length} answered questions?`)) {
+        return;
+      }
+    } else if (reason) {
+      // Auto-submit due to focus loss or time up
+      console.log(`Auto-submitting quiz: ${reason}`);
+    }
 
     try {
       setPhase('submitting');
@@ -402,11 +464,16 @@ const AssignedQuizPage = () => {
         });
       }
 
-      // Redirect to dashboard
+      // Redirect to dashboard with message
+      if (reason) {
+        // Store reason in sessionStorage to show on dashboard
+        sessionStorage.setItem('quizSubmitReason', reason);
+      }
       router.push('/dashboard');
     } catch (err) {
       setError('Failed to submit quiz');
       setPhase('exam');
+      setHasLostFocus(false); // Allow retry
     }
   };
 
@@ -570,11 +637,22 @@ const AssignedQuizPage = () => {
 
       {/* Timer Bar */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-center gap-2">
-          <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-          <span className="text-base sm:text-lg font-semibold text-blue-600">
-            {formatTime(timeRemaining)}
-          </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              <span className="text-base sm:text-lg font-semibold text-blue-600">
+                {formatTime(timeRemaining)}
+              </span>
+            </div>
+            {looseFocusEnabled && (
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-orange-600 bg-orange-50 px-2 sm:px-3 py-1 rounded-full">
+                <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Don&apos;t switch tabs - auto-submit enabled</span>
+                <span className="sm:hidden">Stay focused</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
