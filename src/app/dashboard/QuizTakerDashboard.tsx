@@ -428,7 +428,7 @@ const QuizTakerDashboard = () => {
                             Score: {quiz.submissionId.percentage}%
                           </span>
                           <span className="text-xs sm:text-sm text-gray-500">
-                            ({quiz.submissionId.score}/{quiz.submissionId.totalPoints})
+                            ({Math.round((quiz.submissionId.score / quiz.submissionId.totalPoints) * 400 )}) / 400
                           </span>
                         </div>
                       )}
