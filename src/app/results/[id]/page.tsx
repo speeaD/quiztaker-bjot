@@ -2,18 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Loader2, AlertCircle, CheckCircle, XCircle, Clock, Award, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, XCircle, Clock, Award, Home, ChevronDown, ChevronUp, MinusCircle } from 'lucide-react';
 
 const API_BASE_URL = '/api/quiztaker';
 
 interface Answer {
   question: string;
   type: string;
-  yourAnswer: string;
+  yourAnswer: string | null;
   correctAnswer: string;
   isCorrect: boolean | null;
   pointsAwarded: number;
   pointsPossible: number;
+  wasAnswered: boolean; // NEW: Flag to indicate if question was answered
 }
 
 interface QuestionSetAnswers {
@@ -107,6 +108,26 @@ const ResultsPage = () => {
       default:
         return null;
     }
+  };
+
+  // Calculate statistics for a question set
+  const getQuestionSetStats = (questionSet: QuestionSetAnswers) => {
+    const answeredQuestions = questionSet.answers.filter(a => a.wasAnswered);
+    const correctAnswers = questionSet.answers.filter(a => a.isCorrect === true);
+    const unansweredCount = questionSet.answers.filter(a => !a.wasAnswered).length;
+    const totalQuestions = questionSet.answers.length;
+    
+    const setPercentage = totalQuestions > 0 
+      ? Math.round((correctAnswers.length / totalQuestions) * 100) 
+      : 0;
+
+    return {
+      answeredCount: answeredQuestions.length,
+      correctCount: correctAnswers.length,
+      unansweredCount,
+      totalQuestions,
+      percentage: setPercentage,
+    };
   };
 
   if (loading) {
@@ -233,9 +254,7 @@ const ResultsPage = () => {
             <div className="divide-y divide-gray-200">
               {submission.answersByQuestionSet.map((questionSet) => {
                 const isExpanded = expandedSets.includes(questionSet.order);
-                const correctCount = questionSet.answers.filter(a => a.isCorrect === true).length;
-                const totalQuestions = questionSet.answers.length;
-                const setPercentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+                const stats = getQuestionSetStats(questionSet);
 
                 return (
                   <div key={questionSet.order} className="bg-white">
@@ -249,12 +268,17 @@ const ResultsPage = () => {
                           {questionSet.questionSetTitle}
                         </h3>
                         <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-600">
-                          <span>{correctCount}/{totalQuestions} correct</span>
+                          <span>{stats.correctCount}/{stats.totalQuestions} correct</span>
+                          {stats.unansweredCount > 0 && (
+                            <span className="text-orange-600 font-medium">
+                              {stats.unansweredCount} unanswered
+                            </span>
+                          )}
                           <span className={`font-semibold ${
-                            setPercentage >= 70 ? 'text-green-600' :
-                            setPercentage >= 50 ? 'text-yellow-600' : 'text-red-600'
+                            stats.percentage >= 70 ? 'text-green-600' :
+                            stats.percentage >= 50 ? 'text-yellow-600' : 'text-red-600'
                           }`}>
-                            {setPercentage}%
+                            {stats.percentage}%
                           </span>
                         </div>
                       </div>
@@ -272,7 +296,9 @@ const ResultsPage = () => {
                           <div
                             key={idx}
                             className={`p-4 rounded-lg border-2 ${
-                              answer.isCorrect === true
+                              !answer.wasAnswered
+                                ? 'bg-orange-50 border-orange-200'
+                                : answer.isCorrect === true
                                 ? 'bg-green-50 border-green-200'
                                 : answer.isCorrect === false
                                 ? 'bg-red-50 border-red-200'
@@ -284,7 +310,12 @@ const ResultsPage = () => {
                               <span className="text-xs sm:text-sm font-semibold text-gray-500">
                                 Question {idx + 1}
                               </span>
-                              {answer.isCorrect === true ? (
+                              {!answer.wasAnswered ? (
+                                <div className="flex items-center gap-1 text-orange-600">
+                                  <MinusCircle className="w-4 h-4" />
+                                  <span className="text-xs font-medium">Not Answered</span>
+                                </div>
+                              ) : answer.isCorrect === true ? (
                                 <div className="flex items-center gap-1 text-green-600">
                                   <CheckCircle className="w-4 h-4" />
                                   <span className="text-xs font-medium">Correct</span>
@@ -310,14 +341,23 @@ const ResultsPage = () => {
                                 Your Answer:
                               </span>
                               <p className={`mt-1 text-sm sm:text-base ${
-                                answer.isCorrect === false ? 'text-red-700' : 'text-gray-900'
+                                !answer.wasAnswered 
+                                  ? 'text-orange-700 italic' 
+                                  : answer.isCorrect === false 
+                                  ? 'text-red-700' 
+                                  : 'text-gray-900'
                               }`}>
-                                {answer.yourAnswer || <em className="text-gray-400">No answer provided</em>}
+                                {answer.wasAnswered 
+                                  ? (answer.yourAnswer || <em className="text-gray-400">No answer provided</em>)
+                                  : <em>Question not answered</em>
+                                }
                               </p>
                             </div>
 
-                            {/* Correct Answer (only show if wrong and available) */}
-                            {answer.isCorrect === false && answer.correctAnswer && answer.type !== 'essay' && (
+                            {/* Correct Answer (show if wrong/unanswered and available) */}
+                            {(answer.isCorrect === false || !answer.wasAnswered) && 
+                             answer.correctAnswer && 
+                             answer.type !== 'essay' && (
                               <div>
                                 <span className="text-xs font-semibold text-green-700 uppercase tracking-wide">
                                   Correct Answer:
@@ -333,6 +373,7 @@ const ResultsPage = () => {
                               <span className="text-xs text-gray-600">Points</span>
                               <span className={`text-sm font-bold ${
                                 answer.isCorrect === true ? 'text-green-600' :
+                                !answer.wasAnswered ? 'text-orange-600' :
                                 answer.isCorrect === false ? 'text-red-600' : 'text-gray-600'
                               }`}>
                                 {answer.pointsAwarded}/{answer.pointsPossible}
