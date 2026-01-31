@@ -23,7 +23,8 @@ interface Submission {
 
 interface AssignedQuiz {
   id: string;
-  quizId: {
+  quizId: string;
+  quiz: {
     id: string;
     settings: {
       title: string;
@@ -406,7 +407,7 @@ const QuizTakerDashboard = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-1 sm:mb-1 flex-wrap">
                         <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                          {quiz.quizId.settings.title}
+                          {quiz.quiz.settings.title}
                         </h3>
                         {getStatusBadge(quiz.status)}
                       </div>
@@ -415,10 +416,10 @@ const QuizTakerDashboard = () => {
                           <Calendar className="w-3 h-3" />
                           Assigned: {formatDate(quiz.assignedAt)}
                         </span>
-                        {quiz.quizId.settings.duration && (
+                        {quiz.quiz.settings.duration && (
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {formatDuration(quiz.quizId.settings.duration)}
+                            {formatDuration(quiz.quiz .settings.duration)}
                           </span>
                         )}
                       </div>
@@ -444,7 +445,7 @@ const QuizTakerDashboard = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleTakeQuiz(quiz.quizId.id, quiz.status)}
+                          onClick={() => handleTakeQuiz(quiz.quizId, quiz.status)}
                           className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto"
                         >
                           <PlayCircle className="w-3 h-3 sm:w-4 sm:h-4" />
