@@ -403,7 +403,7 @@ const AssignedQuizPage = () => {
         body: JSON.stringify({
           answers: currentSetAnswers,
           questionSetOrder: currentSetOrder,
-          isFinalSubmission: false,
+          isFinalSubmission: true,
         }),
       });
 
