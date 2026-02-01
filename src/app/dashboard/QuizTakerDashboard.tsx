@@ -22,10 +22,9 @@ interface Submission {
 }
 
 interface AssignedQuiz {
-  id: string;
-  quizId: string;
-  quiz: {
-    id: string;
+  _id: string;
+  quizId: {
+    _id: string;
     settings: {
       title: string;
       description?: string;
@@ -43,13 +42,13 @@ interface AssignedQuiz {
   completedAt?: string;
   attemptCount?: number;
   submissionId?: {
-    id: string;
+    _id: string;
     score: number;
     totalPoints: number;
     percentage: number;
   };
   allSubmissions?: Array<{
-    id: string;
+    _id: string;
     score: number;
     totalPoints: number;
     percentage: number;
@@ -401,13 +400,13 @@ const QuizTakerDashboard = () => {
               <div className="space-y-2 sm:space-y-3">
                 {assignedQuizzes.map((quiz) => (
                   <div 
-                    key={quiz.id}
+                    key={quiz._id}
                     className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 sm:px-6 sm:py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors gap-3 sm:gap-4"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-1 sm:mb-1 flex-wrap">
                         <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                          {quiz.quiz.settings.title}
+                          {quiz.quizId.settings.title}
                         </h3>
                         {getStatusBadge(quiz.status)}
                       </div>
@@ -416,10 +415,10 @@ const QuizTakerDashboard = () => {
                           <Calendar className="w-3 h-3" />
                           Assigned: {formatDate(quiz.assignedAt)}
                         </span>
-                        {quiz.quiz.settings.duration && (
+                        {quiz.quizId.settings.duration && (
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {formatDuration(quiz.quiz .settings.duration)}
+                            {formatDuration(quiz.quizId.settings.duration)}
                           </span>
                         )}
                       </div>
@@ -437,7 +436,7 @@ const QuizTakerDashboard = () => {
                     <div className="flex items-center gap-2 sm:flex-shrink-0">
                       {quiz.status === 'completed' && quiz.submissionId ? (
                         <button
-                          onClick={() => handleViewResults(quiz.submissionId!.id)}
+                          onClick={() => handleViewResults(quiz.submissionId!._id)}
                           className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
                         >
                           <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -445,7 +444,7 @@ const QuizTakerDashboard = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleTakeQuiz(quiz.quizId, quiz.status)}
+                          onClick={() => handleTakeQuiz(quiz.quizId._id, quiz.status)}
                           className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto"
                         >
                           <PlayCircle className="w-3 h-3 sm:w-4 sm:h-4" />
