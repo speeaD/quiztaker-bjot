@@ -371,7 +371,7 @@ const AssignedQuizPage = () => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else if (currentQuestionSetIndex < selectedOrder.length - 1) {
       // Submit current question set before moving to next
-      handleSubmitQuestionSet();
+      
     }
   };
 
