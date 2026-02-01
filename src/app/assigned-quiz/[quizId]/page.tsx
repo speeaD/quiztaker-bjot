@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, ChevronLeft, ChevronRight, Calculator, XCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -176,6 +176,7 @@ const AssignedQuizPage = () => {
 
   const [phase, setPhase] = useState<'loading' | 'order-selection' | 'exam' | 'submitting'>('loading');
   const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<number[]>([1, 2, 3, 4]);
   const [currentQuestionSetIndex, setCurrentQuestionSetIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -214,13 +215,13 @@ const AssignedQuizPage = () => {
   useEffect(() => {
     if (phase !== 'exam' || !looseFocusEnabled || hasLostFocus) return;
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        console.log('Tab switched - triggering auto-submit');
-        setHasLostFocus(true);
-        handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
-      }
-    };
+    // const handleVisibilityChange = () => {
+    //   if (document.hidden) {
+    //     console.log('Tab switched - triggering auto-submit');
+    //     setHasLostFocus(true);
+    //     handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
+    //   }
+    // };
 
     const handleBlur = () => {
       // Small delay to prevent false positives when clicking within the page
@@ -241,7 +242,7 @@ const AssignedQuizPage = () => {
     };
 
     // Add event listeners
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleBlur);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
@@ -249,7 +250,7 @@ const AssignedQuizPage = () => {
 
     // Cleanup
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       console.log('Focus loss detection disabled');
@@ -426,7 +427,8 @@ const AssignedQuizPage = () => {
     }
   };
 
-  const handleSubmitQuiz = async (isAuto = false, reason?: string) => {
+  const handleSubmitQuiz = useCallback(async (isAuto = false, reason?: string) => {
+
     const all = getAllQuestions();
     
     // Show different messages based on reason
@@ -441,7 +443,7 @@ const AssignedQuizPage = () => {
 
     try {
       setPhase('submitting');
-
+      setIsDisabled(true);
       // Submit remaining question set if not submitted
       const currentSetOrder = selectedOrder[currentQuestionSetIndex];
       if (!completedSets.includes(currentSetOrder)) {
@@ -474,8 +476,10 @@ const AssignedQuizPage = () => {
       setError('Failed to submit quiz');
       setPhase('exam');
       setHasLostFocus(false); // Allow retry
+    }finally{
+      setIsDisabled(false);
     }
-  };
+  }, [currentQuestionSetIndex, selectedOrder, answers, completedSets, questionsBySetOrder, quizId, router]);
 
   const currentQuestion = getCurrentQuestion();
   const currentGlobalIndex = selectedOrder.slice(0, currentQuestionSetIndex)
@@ -626,7 +630,7 @@ const AssignedQuizPage = () => {
               </button>
             )}
             <button
-              onClick={() => handleSubmitQuiz()}
+              onClick={() => handleSubmitQuiz()} disabled={isDisabled}
               className="bg-red-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-red-700 active:bg-red-800 transition-colors touch-manipulation"
             >
               Submit
@@ -787,7 +791,7 @@ const AssignedQuizPage = () => {
             {/* Navigation */}
             <div className="flex justify-between pt-3 sm:pt-4 border-t border-gray-200">
               <button
-                onClick={handlePrev}
+                onClick={handlePrev} 
                 disabled={currentQuestionSetIndex === 0 && currentQuestionIndex === 0}
                 className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium text-xs sm:text-sm hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
               >
@@ -795,7 +799,7 @@ const AssignedQuizPage = () => {
                 Prev
               </button>
               <button
-                onClick={handleNext}
+                onClick={handleNext} disabled={isDisabled}
                 className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg bg-blue-600 text-white font-medium text-xs sm:text-sm hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation"
               >
                 {currentQuestionIndex === getCurrentQuestions().length - 1 && currentQuestionSetIndex < selectedOrder.length - 1
