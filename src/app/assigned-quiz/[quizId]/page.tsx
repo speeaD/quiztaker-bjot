@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -189,27 +190,113 @@ const AssignedQuizPage = () => {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [looseFocusEnabled, setLooseFocusEnabled] = useState(false);
   const [hasLostFocus, setHasLostFocus] = useState(false);
-  const userId = typeof window !== 'undefined' && localStorage.getItem('quizTaker') 
-    ? localStorage.getItem('quizTaker') as string 
+  const userId = typeof window !== 'undefined' && localStorage.getItem('quizTaker')
+    ? localStorage.getItem('quizTaker') as string
     : 'Guest';
+  const getAllQuestions = useCallback(() => selectedOrder.flatMap(order => questionsBySetOrder[order] || []), [questionsBySetOrder, selectedOrder]);
+
+
+  const handleSubmitQuiz = useCallback(async (isAuto = false, reason?: string) => {
+    if (isDisabled) return;
+    const all = getAllQuestions();
+
+    // Show different messages based on reason
+    if (!isAuto) {
+      if (!window.confirm(`Submit ${Object.keys(answers).length}/${all.length} answered questions?`)) {
+        return;
+      }
+    } else if (reason) {
+      // Auto-submit due to focus loss or time up
+      console.log(`Auto-submitting quiz: ${reason}`);
+    }
+
+    try {
+      setIsDisabled(true);
+      setPhase('submitting');
+
+      // 🔥 FIX: Submit ALL unsubmitted question sets, not just the current one
+      // Loop through all question sets in the selected order
+      for (let i = 0; i < selectedOrder.length; i++) {
+        const setOrder = selectedOrder[i];
+
+        // Skip if already submitted
+        if (completedSets.includes(setOrder)) {
+          continue;
+        }
+
+        // Get questions for this set
+        const setQuestions = questionsBySetOrder[setOrder] || [];
+
+        // Get answers for this specific question set
+        const setAnswers = setQuestions
+          .map(q => ({
+            questionId: q._id,
+            answer: answers[q._id] || '',
+          }))
+          .filter(a => a.answer);
+
+        // Determine if this is the final submission
+        // It's final if this is the last unsubmitted set
+        const isLastUnsubmittedSet = selectedOrder
+          .slice(i + 1)
+          .every(order => completedSets.includes(order));
+
+        // Submit this question set
+        await fetch(`${API_BASE_URL}/quiz/${quizId}/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            answers: setAnswers,
+            questionSetOrder: setOrder,
+            isFinalSubmission: isLastUnsubmittedSet,
+          }),
+        });
+
+        // Mark as completed locally (to prevent re-submission in loop)
+        if (!completedSets.includes(setOrder)) {
+          setCompletedSets(prev => [...prev, setOrder]);
+        }
+      }
+
+      // Redirect to dashboard with message
+      if (reason) {
+        // Store reason in sessionStorage to show on dashboard
+        sessionStorage.setItem('quizSubmitReason', reason);
+      }
+      router.push('/dashboard');
+    } catch (err) {
+      setError('Failed to submit quiz');
+      setPhase('exam');
+      setHasLostFocus(false); // Allow retry
+    } finally {
+      setIsDisabled(false);
+    }
+  }, [isDisabled, getAllQuestions, answers, selectedOrder, completedSets, router, questionsBySetOrder, quizId]);
 
   useEffect(() => {
     fetchQuizDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (phase !== 'exam' || timeRemaining <= 0) return;
+    if (phase !== 'exam') return;
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
-          handleSubmitQuiz(true, 'Time expired');
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [phase, timeRemaining]);
+  }, [phase]); // ✅ Only depend on phase
+
+  // Separate effect for auto-submit
+  useEffect(() => {
+    if (phase === 'exam' && timeRemaining === 0 && !isDisabled) {
+      handleSubmitQuiz(true, 'Time expired');
+    }
+  }, [timeRemaining, phase, isDisabled, handleSubmitQuiz]);
 
   // Focus loss detection - AUTO SUBMIT
   useEffect(() => {
@@ -224,7 +311,6 @@ const AssignedQuizPage = () => {
     // };
 
     const handleBlur = () => {
-      // Small delay to prevent false positives when clicking within the page
       setTimeout(() => {
         if (!document.hasFocus()) {
           console.log('Window blur - triggering auto-submit');
@@ -255,7 +341,7 @@ const AssignedQuizPage = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       console.log('Focus loss detection disabled');
     };
-  }, [phase, looseFocusEnabled, hasLostFocus]);
+  }, [phase, looseFocusEnabled, hasLostFocus, handleSubmitQuiz]);
 
   const fetchQuizDetails = async () => {
     try {
@@ -268,12 +354,12 @@ const AssignedQuizPage = () => {
       }
 
       setQuiz(data.quiz);
-      
+
       // Enable loose focus detection if quiz settings allow
       if (data.quiz.settings.looseFocus === false) {
         setLooseFocusEnabled(true);
       }
-      
+
       // Check if custom order already set
       if (data.selectedQuestionSetOrder && data.selectedQuestionSetOrder.length === 4) {
         setSelectedOrder(data.selectedQuestionSetOrder);
@@ -315,7 +401,7 @@ const AssignedQuizPage = () => {
       const startResponse = await fetch(`${API_BASE_URL}/quiz/${quizId}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({quizTaker:  userId }),
+        body: JSON.stringify({ quizTaker: userId }),
       });
 
       const startData = await startResponse.json();
@@ -358,7 +444,7 @@ const AssignedQuizPage = () => {
 
   const getCurrentQuestions = () => questionsBySetOrder[selectedOrder[currentQuestionSetIndex]] || [];
   const getCurrentQuestion = () => getCurrentQuestions()[currentQuestionIndex] || null;
-  const getAllQuestions = () => selectedOrder.flatMap(order => questionsBySetOrder[order] || []);
+
 
   const handleOptionSelect = (answer: string) => {
     const q = getCurrentQuestion();
@@ -370,8 +456,9 @@ const AssignedQuizPage = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else if (currentQuestionSetIndex < selectedOrder.length - 1) {
-      // Submit current question set before moving to next
-      
+      setCurrentQuestionSetIndex(currentQuestionSetIndex + 1);
+      setCurrentQuestionIndex(0);
+
     }
   };
 
@@ -388,7 +475,7 @@ const AssignedQuizPage = () => {
   const handleSubmitQuestionSet = async () => {
     const currentSetOrder = selectedOrder[currentQuestionSetIndex];
     const currentSetQuestions = questionsBySetOrder[currentSetOrder] || [];
-    
+
     // Get answers for current question set only
     const currentSetAnswers = currentSetQuestions
       .map(q => ({
@@ -427,59 +514,6 @@ const AssignedQuizPage = () => {
     }
   };
 
-  const handleSubmitQuiz = useCallback(async (isAuto = false, reason?: string) => {
-
-    const all = getAllQuestions();
-    
-    // Show different messages based on reason
-    if (!isAuto) {
-      if (!window.confirm(`Submit ${Object.keys(answers).length}/${all.length} answered questions?`)) {
-        return;
-      }
-    } else if (reason) {
-      // Auto-submit due to focus loss or time up
-      console.log(`Auto-submitting quiz: ${reason}`);
-    }
-
-    try {
-      setPhase('submitting');
-      setIsDisabled(true);
-      // Submit remaining question set if not submitted
-      const currentSetOrder = selectedOrder[currentQuestionSetIndex];
-      if (!completedSets.includes(currentSetOrder)) {
-        const currentSetQuestions = questionsBySetOrder[currentSetOrder] || [];
-        const currentSetAnswers = currentSetQuestions
-          .map(q => ({
-            questionId: q._id,
-            answer: answers[q._id] || '',
-          }))
-          .filter(a => a.answer);
-
-        await fetch(`${API_BASE_URL}/quiz/${quizId}/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            answers: currentSetAnswers,
-            questionSetOrder: currentSetOrder,
-            isFinalSubmission: true,
-          }),
-        });
-      }
-
-      // Redirect to dashboard with message
-      if (reason) {
-        // Store reason in sessionStorage to show on dashboard
-        sessionStorage.setItem('quizSubmitReason', reason);
-      }
-      router.push('/dashboard');
-    } catch (err) {
-      setError('Failed to submit quiz');
-      setPhase('exam');
-      setHasLostFocus(false); // Allow retry
-    }finally{
-      setIsDisabled(false);
-    }
-  }, [currentQuestionSetIndex, selectedOrder, answers, completedSets, questionsBySetOrder, quizId, router]);
 
   const currentQuestion = getCurrentQuestion();
   const currentGlobalIndex = selectedOrder.slice(0, currentQuestionSetIndex)
@@ -619,11 +653,10 @@ const AssignedQuizPage = () => {
             {quiz.settings.displayCalculator && (
               <button
                 onClick={() => setShowCalculator(!showCalculator)}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors ${
-                  showCalculator
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors ${showCalculator
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
               >
                 <Calculator className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Calculator</span>
@@ -676,13 +709,12 @@ const AssignedQuizPage = () => {
                   }
                 }}
                 disabled={isCompleted}
-                className={`px-3 sm:px-6 py-2 sm:py-3 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors touch-manipulation ${
-                  currentQuestionSetIndex === i
-                    ? 'bg-blue-700 text-white'
-                    : isCompleted
+                className={`px-3 sm:px-6 py-2 sm:py-3 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors touch-manipulation ${currentQuestionSetIndex === i
+                  ? 'bg-blue-700 text-white'
+                  : isCompleted
                     ? 'bg-green-700 text-green-100'
                     : 'bg-blue-900 text-blue-200 hover:bg-blue-800 active:bg-blue-700'
-                }`}
+                  }`}
               >
                 {qs?.title} {isCompleted && '✓'}
               </button>
@@ -724,19 +756,17 @@ const AssignedQuizPage = () => {
                   <button
                     key={i}
                     onClick={() => handleOptionSelect(opt)}
-                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${
-                      answers[currentQuestion._id] === opt
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
-                    }`}
+                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
+                      }`}
                   >
                     <div className="flex items-start gap-2 sm:gap-3">
                       <span
-                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${
-                          answers[currentQuestion._id] === opt
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
+                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                          }`}
                       >
                         {String.fromCharCode(65 + i)}
                       </span>
@@ -753,19 +783,17 @@ const AssignedQuizPage = () => {
                   <button
                     key={opt}
                     onClick={() => handleOptionSelect(opt)}
-                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${
-                      answers[currentQuestion._id] === opt
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
-                    }`}
+                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <span
-                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${
-                          answers[currentQuestion._id] === opt
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
+                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                          }`}
                       >
                         {opt[0]}
                       </span>
@@ -791,7 +819,7 @@ const AssignedQuizPage = () => {
             {/* Navigation */}
             <div className="flex justify-between pt-3 sm:pt-4 border-t border-gray-200">
               <button
-                onClick={handlePrev} 
+                onClick={handlePrev}
                 disabled={currentQuestionSetIndex === 0 && currentQuestionIndex === 0}
                 className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium text-xs sm:text-sm hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
               >

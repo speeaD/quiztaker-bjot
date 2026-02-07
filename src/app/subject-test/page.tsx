@@ -170,25 +170,32 @@ const CBTSimulator = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeRemaining, setTimeRemaining] = useState(3600);
   const [submissionResult, setSubmissionResult] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Fixed: Added to prevent duplicate submissions
 
   useEffect(() => {
     if (phase === 'selection') fetchQuestionSets();
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== 'exam' || timeRemaining <= 0) return;
+    if (phase !== 'exam') return; // Fixed: Removed timeRemaining from dependencies
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
-          handleSubmit(true);
-          return 0;
+          return 0; // Fixed: Just return 0, handle submission separately
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
+  }, [phase]); // Fixed: Only depend on phase
+
+  // Fixed: Separate effect to handle auto-submit when timer reaches 0
+  useEffect(() => {
+    if (phase === 'exam' && timeRemaining === 0 && !isSubmitting) {
+      handleSubmit(true);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, timeRemaining]);
+  }, [timeRemaining, phase, isSubmitting]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -288,6 +295,8 @@ const CBTSimulator = () => {
   };
 
   const handleSubmit = async (isAuto = false) => {
+    if (isSubmitting) return; // Fixed: Prevent duplicate submissions
+    
     if (!isAuto) {
       const confirmed = window.confirm(
         `You have answered ${Object.keys(answers).length} out of ${questions.length} questions. Do you want to submit?`
@@ -296,6 +305,7 @@ const CBTSimulator = () => {
     }
 
     try {
+      setIsSubmitting(true); // Fixed: Set submitting flag
       setLoading(true);
       setError('');
 
@@ -327,6 +337,7 @@ const CBTSimulator = () => {
       console.error('Error:', err);
     } finally {
       setLoading(false);
+      setIsSubmitting(false); // Fixed: Clear submitting flag
     }
   };
 
@@ -490,11 +501,21 @@ const CBTSimulator = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <button
                   onClick={() => {
+                    // Fixed: Complete state reset
                     setPhase('selection');
                     setSelectedQuestionSetId('');
                     setAnswers({});
                     setCurrentQuestionIndex(0);
                     setQuestions([]);
+                    setTimeRemaining(3600); // Fixed: Reset timer
+                    setSubmissionResult(null); // Fixed: Clear results
+                    setSessionId(''); // Fixed: Clear session
+                    setQuizTakerId(''); // Fixed: Clear quiz taker
+                    setStartedAt(null); // Fixed: Clear start time
+                    setError(''); // Fixed: Clear errors
+                    setLoading(false); // Fixed: Reset loading
+                    setShowCalculator(false); // Fixed: Close calculator
+                    setIsSubmitting(false); // Fixed: Reset submitting flag
                   }}
                   className="bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation"
                 >
@@ -534,7 +555,8 @@ const CBTSimulator = () => {
             </button>
             <button 
               onClick={() => handleSubmit()} 
-              className="bg-red-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-red-700 transition-colors"
+              disabled={loading || isSubmitting} 
+              className="bg-red-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Submit
             </button>

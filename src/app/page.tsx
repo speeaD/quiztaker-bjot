@@ -115,9 +115,9 @@ export default function HomePage() {
                         </div>
                         <div>
                             <span className="text-lg font-bold text-gray-900">BJOT</span>
-                            <span className="ml-2 text-xs px-2 py-0.5 bg-blue-50 text-blue-bg rounded-full font-medium">
+                            {/* <span className="ml-2 text-xs px-2 py-0.5 bg-blue-50 text-blue-bg rounded-full font-medium">
                                 Student
-                            </span>
+                            </span> */}
                         </div>
                     </div>
 
@@ -137,6 +137,9 @@ export default function HomePage() {
 
                         <Link className="flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-lg shadow-blue-500/30 transition-transform hover:scale-105 active:scale-95" href="/login">
                             Login
+                        </Link>
+                        <Link className="flex h-9 items-center justify-center rounded-lg bg-green-600 px-4 text-sm font-bold text-white shadow-lg shadow-blue-500/30 transition-transform hover:scale-105 active:scale-95" href="/register">
+                            Register
                         </Link>
                         <button
                             className="md:hidden"
@@ -344,9 +347,9 @@ export default function HomePage() {
                         Sign up today and attempt your first practice exam.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="bg-white text-blue-600 hover:bg-slate-100 px-8 py-4 rounded-xl font-bold text-lg shadow-xl transition-colors">
+                       <Link href="/register"> <button className="bg-white text-blue-600 hover:bg-slate-100 px-8 py-4 rounded-xl font-bold text-lg shadow-xl transition-colors">
                             Become a Student
-                        </button>
+                        </button> </Link>
                     </div>
                 </div>
             </section>
