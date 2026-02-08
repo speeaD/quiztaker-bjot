@@ -366,7 +366,7 @@ const AssignedQuizPage = () => {
             setHasLostFocus(true);
             handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
           }
-        }, 300); // 300ms grace period
+        }, 2500); // 300ms grace period
       } else {
         // Page became visible again - cancel any pending submission
         if (focusLostTimeout) {
