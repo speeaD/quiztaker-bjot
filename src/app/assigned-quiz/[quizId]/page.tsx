@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, ChevronLeft, ChevronRight, Calculator, XCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const API_BASE_URL = '/api/quiztaker';
 
@@ -19,6 +20,9 @@ interface Question {
   _id: string;
   type: string;
   question: string;
+  passage?: string;           // NEW: Optional passage text
+  diagram?: string;           // NEW: Optional diagram URL
+  diagramAlt?: string;        // NEW: Optional alt text for accessibility
   options?: string[];
   points: number;
   order: number;
@@ -178,6 +182,7 @@ const AssignedQuizPage = () => {
   const [phase, setPhase] = useState<'loading' | 'order-selection' | 'exam' | 'submitting'>('loading');
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<number[]>([1, 2, 3, 4]);
   const [currentQuestionSetIndex, setCurrentQuestionSetIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -273,6 +278,37 @@ const AssignedQuizPage = () => {
     }
   }, [isDisabled, getAllQuestions, answers, selectedOrder, completedSets, router, questionsBySetOrder, quizId]);
 
+  const ImageModal: React.FC<{ imageUrl: string; altText: string; onClose: () => void }> = ({
+    imageUrl,
+    altText,
+    onClose
+  }) => {
+    return (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <div className="relative max-w-5xl max-h-[90vh] w-full">
+          <button
+            onClick={onClose}
+            className="absolute -top-10 right-0 text-white hover:text-gray-300 text-sm sm:text-base"
+          >
+            <XCircle size={32} />
+          </button>
+          <Image
+            src={imageUrl}
+            alt={altText}
+            className="w-full h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+          {altText && (
+            <p className="text-white text-center mt-4 text-sm">{altText}</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   useEffect(() => {
     fetchQuizDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -300,24 +336,59 @@ const AssignedQuizPage = () => {
 
   // Focus loss detection - AUTO SUBMIT
   useEffect(() => {
+    if (phase === 'exam' && timeRemaining === 0 && !isDisabled) {
+      handleSubmitQuiz(true, 'Time expired');
+    }
+  }, [timeRemaining, phase, isDisabled, handleSubmitQuiz]);
+
+  // Focus loss detection - AUTO SUBMIT (FIXED VERSION)
+  useEffect(() => {
     if (phase !== 'exam' || !looseFocusEnabled || hasLostFocus) return;
 
-    // const handleVisibilityChange = () => {
-    //   if (document.hidden) {
-    //     console.log('Tab switched - triggering auto-submit');
-    //     setHasLostFocus(true);
-    //     handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
-    //   }
-    // };
+    // Track if the user has genuinely switched tabs/apps
+    let wasVisible = true;
+    let focusLostTimeout: NodeJS.Timeout | null = null;
 
-    const handleBlur = () => {
-      setTimeout(() => {
-        if (!document.hasFocus()) {
-          console.log('Window blur - triggering auto-submit');
-          setHasLostFocus(true);
-          handleSubmitQuiz(true, 'Focus lost - clicked outside window');
+    const handleVisibilityChange = () => {
+      // Mobile: document.hidden can be true when screen turns off
+      // Desktop: document.hidden is true when tab is switched
+      
+      if (document.hidden) {
+        wasVisible = false;
+        
+        // Give a grace period to distinguish screen-off from tab-switch
+        // On mobile, screen-off typically triggers multiple rapid visibility changes
+        // On desktop/genuine tab switch, the page stays hidden
+        focusLostTimeout = setTimeout(() => {
+          // Only trigger if still hidden after delay
+          if (document.hidden && !document.hasFocus()) {
+            console.log('Tab/window switched - triggering auto-submit');
+            setHasLostFocus(true);
+            handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
+          }
+        }, 300); // 300ms grace period
+      } else {
+        // Page became visible again - cancel any pending submission
+        if (focusLostTimeout) {
+          clearTimeout(focusLostTimeout);
+          focusLostTimeout = null;
         }
-      }, 100);
+        wasVisible = true;
+      }
+    };
+
+    // Alternative approach: Use both visibility and focus together
+    const handleFocusLoss = () => {
+      // Only submit if BOTH conditions are true:
+      // 1. Document is hidden (tab switched)
+      // 2. Window doesn't have focus
+      setTimeout(() => {
+        if (document.hidden && !document.hasFocus()) {
+          console.log('Focus lost - triggering auto-submit');
+          setHasLostFocus(true);
+          handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
+        }
+      }, 200);
     };
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -327,17 +398,18 @@ const AssignedQuizPage = () => {
       return e.returnValue;
     };
 
-    // Add event listeners
-    // document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
+    // Add event listeners - Use visibilitychange instead of blur
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     console.log('Focus loss detection enabled');
 
     // Cleanup
     return () => {
-      // document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
+      if (focusLostTimeout) {
+        clearTimeout(focusLostTimeout);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       console.log('Focus loss detection disabled');
     };
@@ -744,12 +816,61 @@ const AssignedQuizPage = () => {
               </span>
             </div>
 
+            {/* NEW: Passage Section */}
+            {currentQuestion.passage && (
+              <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg">
+                <h3 className="text-sm sm:text-base font-semibold text-amber-900 mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  Reading Passage
+                </h3>
+                <div className="text-sm sm:text-base text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {currentQuestion.passage}
+                </div>
+              </div>
+            )}
+
+            {/* NEW: Diagram Section */}
+            {currentQuestion.diagram && (
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Diagram/Figure
+                </h3>
+                <div className="relative border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                  <Image
+                    src={currentQuestion.diagram}
+                    alt={currentQuestion.diagramAlt || 'Question diagram'}
+                    className="w-full h-auto max-h-96 object-contain cursor-zoom-in hover:opacity-90 transition-opacity"
+                    onClick={() => setSelectedImage(currentQuestion.diagram!)}
+                  />
+                  <button
+                    onClick={() => setSelectedImage(currentQuestion.diagram!)}
+                    className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-700 px-3 py-1 rounded-lg text-xs sm:text-sm font-medium shadow-sm transition-all flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                    Zoom
+                  </button>
+                </div>
+                {currentQuestion.diagramAlt && (
+                  <p className="text-xs sm:text-sm text-gray-600 mt-2 italic">
+                    {currentQuestion.diagramAlt}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Question Text */}
-            <p className="text-base sm:text-lg mb-6 sm:mb-8 text-gray-900 leading-relaxed">
+            <p className="text-base sm:text-lg mb-6 sm:mb-8 text-gray-900 leading-relaxed font-medium">
               {currentQuestion.question}
             </p>
 
-            {/* Options */}
+            {/* Options - Multiple Choice */}
             {currentQuestion.type === 'multiple-choice' && (
               <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                 {(currentQuestion.options || []).map((opt, i) => (
@@ -757,15 +878,15 @@ const AssignedQuizPage = () => {
                     key={i}
                     onClick={() => handleOptionSelect(opt)}
                     className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
                       }`}
                   >
                     <div className="flex items-start gap-2 sm:gap-3">
                       <span
                         className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700'
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
                           }`}
                       >
                         {String.fromCharCode(65 + i)}
@@ -777,6 +898,7 @@ const AssignedQuizPage = () => {
               </div>
             )}
 
+            {/* Options - True/False */}
             {currentQuestion.type === 'true-false' && (
               <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                 {['True', 'False'].map((opt) => (
@@ -784,15 +906,15 @@ const AssignedQuizPage = () => {
                     key={opt}
                     onClick={() => handleOptionSelect(opt)}
                     className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
                       }`}
                   >
                     <div className="flex items-center gap-3">
                       <span
                         className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700'
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700'
                           }`}
                       >
                         {opt[0]}
@@ -804,6 +926,7 @@ const AssignedQuizPage = () => {
               </div>
             )}
 
+            {/* Text Input - Fill in the blanks & Essay */}
             {(currentQuestion.type === 'fill-in-the-blanks' || currentQuestion.type === 'essay') && (
               <div className="mb-6 sm:mb-8">
                 <textarea
@@ -827,7 +950,8 @@ const AssignedQuizPage = () => {
                 Prev
               </button>
               <button
-                onClick={handleNext} disabled={isDisabled}
+                onClick={handleNext}
+                disabled={isDisabled}
                 className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg bg-blue-600 text-white font-medium text-xs sm:text-sm hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation"
               >
                 {currentQuestionIndex === getCurrentQuestions().length - 1 && currentQuestionSetIndex < selectedOrder.length - 1
@@ -838,6 +962,16 @@ const AssignedQuizPage = () => {
             </div>
           </div>
         )}
+
+        {/* Image Modal - Add this before the closing </main> tag */}
+        {selectedImage && (
+          <ImageModal
+            imageUrl={selectedImage}
+            altText={currentQuestion?.diagramAlt || 'Diagram'}
+            onClose={() => setSelectedImage(null)}
+          />
+        )}
+
       </main>
 
       {/* Calculator Widget */}
