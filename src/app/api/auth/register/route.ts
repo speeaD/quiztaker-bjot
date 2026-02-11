@@ -5,11 +5,25 @@ export async function POST(request: Request) {
       firstname,
       lastname,
       selectedQuestionSets,
-      accountType
+      phone,
+      parentName,
+      parentPhone,
+      department,
+      course,
+      firstJamb,
+      lastJambScore,
+      accountType,
     }: {
       email: string;
       firstname: string;
       lastname: string;
+      phone: string;
+      parentName: string;
+      parentPhone: string;
+      department: string;
+      course: string;
+      firstJamb: boolean;
+      lastJambScore: number;
       selectedQuestionSets: string[];
       accountType: string;
     } = await request.json();
@@ -21,6 +35,13 @@ export async function POST(request: Request) {
       !selectedQuestionSets ||
       selectedQuestionSets.length !== 4
     ) {
+      console.log("Invalid input:", {
+        email,
+        firstname,
+        lastname,
+        selectedQuestionSets,
+        accountType,
+      });
       return new Response(
         JSON.stringify({
           error:
@@ -41,6 +62,13 @@ export async function POST(request: Request) {
         email: email,
         firstname: firstname,
         lastname: lastname,
+        phone: phone,
+        parentName: parentName,
+        parentPhone: parentPhone,
+        department: department,
+        course: course,
+        firstJamb: firstJamb,
+        lastJambScore: lastJambScore,
         questionSetCombination: selectedQuestionSets,
       }),
     });
