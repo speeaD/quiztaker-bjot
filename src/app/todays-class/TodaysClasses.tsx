@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { studentApi } from '../../lib/api/attendance-client';
 import { SessionWithAttendanceStatus } from '../../types/global';
 import {
@@ -20,6 +21,7 @@ export default function TodaysClassesClient({
   initialClasses: SessionWithAttendanceStatus[];
   initialError?: string | null;
 }) {
+  const router = useRouter();
   const [classes, setClasses] = useState<SessionWithAttendanceStatus[]>(initialClasses);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(initialError || '');
@@ -82,13 +84,13 @@ export default function TodaysClassesClient({
     const canMarkAttendance = isWindowOpen && !hasMarkedAttendance && (!timeRemaining || !timeRemaining.isExpired);
 
     return (
-      <div className={`border rounded-lg p-6 transition-all ${
+      <div className={`border rounded-lg p-4 sm:p-6 transition-all ${
         isActive ? 'border-blue-500 shadow-lg' : 'border-gray-200'
       }`}>
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+        <div className="flex items-start justify-between mb-4 gap-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 truncate">
               {session.questionSetTitle}
             </h3>
             <p className="text-sm text-gray-600">
@@ -97,7 +99,7 @@ export default function TodaysClassesClient({
           </div>
           
           {isActive && (
-            <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm font-medium flex-shrink-0">
               <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></div>
               <span>Ongoing</span>
             </div>
@@ -107,29 +109,29 @@ export default function TodaysClassesClient({
         {/* Attendance Window Status */}
         <div className="mb-4">
           {isWindowOpen ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="font-medium text-green-900">Attendance Window Open</span>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <div className="flex items-center space-x-2 min-w-0">
+                  <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                  <span className="font-medium text-green-900 text-sm sm:text-base truncate">Attendance Window Open</span>
                 </div>
                 {timeRemaining && !timeRemaining.isExpired && (
-                  <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
+                  <span className="text-xs sm:text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded flex-shrink-0">
                     {timeRemaining.displayText} left
                   </span>
                 )}
               </div>
-              <p className="text-sm text-green-700">
+              <p className="text-xs sm:text-sm text-green-700">
                 You can mark your attendance now
               </p>
             </div>
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
               <div className="flex items-center space-x-2 mb-1">
-                <div className="h-3 w-3 bg-gray-400 rounded-full"></div>
-                <span className="font-medium text-gray-700">Attendance Window Closed</span>
+                <div className="h-3 w-3 bg-gray-400 rounded-full flex-shrink-0"></div>
+                <span className="font-medium text-gray-700 text-sm sm:text-base">Attendance Window Closed</span>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Wait for your instructor to open the attendance window
               </p>
             </div>
@@ -138,15 +140,15 @@ export default function TodaysClassesClient({
 
         {/* Attendance Status */}
         {hasMarkedAttendance && (
-          <div className={`mb-4 rounded-lg p-4 ${
+          <div className={`mb-4 rounded-lg p-3 sm:p-4 ${
             session.attendanceStatus === 'present'
               ? 'bg-green-50 border border-green-200'
               : 'bg-yellow-50 border border-yellow-200'
           }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center space-x-2 min-w-0">
                 <svg
-                  className={`w-5 h-5 ${
+                  className={`w-5 h-5 flex-shrink-0 ${
                     session.attendanceStatus === 'present' ? 'text-green-600' : 'text-yellow-600'
                   }`}
                   fill="currentColor"
@@ -158,14 +160,14 @@ export default function TodaysClassesClient({
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className={`font-medium ${
+                <span className={`font-medium text-sm sm:text-base ${
                   session.attendanceStatus === 'present' ? 'text-green-900' : 'text-yellow-900'
                 }`}>
                   Attendance Marked
                 </span>
               </div>
-              <div className="text-right">
-                <div className={`text-sm ${
+              <div className="text-right flex-shrink-0">
+                <div className={`text-xs sm:text-sm ${
                   session.attendanceStatus === 'present' ? 'text-green-700' : 'text-yellow-700'
                 }`}>
                   {session.markedAt && getRelativeTime(session.markedAt)}
@@ -182,9 +184,9 @@ export default function TodaysClassesClient({
         <button
           onClick={() => handleMarkAttendance(session._id)}
           disabled={!canMarkAttendance || markingAttendance === session._id}
-          className={`w-full py-3 rounded-lg font-medium transition-all ${
+          className={`w-full py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${
             canMarkAttendance
-              ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
+              ? 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow-md'
               : 'bg-gray-200 text-gray-500 cursor-not-allowed'
           }`}
         >
@@ -199,7 +201,7 @@ export default function TodaysClassesClient({
 
         {/* Session Info */}
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center justify-between text-sm">
             <div>
               <span className="text-gray-600">Status:</span>
               <span className={`ml-2 font-medium ${
@@ -208,8 +210,8 @@ export default function TodaysClassesClient({
                 {session.status}
               </span>
             </div>
-            <div className="text-right">
-              <span className="text-gray-600">Students Present:</span>
+            <div>
+              <span className="text-gray-600">Present:</span>
               <span className="ml-2 font-medium text-gray-900">
                 {session.presentCount}/{session.totalStudents}
               </span>
@@ -221,15 +223,32 @@ export default function TodaysClassesClient({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Today&apos;s Classes</h1>
-        <p className="text-gray-600">{formatDate(getTodayDate())}</p>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      {/* Back Navigation */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 transition-colors group"
+        aria-label="Go back"
+      >
+        <svg
+          className="w-5 h-5 transition-transform group-hover:-translate-x-0.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        <span className="text-sm font-medium">Back</span>
+      </button>
+
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Today&apos;s Classes</h1>
+        <p className="text-sm sm:text-base text-gray-600">{formatDate(getTodayDate())}</p>
       </div>
 
       {/* Messages */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-start">
+        <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-start text-sm sm:text-base">
           <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>
@@ -238,7 +257,7 @@ export default function TodaysClassesClient({
       )}
 
       {successMessage && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600 flex items-start">
+        <div className="mb-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg text-green-600 flex items-start text-sm sm:text-base">
           <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
@@ -249,13 +268,13 @@ export default function TodaysClassesClient({
       {/* Classes List */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-600">Loading your classes...</p>
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-600 text-sm sm:text-base">Loading your classes...</p>
         </div>
       ) : classes?.length === 0 || !classes ? (
-        <div className="text-center py-12">
+        <div className="text-center py-10 sm:py-12">
           <svg
-            className="w-16 h-16 text-gray-400 mx-auto mb-4"
+            className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -267,11 +286,11 @@ export default function TodaysClassesClient({
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Classes Today</h3>
-          <p className="text-gray-600">You don&apos;t have any scheduled classes for today.</p>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No Classes Today</h3>
+          <p className="text-sm sm:text-base text-gray-600">You don&apos;t have any scheduled classes for today.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {classes.map((session) => (
             <ClassCard key={session._id} session={session} />
           ))}
@@ -280,10 +299,10 @@ export default function TodaysClassesClient({
 
       {/* Refresh Button */}
       {!isLoading && classes?.length > 0 && (
-        <div className="mt-6 text-center">
+        <div className="mt-4 sm:mt-6 text-center">
           <button
             onClick={loadTodaysClasses}
-            className="px-6 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
+            className="px-5 sm:px-6 py-2 text-blue-600 hover:bg-blue-50 active:bg-blue-100 rounded-lg transition-colors text-sm font-medium"
           >
             Refresh Classes
           </button>
