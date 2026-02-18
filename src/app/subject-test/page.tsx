@@ -157,7 +157,7 @@ const CBTSimulator = () => {
   const [phase, setPhase] = useState<'selection' | 'exam' | 'result'>('selection');
   const [showCalculator, setShowCalculator] = useState(false);
   const email = 'student@example.com'; // Replace with actual email logic
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [availableQuestionSets, setAvailableQuestionSets] = useState<QuestionSet[]>([]);
@@ -194,7 +194,7 @@ const CBTSimulator = () => {
     if (phase === 'exam' && timeRemaining === 0 && !isSubmitting) {
       handleSubmit(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRemaining, phase, isSubmitting]);
 
   const formatTime = (seconds: number) => {
@@ -229,7 +229,7 @@ const CBTSimulator = () => {
 
   const handleStartExam = async () => {
     if (!selectedQuestionSetId) return;
-    
+
     try {
       setLoading(true);
       setError('');
@@ -237,14 +237,14 @@ const CBTSimulator = () => {
       const sessionResponse = await fetch(`${API_BASE_URL}/cbt/start-single-subject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          questionSetId: selectedQuestionSetId, 
-          email 
+        body: JSON.stringify({
+          questionSetId: selectedQuestionSetId,
+          email
         }),
       });
 
       const sessionData = await sessionResponse.json();
-      
+
       if (!sessionData.success) {
         setError(sessionData.message || 'Failed to start exam');
         setLoading(false);
@@ -259,9 +259,12 @@ const CBTSimulator = () => {
         `${API_BASE_URL}/cbt/question-set/${selectedQuestionSetId}/questions`
       );
       const questionsData = await questionsResponse.json();
-      
+
       if (questionsData.success) {
-        setQuestions(questionsData.questionSet.questions);
+        const allQuestions: Question[] = questionsData.questionSet.questions;
+        const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, 40);
+        setQuestions(selected);
         setPhase('exam');
       } else {
         setError('Failed to load questions');
@@ -296,7 +299,7 @@ const CBTSimulator = () => {
 
   const handleSubmit = async (isAuto = false) => {
     if (isSubmitting) return; // Fixed: Prevent duplicate submissions
-    
+
     if (!isAuto) {
       const confirmed = window.confirm(
         `You have answered ${Object.keys(answers).length} out of ${questions.length} questions. Do you want to submit?`
@@ -316,16 +319,16 @@ const CBTSimulator = () => {
           sessionId,
           quizTakerId,
           questionSetId: selectedQuestionSetId,
-          answers: Object.entries(answers).map(([questionId, answer]) => ({ 
-            questionId, 
-            answer 
+          answers: Object.entries(answers).map(([questionId, answer]) => ({
+            questionId,
+            answer
           })),
           startedAt: startedAt?.toISOString(),
         }),
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setSubmissionResult(data.submission);
         setPhase('result');
@@ -349,12 +352,12 @@ const CBTSimulator = () => {
           <header className="bg-white border-b border-gray-200 p-3 sm:p-4 rounded-lg">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 bg-blue-bg rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-lg">B</span>
-          </div>
+                <span className="text-white font-bold text-lg">B</span>
+              </div>
               <span className="font-semibold text-gray-900 text-sm sm:text-base">BJOT CBT Simulator</span>
             </div>
           </header>
-          
+
           <main className="flex items-center justify-center px-2 sm:px-6 py-2">
             <div className="w-full max-w-2xl bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-8">
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
@@ -383,16 +386,13 @@ const CBTSimulator = () => {
                         <button
                           key={qs._id}
                           onClick={() => toggleQuestionSet(qs._id)}
-                          className={`relative p-4 sm:p-6 rounded-lg border-2 text-left transition-all touch-manipulation ${
-                            selected 
-                              ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
+                          className={`relative p-4 sm:p-6 rounded-lg border-2 text-left transition-all touch-manipulation ${selected
+                              ? 'bg-blue-600 border-blue-600 text-white shadow-md'
                               : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 active:bg-blue-100'
-                          }`}
+                            }`}
                         >
                           <div className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">{qs.title}</div>
-                          <div className={`text-xs sm:text-sm ${selected ? 'text-blue-100' : 'text-gray-500'}`}>
-                            {qs.questionCount} questions • {qs.totalPoints} points
-                          </div>
+
                           {selected && (
                             <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
                               <Check className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -406,7 +406,7 @@ const CBTSimulator = () => {
                   {selectedQuestionSetId && (
                     <div className="mb-6 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-xs sm:text-sm text-blue-900">
-                        <strong>Duration:</strong> 1 hour • 
+                        <strong>Duration:</strong> 1 hour •
                         <strong className="ml-2">Subject:</strong>{' '}
                         {availableQuestionSets.find(qs => qs._id === selectedQuestionSetId)?.title}
                       </p>
@@ -416,11 +416,10 @@ const CBTSimulator = () => {
                   <button
                     onClick={handleStartExam}
                     disabled={!selectedQuestionSetId || loading}
-                    className={`w-full py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all touch-manipulation ${
-                      selectedQuestionSetId && !loading
-                        ? 'bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 shadow-sm' 
+                    className={`w-full py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all touch-manipulation ${selectedQuestionSetId && !loading
+                        ? 'bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 shadow-sm'
                         : 'bg-blue-300 text-white cursor-not-allowed'
-                    }`}
+                      }`}
                   >
                     {loading ? (
                       <span className="flex items-center justify-center gap-2">
@@ -442,9 +441,9 @@ const CBTSimulator = () => {
 
   // Result Phase
   if (phase === 'result' && submissionResult) {
-    const percentageColor = 
-      submissionResult.percentage >= 70 ? 'green' : 
-      submissionResult.percentage >= 50 ? 'yellow' : 'red';
+    const percentageColor =
+      submissionResult.percentage >= 70 ? 'green' :
+        submissionResult.percentage >= 50 ? 'yellow' : 'red';
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -455,17 +454,15 @@ const CBTSimulator = () => {
               <span className="font-semibold text-gray-900 text-sm sm:text-base">BJOT CBT Simulator</span>
             </div>
           </header>
-          
+
           <main className="px-2 sm:px-6 py-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
-              <div className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto flex items-center justify-center mb-4 sm:mb-6 ${
-                percentageColor === 'green' ? 'bg-green-100' : 
-                percentageColor === 'yellow' ? 'bg-yellow-100' : 'bg-red-100'
-              }`}>
-                <span className={`text-3xl sm:text-4xl font-bold ${
-                  percentageColor === 'green' ? 'text-green-600' : 
-                  percentageColor === 'yellow' ? 'text-yellow-600' : 'text-red-600'
+              <div className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto flex items-center justify-center mb-4 sm:mb-6 ${percentageColor === 'green' ? 'bg-green-100' :
+                  percentageColor === 'yellow' ? 'bg-yellow-100' : 'bg-red-100'
                 }`}>
+                <span className={`text-3xl sm:text-4xl font-bold ${percentageColor === 'green' ? 'text-green-600' :
+                    percentageColor === 'yellow' ? 'text-yellow-600' : 'text-red-600'
+                  }`}>
                   {submissionResult.percentage}%
                 </span>
               </div>
@@ -537,25 +534,24 @@ const CBTSimulator = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-blue-bg rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-lg">B</span>
-          </div>
+              <span className="text-white font-bold text-lg">B</span>
+            </div>
             <span className="font-semibold text-gray-900 text-sm sm:text-base">BJOT CBT</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button 
+            <button
               onClick={() => setShowCalculator(!showCalculator)}
-              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors ${
-                showCalculator 
-                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors ${showCalculator
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
+                }`}
             >
               <Calculator className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Calculator</span>
             </button>
-            <button 
-              onClick={() => handleSubmit()} 
-              disabled={loading || isSubmitting} 
+            <button
+              onClick={() => handleSubmit()}
+              disabled={loading || isSubmitting}
               className="bg-red-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Submit
@@ -606,18 +602,16 @@ const CBTSimulator = () => {
                 <button
                   key={i}
                   onClick={() => handleOptionSelect(opt)}
-                  className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${
-                    answers[currentQuestion._id] === opt 
-                      ? 'border-blue-500 bg-blue-50' 
+                  className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
+                      ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100 active:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-2 sm:gap-3">
-                    <span className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${
-                      answers[currentQuestion._id] === opt 
-                        ? 'bg-blue-500 text-white' 
+                    <span className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
+                        ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700'
-                    }`}>
+                      }`}>
                       {String.fromCharCode(65 + i)}
                     </span>
                     <span className="text-gray-900 pt-0.5 sm:pt-1 text-sm sm:text-base">{opt}</span>

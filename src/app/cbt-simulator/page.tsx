@@ -248,7 +248,14 @@ const CBTSimulator = () => {
       for (const id of selectedQuestionSetIds) {
         const res = await fetch(`${API_BASE_URL}/cbt/question-set/${id}/questions`);
         const data = await res.json();
-        if (data.success) questionsData[id] = data.questionSet.questions;
+        if (data.success) {
+          const qs = availableQuestionSets.find(q => q._id === id);
+          const isEnglish = qs?.title?.toLowerCase().includes('english');
+          const limit = isEnglish ? 60 : 40;
+          const allQuestions: Question[] = data.questionSet.questions;
+          const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+          questionsData[id] = shuffled.slice(0, limit);
+        }
       }
       setQuestionsBySetId(questionsData);
       setPhase('exam');
@@ -361,9 +368,7 @@ const CBTSimulator = () => {
                             }`}
                         >
                           <div className="font-medium text-sm sm:text-base">{qs.title}</div>
-                          <div className={`text-xs sm:text-sm ${selected ? 'text-blue-100' : 'text-gray-500'}`}>
-                            {qs.questionCount} questions
-                          </div>
+                    
                           {selected && <Check className="w-4 h-4 sm:w-5 sm:h-5 absolute top-3 right-3" />}
                         </button>
                       );
