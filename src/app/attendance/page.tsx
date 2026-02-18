@@ -2,12 +2,22 @@
 import { serverApi } from '../../lib/api/attendance-client';
 import AttendanceHistoryClient from './AttendanceClient';
 
-export default async function StudentHistoryPage() {
+export async function getData() {
   const  initialData = await serverApi.student.getAttendanceHistory().catch((err: any) => {
     console.error('Failed to fetch attendance history:', err);
     return null;
   }); 
   const  error = null;
+  return {
+    props: {
+      initialData,
+      error,
+    },
+  };
+}
+
+export default async function StudentHistoryPage({ initialData, error }: { initialData: any; error: any }) {
+  
 
   // }
 
