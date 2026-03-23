@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Loader2, Mail } from 'lucide-react';
 
 export default function Login() {
-    const backend_url = process.env.BACKEND_URL || 'https://bjot-backend.vercel-nine.app/api';
+    const backend_url = process.env.BACKEND_URL || 'https://bjot-backend-nine.vercel.app/api';
     // const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
