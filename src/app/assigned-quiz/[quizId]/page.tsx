@@ -183,11 +183,12 @@ const AssignedQuizPage = () => {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [isDisabled, setIsDisabled] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<number[]>([1, 2, 3, 4]);
+  const [selectedOrder, setSelectedOrder] = useState<number[]>([]);
   const [currentQuestionSetIndex, setCurrentQuestionSetIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionsBySetOrder, setQuestionsBySetOrder] = useState<Record<number, Question[]>>({});
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [timerStarted, setTimerStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [showCalculator, setShowCalculator] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -219,60 +220,41 @@ const AssignedQuizPage = () => {
       setIsDisabled(true);
       setPhase('submitting');
 
+      const localCompleted = new Set(completedSets);
+      const unsubmittedOrders = selectedOrder.filter(order => !localCompleted.has(order));
+
       // 🔥 FIX: Submit ALL unsubmitted question sets, not just the current one
       // Loop through all question sets in the selected order
-      for (let i = 0; i < selectedOrder.length; i++) {
-        const setOrder = selectedOrder[i];
-
-        // Skip if already submitted
-        if (completedSets.includes(setOrder)) {
-          continue;
-        }
-
-        // Get questions for this set
+      for (let i = 0; i < unsubmittedOrders.length; i++) {
+        const setOrder = unsubmittedOrders[i];
         const setQuestions = questionsBySetOrder[setOrder] || [];
+        const isFinalSubmission = i === unsubmittedOrders.length - 1; // last one is always final
 
-        // Get answers for this specific question set
         const setAnswers = setQuestions
-          .map(q => ({
-            questionId: q._id,
-            answer: answers[q._id] || '',
-          }))
+          .map(q => ({ questionId: q._id, answer: answers[q._id] || '' }))
           .filter(a => a.answer);
 
-        // Determine if this is the final submission
-        // It's final if this is the last unsubmitted set
-        const isLastUnsubmittedSet = selectedOrder
-          .slice(i + 1)
-          .every(order => completedSets.includes(order));
-
-        // Submit this question set
         await fetch(`${API_BASE_URL}/quiz/${quizId}/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             answers: setAnswers,
             questionSetOrder: setOrder,
-            isFinalSubmission: isLastUnsubmittedSet,
+            isFinalSubmission,
           }),
         });
 
-        // Mark as completed locally (to prevent re-submission in loop)
-        if (!completedSets.includes(setOrder)) {
-          setCompletedSets(prev => [...prev, setOrder]);
-        }
+        localCompleted.add(setOrder);
       }
 
-      // Redirect to dashboard with message
       if (reason) {
-        // Store reason in sessionStorage to show on dashboard
         sessionStorage.setItem('quizSubmitReason', reason);
       }
       router.push('/dashboard');
     } catch (err) {
       setError('Failed to submit quiz');
       setPhase('exam');
-      setHasLostFocus(false); // Allow retry
+      setHasLostFocus(false);
     } finally {
       setIsDisabled(false);
     }
@@ -329,17 +311,12 @@ const AssignedQuizPage = () => {
 
   // Separate effect for auto-submit
   useEffect(() => {
-    if (phase === 'exam' && timeRemaining === 0 && !isDisabled) {
+    if (phase === 'exam' && timerStarted && timeRemaining === 0 && !isDisabled) {
       handleSubmitQuiz(true, 'Time expired');
     }
-  }, [timeRemaining, phase, isDisabled, handleSubmitQuiz]);
+  }, [timeRemaining, phase, timerStarted, isDisabled, handleSubmitQuiz]);
 
-  // Focus loss detection - AUTO SUBMIT
-  useEffect(() => {
-    if (phase === 'exam' && timeRemaining === 0 && !isDisabled) {
-      handleSubmitQuiz(true, 'Time expired');
-    }
-  }, [timeRemaining, phase, isDisabled, handleSubmitQuiz]);
+
 
   // Focus loss detection - AUTO SUBMIT (FIXED VERSION)
   useEffect(() => {
@@ -352,10 +329,10 @@ const AssignedQuizPage = () => {
     const handleVisibilityChange = () => {
       // Mobile: document.hidden can be true when screen turns off
       // Desktop: document.hidden is true when tab is switched
-      
+
       if (document.hidden) {
         wasVisible = false;
-        
+
         // Give a grace period to distinguish screen-off from tab-switch
         // On mobile, screen-off typically triggers multiple rapid visibility changes
         // On desktop/genuine tab switch, the page stays hidden
@@ -433,11 +410,19 @@ const AssignedQuizPage = () => {
       }
 
       // Check if custom order already set
-      if (data.selectedQuestionSetOrder && data.selectedQuestionSetOrder.length === 4) {
+      if (data.selectedQuestionSetOrder && data.selectedQuestionSetOrder.length > 0) {
         setSelectedOrder(data.selectedQuestionSetOrder);
-        await startQuiz(data.selectedQuestionSetOrder);
+        await startQuiz(data.selectedQuestionSetOrder, data.quiz);
       } else {
-        setPhase('order-selection');
+        const defaultOrder = data.quiz.questionSets.map((qs: QuestionSet) => qs.order);
+        setSelectedOrder(defaultOrder);
+
+        if (defaultOrder.length === 1) {
+          // Single-subject: no need to show order selection, go straight in
+          await startQuiz(defaultOrder, data.quiz);
+        } else {
+          setPhase('order-selection');
+        }
       }
     } catch (err) {
       setError('Failed to load quiz');
@@ -467,7 +452,8 @@ const AssignedQuizPage = () => {
     }
   };
 
-  const startQuiz = async (order: number[]) => {
+  const startQuiz = async (order: number[], quizData?: Quiz) => {
+    const resolvedQuiz = quizData || quiz; 
     try {
       // Start the quiz
       const startResponse = await fetch(`${API_BASE_URL}/quiz/${quizId}/start`, {
@@ -495,10 +481,11 @@ const AssignedQuizPage = () => {
       setQuestionsBySetOrder(questionsData);
 
       // Set timer
-      if (quiz?.settings.duration) {
-        const { hours, minutes, seconds } = quiz.settings.duration;
+      if (resolvedQuiz?.settings.duration) {
+        const { hours, minutes, seconds } = resolvedQuiz.settings.duration;
         const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
         setTimeRemaining(totalSeconds);
+        setTimerStarted(true);
       }
 
       setPhase('exam');
@@ -670,7 +657,7 @@ const AssignedQuizPage = () => {
                               setSelectedOrder(newOrder);
                             }
                           }}
-                          disabled={position === 3}
+                          disabled={position === quiz.questionSets.length - 1}
                           className="px-2 py-1 bg-gray-200 rounded text-xs disabled:opacity-30"
                         >
                           ↓
@@ -878,15 +865,15 @@ const AssignedQuizPage = () => {
                     key={i}
                     onClick={() => handleOptionSelect(opt)}
                     className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
                       }`}
                   >
                     <div className="flex items-start gap-2 sm:gap-3">
                       <span
                         className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
                           }`}
                       >
                         {String.fromCharCode(65 + i)}
@@ -906,15 +893,15 @@ const AssignedQuizPage = () => {
                     key={opt}
                     onClick={() => handleOptionSelect(opt)}
                     className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
                       }`}
                   >
                     <div className="flex items-center gap-3">
                       <span
                         className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
                           }`}
                       >
                         {opt[0]}
