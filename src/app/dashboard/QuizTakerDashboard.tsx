@@ -1,7 +1,7 @@
 'use client';
 
 import DashboardHeader from '@/components/DashboardHeader';
-import { AlertCircle, Award, Calendar, Clock, Loader2, Lock, TrendingUp, CheckCircle, PlayCircle, Eye, XCircle } from 'lucide-react';
+import { AlertCircle, Award, Calendar, Clock, Loader2, Lock, TrendingUp, CheckCircle, PlayCircle, Eye, XCircle, ChevronDown, ChevronUp, History } from 'lucide-react';
 import Link from 'next/link';
 import { JSX, useEffect, useState } from 'react';
 
@@ -109,7 +109,9 @@ const QuizTakerDashboard = () => {
   const [error, setError] = useState('');
   const [assignedError, setAssignedError] = useState('');
   const [submitNotification, setSubmitNotification] = useState<string | null>(null);
-  const [expandedQuizzes, setExpandedQuizzes] = useState<Set<string>>(new Set())
+  const [expandedQuizzes, setExpandedQuizzes] = useState<Set<string>>(new Set());
+  const [assignedFilter, setAssignedFilter] = useState<'all' | 'pending' | 'in-progress' | 'completed'>('all');
+  const [showAllAssigned, setShowAllAssigned] = useState(false);
   
   const email = typeof window !== 'undefined' && localStorage.getItem('quizTakerEmail') 
     ? localStorage.getItem('quizTakerEmail') as string 
@@ -264,13 +266,43 @@ const QuizTakerDashboard = () => {
     setExpandedQuizzes(newExpanded);
   };
 
-  const getBestAttempt = (quiz: AssignedQuiz) => {
-    if (!quiz.allSubmissions || quiz.allSubmissions.length === 0) {
-      return quiz.submissionId;
+  interface AttemptSummary {
+    id: string;
+    score: number;
+    totalPoints: number;
+    percentage: number;
+    completedAt?: string;
+    attemptNumber?: number;
+  }
+
+  const getAttempts = (quiz: AssignedQuiz): AttemptSummary[] => {
+    if (quiz.allSubmissions && quiz.allSubmissions.length > 0) {
+      return [...quiz.allSubmissions]
+        .sort((a, b) => b.attemptNumber - a.attemptNumber)
+        .map((s) => ({
+          id: s._id,
+          score: s.score,
+          totalPoints: s.totalPoints,
+          percentage: s.percentage,
+          completedAt: s.completedAt,
+          attemptNumber: s.attemptNumber,
+        }));
     }
-    return quiz.allSubmissions.reduce((best, current) => 
-      current.percentage > best.percentage ? current : best
-    );
+    if (quiz.submissionId) {
+      return [{
+        id: quiz.submissionId._id,
+        score: quiz.submissionId.score,
+        totalPoints: quiz.submissionId.totalPoints,
+        percentage: quiz.submissionId.percentage,
+      }];
+    }
+    return [];
+  };
+
+  const getBestAttempt = (quiz: AssignedQuiz): AttemptSummary | undefined => {
+    const attempts = getAttempts(quiz);
+    if (attempts.length === 0) return undefined;
+    return attempts.reduce((best, current) => (current.percentage > best.percentage ? current : best));
   };
 
   // Calculate statistics
@@ -286,6 +318,43 @@ const QuizTakerDashboard = () => {
   const pendingQuizzes = assignedQuizzes.filter(q => q.status === 'pending').length;
   const inProgressQuizzes = assignedQuizzes.filter(q => q.status === 'in-progress').length;
   const completedQuizzes = assignedQuizzes.filter(q => q.status === 'completed').length;
+
+  // Surface exams that still need action before ones already completed, so
+  // a long history of completed exams doesn't bury what's outstanding.
+  const ASSIGNED_STATUS_PRIORITY: Record<AssignedQuiz['status'], number> = {
+    'in-progress': 0,
+    pending: 1,
+    completed: 2,
+  };
+  const sortedAssignedQuizzes = [...assignedQuizzes].sort((a, b) => {
+    const priorityDiff = ASSIGNED_STATUS_PRIORITY[a.status] - ASSIGNED_STATUS_PRIORITY[b.status];
+    if (priorityDiff !== 0) return priorityDiff;
+    return new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime();
+  });
+
+  const assignedFilterTabs: { id: typeof assignedFilter; label: string; count: number }[] = [
+    { id: 'all', label: 'All', count: assignedQuizzes.length },
+    { id: 'pending', label: 'Pending', count: pendingQuizzes },
+    { id: 'in-progress', label: 'In Progress', count: inProgressQuizzes },
+    { id: 'completed', label: 'Completed', count: completedQuizzes },
+  ];
+
+  const filteredAssignedQuizzes = assignedFilter === 'all'
+    ? sortedAssignedQuizzes
+    : sortedAssignedQuizzes.filter(q => q.status === assignedFilter);
+
+  // Cap what renders by default. This is the actual fix for the section
+  // growing tall enough to push the rest of the dashboard out of view.
+  const ASSIGNED_VISIBLE_LIMIT = 1;
+  const visibleAssignedQuizzes = showAllAssigned
+    ? filteredAssignedQuizzes
+    : filteredAssignedQuizzes.slice(0, ASSIGNED_VISIBLE_LIMIT);
+  const hiddenAssignedCount = filteredAssignedQuizzes.length - visibleAssignedQuizzes.length;
+
+  const handleAssignedFilterChange = (filter: typeof assignedFilter) => {
+    setAssignedFilter(filter);
+    setShowAllAssigned(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -352,112 +421,189 @@ const QuizTakerDashboard = () => {
         )}
 
         {/* Assigned Quizzes Section */}
-       
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                <h2 className="font-semibold text-gray-900 text-base sm:text-lg">Assigned Exams</h2>
-              </div>
-              {assignedQuizzes.length > 0 && (
-                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 flex-wrap">
-                  <span>{pendingQuizzes} pending</span>
-                  <span>•</span>
-                  <span>{inProgressQuizzes} in progress</span>
-                  <span>•</span>
-                  <span>{completedQuizzes} completed</span>
-                </div>
-              )}
-            </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            <h2 className="font-semibold text-gray-900 text-base sm:text-lg">Assigned Exams</h2>
+          </div>
 
-            {assignedLoading ? (
-              <div className="flex flex-col items-center justify-center py-8 sm:py-12">
-                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-spin mb-2 sm:mb-3" />
-                <p className="text-gray-500 text-xs sm:text-sm">Loading assigned exams...</p>
-              </div>
-            ) : assignedError ? (
-              <div className="text-center py-8 sm:py-12">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
-                </div>
-                <p className="text-gray-700 font-medium text-xs sm:text-sm mb-2">{assignedError}</p>
+          {assignedQuizzes.length > 0 && (
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5 overflow-x-auto pb-0.5 -mx-1 px-1">
+              {assignedFilterTabs.map((tab) => (
                 <button
-                  onClick={fetchAssignedQuizzes}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  key={tab.id}
+                  onClick={() => handleAssignedFilterChange(tab.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
+                    assignedFilter === tab.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
-                  Try Again
-                </button>
-              </div>
-            ) : assignedQuizzes.length === 0 ? (
-              <div className="text-center py-8 sm:py-12">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
-                </div>
-                <p className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">No assigned exams</p>
-                <p className="text-gray-400 text-xs">Your instructor hasn&apos;t assigned any exams yet</p>
-              </div>
-            ) : (
-              <div className="space-y-2 sm:space-y-3">
-                {assignedQuizzes.map((quiz) => (
-                  <div 
-                    key={quiz._id}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 sm:px-6 sm:py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors gap-3 sm:gap-4"
+                  {tab.label}
+                  <span
+                    className={`text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full ${
+                      assignedFilter === tab.id ? 'bg-white/20' : 'bg-white text-gray-500'
+                    }`}
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-1 sm:mb-1 flex-wrap">
-                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                          {quiz.quizId.settings.title}
-                        </h3>
-                        {getStatusBadge(quiz.status)}
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {assignedLoading ? (
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+              <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-spin mb-2 sm:mb-3" />
+              <p className="text-gray-500 text-xs sm:text-sm">Loading assigned exams...</p>
+            </div>
+          ) : assignedError ? (
+            <div className="text-center py-8 sm:py-12">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
+              </div>
+              <p className="text-gray-700 font-medium text-xs sm:text-sm mb-2">{assignedError}</p>
+              <button
+                onClick={fetchAssignedQuizzes}
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : assignedQuizzes.length === 0 ? (
+            <div className="text-center py-8 sm:py-12">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">No assigned exams</p>
+              <p className="text-gray-400 text-xs">Your instructor hasn&apos;t assigned any exams yet</p>
+            </div>
+          ) : filteredAssignedQuizzes.length === 0 ? (
+            <div className="text-center py-8 sm:py-12">
+              <p className="text-gray-500 text-xs sm:text-sm">
+                No {assignedFilter.replace('-', ' ')} exams right now.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2 sm:space-y-3">
+                {visibleAssignedQuizzes.map((quiz) => {
+                  const attempts = getAttempts(quiz);
+                  const bestAttempt = getBestAttempt(quiz);
+                  const hasMultipleAttempts = attempts.length > 1;
+                  const isExpanded = expandedQuizzes.has(quiz._id);
+                  const statusAccent =
+                    quiz.status === 'in-progress'
+                      ? 'border-l-blue-500'
+                      : quiz.status === 'completed'
+                      ? 'border-l-emerald-500'
+                      : 'border-l-gray-300';
+
+                  return (
+                    <div
+                      key={quiz._id}
+                      className={`bg-gray-50 rounded-lg border border-gray-100 border-l-4 ${statusAccent} hover:border-gray-200 transition-colors overflow-hidden`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:px-5 sm:py-4 gap-3 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                              {quiz.quizId.settings?.title || 'Untitled Quiz'}
+                            </h3>
+                            {getStatusBadge(quiz.status)}
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              Assigned: {formatDate(quiz.assignedAt)}
+                            </span>
+                            {quiz.quizId.settings?.duration && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatDuration(quiz.quizId.settings?.duration)}
+                              </span>
+                            )}
+                          </div>
+                          {quiz.status === 'completed' && bestAttempt && (
+                            <div className="mt-2 flex items-center gap-2 flex-wrap">
+                              <span className={`text-xs sm:text-sm font-semibold ${getPercentageColor(bestAttempt.percentage)}`}>
+                                {hasMultipleAttempts ? 'Best score' : 'Score'}: {bestAttempt.percentage}%
+                              </span>
+                              <span className="text-xs sm:text-sm text-gray-500">
+                                ({Math.round((bestAttempt.score / bestAttempt.totalPoints) * 400)}) / 400
+                              </span>
+                              {hasMultipleAttempts && (
+                                <button
+                                  onClick={() => toggleQuizExpanded(quiz._id)}
+                                  className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 hover:text-gray-700 font-medium"
+                                >
+                                  <History className="w-3 h-3" />
+                                  {attempts.length} attempts
+                                  {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 sm:flex-shrink-0">
+                          {quiz.status === 'completed' && quiz.submissionId ? (
+                            <button
+                              onClick={() => handleViewResults(quiz.submissionId!._id)}
+                              className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
+                            >
+                              <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                              View Results
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleTakeQuiz(quiz.quizId._id, quiz.status)}
+                              className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto"
+                            >
+                              <PlayCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                              {quiz.status === 'in-progress' ? 'Continue' : 'Start Exam'}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Assigned: {formatDate(quiz.assignedAt)}
-                        </span>
-                        {quiz.quizId.settings.duration && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {formatDuration(quiz.quizId.settings.duration)}
-                          </span>
-                        )}
-                      </div>
-                      {quiz.status === 'completed' && quiz.submissionId && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className={`text-xs sm:text-sm font-semibold ${getPercentageColor(quiz.submissionId.percentage)}`}>
-                            Score: {quiz.submissionId.percentage}%
-                          </span>
-                          <span className="text-xs sm:text-sm text-gray-500">
-                            ({Math.round((quiz.submissionId.score / quiz.submissionId.totalPoints) * 400 )}) / 400
-                          </span>
+
+                      {hasMultipleAttempts && isExpanded && (
+                        <div className="border-t border-gray-100 bg-white px-3 sm:px-5 py-2 sm:py-3 space-y-1.5">
+                          {attempts.map((attempt) => (
+                            <div
+                              key={attempt.id}
+                              className="flex items-center justify-between text-xs sm:text-sm"
+                            >
+                              <span className="text-gray-500">
+                                Attempt {attempt.attemptNumber ?? '—'}
+                                {attempt.completedAt && ` · ${formatDate(attempt.completedAt)}`}
+                              </span>
+                              <span className={`font-semibold ${getPercentageColor(attempt.percentage)}`}>
+                                {attempt.percentage}%
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 sm:flex-shrink-0">
-                      {quiz.status === 'completed' && quiz.submissionId ? (
-                        <button
-                          onClick={() => handleViewResults(quiz.submissionId!._id)}
-                          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
-                        >
-                          <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                          View Results
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleTakeQuiz(quiz.quizId._id, quiz.status)}
-                          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto"
-                        >
-                          <PlayCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                          {quiz.status === 'in-progress' ? 'Continue' : 'Start Exam'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            )}
-          </div>
-      
+
+              {(hiddenAssignedCount > 0 || showAllAssigned) && filteredAssignedQuizzes.length > ASSIGNED_VISIBLE_LIMIT && (
+                <button
+                  onClick={() => setShowAllAssigned((prev) => !prev)}
+                  className="w-full flex items-center justify-center gap-1 mt-3 py-2 sm:py-3 text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  {showAllAssigned ? (
+                    <>Show less <ChevronUp className="w-3.5 h-3.5" /></>
+                  ) : (
+                    <>Show {hiddenAssignedCount} more <ChevronDown className="w-3.5 h-3.5" /></>
+                  )}
+                </button>
+              )}
+            </>
+          )}
+        </div>
 
         {/* Main Content */}
         <main className="space-y-4 sm:space-y-6">

@@ -99,7 +99,7 @@ export default function GameHub() {
             </div>
             <p className="text-gray-600 mb-4">See who&apos;s on top</p>
             <button 
-              onClick={() => router.push('/scholars-wager/leaderboard')}
+              onClick={() => router.push('/leaderboard')}
               className="text-blue-600 hover:text-blue-800 font-semibold"
             >
               View Rankings →

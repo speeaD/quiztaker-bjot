@@ -2,7 +2,7 @@ import axios from 'axios';
 import { cookies } from 'next/headers';
 
 const instance = axios.create({
-  baseURL: process.env.BACKEND_URL || 'https://bjot-backend.vercel.app/api',
+  baseURL: process.env.BACKEND_URL || 'https://bjot-backend-nine.vercel.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
