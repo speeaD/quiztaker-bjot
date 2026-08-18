@@ -1,11 +1,12 @@
-import Image from "next/image"
+import Image from "next/image";
 import Link from "next/link";
+import { Reveal } from "@/components/motion/Reveal";
 
 export default function Footer() {
   return (
     <footer>
       <div className="wrap">
-        <div className="footer-grid">
+        <Reveal className="footer-grid" distance={16} amount={0.1}>
           <div>
             <div className="footer-logo">BJOT</div>
             <p className="desc">
@@ -43,7 +44,7 @@ export default function Footer() {
               <li>Lagos, Nigeria</li>
             </ul>
           </div>
-        </div>
+        </Reveal>
         <div className="footer-bottom">
           <span>© 2026 BJOT Blast Jamb Online Tutorial. All rights reserved.</span>
         </div>

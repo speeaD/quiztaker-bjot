@@ -1,9 +1,11 @@
+import { Reveal } from "@/components/motion/Reveal";
+
 export default function TeamCta() {
   return (
     <section>
       <div className="wrap">
         <div className="team-cta">
-          <div className="team-block">
+          <Reveal className="team-block" direction="left" distance={30}>
             <div className="eyebrow">Our team</div>
             <h2>The People Behind BJOT</h2>
             <p>
@@ -14,8 +16,8 @@ export default function TeamCta() {
             <a href="/about-us" className="btn btn-primary">
               Meet The Team
             </a>
-          </div>
-          <div className="cta-block">
+          </Reveal>
+          <Reveal className="cta-block" direction="right" distance={30} delay={0.1}>
             <h2>Join Thousands Of Successful Students Today</h2>
             <p>
               Your success story begins here. Start learning, practicing, and
@@ -29,7 +31,7 @@ export default function TeamCta() {
                 Explore Premium
               </a>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { BookOpen, FileText, Medal, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
 
 const FEATURES = [
   {
@@ -44,28 +46,43 @@ export default function Features() {
   return (
     <section>
       <div className="wrap">
-        <div className="section-head">
+        <Reveal className="section-head">
           <div className="eyebrow">Why BJOT</div>
           <h2>More Than Just A Tutorial</h2>
           <p>Everything you need to excel in your exams, in one place.</p>
-        </div>
+        </Reveal>
 
-        <div
+        <StaggerGroup
           className="features-grid"
+          stagger={0.14}
           style={isMobile ? { gridTemplateColumns: "1fr" } : undefined}
         >
-          <div className="features-connector" aria-hidden="true" />
+          <motion.div
+            className="features-connector"
+            aria-hidden="true"
+            style={{ originX: 0 }}
+            initial={{ scaleX: 0, opacity: 0 }}
+            whileInView={{ scaleX: 1, opacity: 1 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          />
           {FEATURES.map((f) => (
-            <div className="feature-card" key={f.title}>
-              <div className="feature-icon-badge">{f.icon}</div>
+            <StaggerItem className="feature-card" key={f.title} direction="up" distance={24}>
+              <motion.div
+                className="feature-icon-badge"
+                whileHover={{ scale: 1.08, rotate: -4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              >
+                {f.icon}
+              </motion.div>
               <div className="feature-step-num">Step {f.step}</div>
               <div className="feature-body">
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   );

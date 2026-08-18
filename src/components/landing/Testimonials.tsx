@@ -1,3 +1,8 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+
 const TESTIMONIALS = [
   {
     // Solo portrait, Nigeria — free to use under the Unsplash License (Micheal Awala)
@@ -32,34 +37,36 @@ export default function Testimonials() {
   return (
     <section className="testimonials">
       <div className="wrap">
-        <div className="section-head">
+        <Reveal className="section-head">
           <div className="eyebrow">Testimonials</div>
           <h2>Real Students, Real Results</h2>
           <p>Hear from students who transformed their scores with BJOT.</p>
-        </div>
-        <div className="test-grid">
+        </Reveal>
+        <StaggerGroup className="test-grid" stagger={0.13}>
           {TESTIMONIALS.map((t) => (
-            <div className="test-card" key={t.name}>
-              <div
+            <StaggerItem className="test-card" key={t.name} direction="up" distance={26}>
+              <motion.div
                 className="video-thumb"
                 style={{ backgroundImage: `url(${t.img})` }}
                 aria-label={`${t.name} testimonial video preview`}
+                whileHover={{ scale: 1.03 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className="video-overlay" />
                 <div className="score">{t.score}</div>
                 <div className="play-badge">▶</div>
                 <div className="video-length">02:14</div>
                 <div className="verified">✓ Verified</div>
-              </div>
+              </motion.div>
               <div className="test-body">
                 <p>&quot;{t.quote}&quot;</p>
                 <div className="who">
                   {t.name} <span>{t.role}</span>
                 </div>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGroup>
         <a href="#" className="see-more">
           See More Results →
         </a>

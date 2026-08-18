@@ -1,6 +1,5 @@
 import { Youtube, Video, Users, PlayCircle } from "lucide-react";
-import btsWhiteboard from "../../public/bts-whiteboard.jpg";
-import btsStudio from "../../public/bts-studio.jpg";
+import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
 
 const STATS = [
   { icon: <Video size={18} />, label: "Lesson Videos", value: "120+" },
@@ -25,7 +24,7 @@ export default function YouTubeChannel() {
   return (
     <section className="yt-section">
       <div className="wrap yt-wrap">
-        <div className="yt-copy">
+        <Reveal className="yt-copy" direction="left" distance={30}>
           <div className="eyebrow">Watch &amp; Learn</div>
           <h2>Free Lessons, Every Week, On YouTube</h2>
           <p>
@@ -55,14 +54,17 @@ export default function YouTubeChannel() {
             <Youtube size={18} />
             Subscribe on YouTube
           </a>
-        </div>
+        </Reveal>
 
-        <div className="yt-gallery">
+        <StaggerGroup className="yt-gallery" stagger={0.15}>
           {BTS_PHOTOS.map((p) => (
-            <div
+            <StaggerItem
               className="yt-photo"
               key={p.caption}
+              direction="right"
+              distance={30}
               style={{ backgroundImage: `url(${p.img})` }}
+              aria-label={`${p.caption} behind the scenes photo`}
             >
               <div className="yt-photo-overlay" />
               <span className="yt-photo-tag">{p.tag}</span>
@@ -70,9 +72,9 @@ export default function YouTubeChannel() {
                 <PlayCircle size={20} />
               </div>
               <p className="yt-photo-caption">{p.caption}</p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   );
