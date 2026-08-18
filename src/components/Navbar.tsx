@@ -17,8 +17,8 @@ export default function Navbar() {
           <Image
             src={logo}
             alt="BJOT Logo"
-            width={210}
-            height={56}
+            width={250}
+            height={150}
             priority
             className="logo-image"
           />
