@@ -4,9 +4,8 @@ import logo from "../../../public/bjot-logo.png";
 const LINKS = [
   "Home",
   "About Us",
-  "Results",
-  "FAQ",
-  "Contact Us",
+  "Testimonials",
+  "Support",
 ];
 
 export default function Navbar() {

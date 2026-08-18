@@ -583,7 +583,7 @@ section {
 }
 .video-thumb {
   position: relative;
-  height: 220px;
+  height: 220px !important;
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -1009,7 +1009,7 @@ section {
     rgba(6, 37, 26, 0.8) 100%
   ), url("/group-bjot.png") center/cover no-repeat !important;
   color: #fff;
-  height: 500px;
+  height: 450px;
   padding: 100px 0 90px;
 }
 .about-hero-inner {
@@ -1315,6 +1315,276 @@ img.svg-inline {
   }
   .standard-words .divider {
     display: none;
+  }
+}
+
+/* ---------- FAQ: ACCORDION ---------- */
+.faq-section {
+  background: var(--paper);
+}
+.faq-wrap {
+  max-width: 800px;
+}
+.faq-category {
+  margin-bottom: 44px;
+}
+.faq-category:last-child {
+  margin-bottom: 0;
+}
+.faq-category-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold-600);
+  margin-bottom: 16px;
+}
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.faq-item {
+  background: #fff;
+  border: 1px solid rgba(19, 32, 24, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+.faq-item.is-open {
+  border-color: rgba(242, 169, 30, 0.4);
+}
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 18px 20px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--green-950);
+  font-family: inherit;
+}
+.faq-chevron {
+  flex: 0 0 auto;
+  color: var(--gold-600);
+  transition: transform 0.2s ease;
+}
+.faq-item.is-open .faq-chevron {
+  transform: rotate(180deg);
+}
+.faq-answer {
+  padding: 0 20px 20px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+ 
+/* ---------- FAQ: CONTACT ---------- */
+.faq-contact {
+  background: var(--cream);
+}
+.faq-contact-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.faq-contact .eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--gold-600);
+  text-transform: uppercase;
+}
+.faq-contact h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--green-950);
+  margin-top: 8px;
+  line-height: 1.25;
+}
+.faq-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.faq-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.faq-contact-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(19, 32, 24, 0.08);
+  color: var(--gold-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.faq-contact-label {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.faq-contact-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-950);
+}
+ 
+@media (max-width: 700px) {
+  .faq-contact-inner {
+    grid-template-columns: 1fr;
+  }
+  .faq-question {
+    font-size: 14px;
+    padding: 16px;
+  }
+}
+
+/* ---------- TESTIMONIALS PAGE: VIDEO PLACEHOLDER ---------- */
+.video-thumb-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.45);
+}
+.video-thumb-placeholder span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+ 
+/* ---------- TESTIMONIALS PAGE: PHOTO TESTIMONIALS ---------- */
+.photo-test-section {
+  background: var(--paper);
+}
+.photo-test-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.photo-test-card {
+  background: #fff;
+  border: 1px solid rgba(19, 32, 24, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.photo-test-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+.photo-test-photo {
+  position: relative;
+  height: 200px;
+  background: var(--cream);
+}
+.photo-test-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-test-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ink-soft);
+  opacity: 0.5;
+}
+.photo-test-photo-placeholder span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.photo-test-score {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--green-950);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.photo-test-body {
+  padding: 20px;
+}
+.photo-test-body p {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin: 0 0 14px;
+}
+.photo-test-who {
+  display: flex;
+  flex-direction: column;
+}
+.photo-test-who strong {
+  font-size: 14px;
+  color: var(--green-950);
+}
+.photo-test-who span {
+  font-size: 12px;
+  color: var(--gold-600);
+  font-weight: 600;
+  margin-top: 2px;
+}
+ 
+/* ---------- TESTIMONIALS PAGE: CLOSING CTA ---------- */
+.testimonials-cta-section {
+  background: var(--paper);
+  padding-bottom: 90px;
+}
+.cta-standalone {
+  border-radius: 16px;
+  padding: 56px;
+  text-align: center;
+  align-items: center;
+}
+.cta-standalone p {
+  max-width: 52ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cta-standalone .ctas {
+  justify-content: center;
+}
+ 
+@media (max-width: 900px) {
+  .photo-test-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+ 
+@media (max-width: 560px) {
+  .photo-test-grid {
+    grid-template-columns: 1fr;
+  }
+  .cta-standalone {
+    padding: 36px 24px;
   }
 }
 

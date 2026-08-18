@@ -1,8 +1,3 @@
-// app/about/page.tsx
-// Assumes your shared <Header /> and <Footer /> components are rendered
-// in the root layout (as they likely are for the homepage) — import and
-// wrap with them here if not.
-
 import AboutHero from "@/components/about/AboutHero";
 import AboutIntro from "@/components/about/AboutIntro";
 import TeamGrid from "@/components/about/TeamGrid";

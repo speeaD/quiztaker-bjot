@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -20,18 +21,18 @@ export default function Footer() {
           <div>
             <h4>Quick Links</h4>
             <ul>
-              <li>Home</li>
-              <li>About Us</li>
-              <li>Results</li>
+              <li><Link href="/">Home</Link></li>
+              <li><Link href="/about-us">About Us</Link></li>
+              <li><Link href="/testimonials">Testimonials</Link></li>
             </ul>
           </div>
           <div>
             <h4>Support</h4>
             <ul>
-              <li>Contact Us</li>
-              <li>Privacy Policy</li>
-              <li>Terms of Use</li>
-              <li>FAQs</li>
+              <li><Link href="/support#contact">Contact Us</Link></li>
+              <li><Link href="/privacy-policy">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-use">Terms of Use</Link></li>
+              <li><Link href="/support">FAQs</Link></li>
             </ul>
           </div>
           <div>
