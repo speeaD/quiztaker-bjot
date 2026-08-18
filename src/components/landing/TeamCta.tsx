@@ -11,7 +11,7 @@ export default function TeamCta() {
               tools that help Nigerian students prepare different and score
               higher.
             </p>
-            <a href="#" className="btn btn-primary">
+            <a href="/about-us" className="btn btn-primary">
               Meet The Team
             </a>
           </div>

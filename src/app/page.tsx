@@ -1,12 +1,12 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import StatsBar from "@/components/StatsBar";
-import Features from "@/components/Features";
-import Testimonials from "@/components/Testimonials";
-import HowItWorks from "@/components/HowItWorks";
-import TeamCta from "@/components/TeamCta";
-import Footer from "@/components/Footer";
-import YouTubeChannel from "@/components/Youtubechannel";
+import Navbar from "@/components/landing/Navbar";
+import Hero from "@/components/landing/Hero";
+import StatsBar from "@/components/landing/StatsBar";
+import Features from "@/components/landing/Features";
+import Testimonials from "@/components/landing/Testimonials";
+import HowItWorks from "@/components/landing/HowItWorks";
+import TeamCta from "@/components/landing/TeamCta";
+import Footer from "@/components/landing/Footer";
+import YouTubeChannel from "@/components/landing/Youtubechannel";
 
 export default function Home() {
   return (

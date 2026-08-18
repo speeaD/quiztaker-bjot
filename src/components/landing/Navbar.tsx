@@ -1,5 +1,5 @@
 import Image from "next/image";
-import logo from "../../public/bjot-logo.png"
+import logo from "../../../public/bjot-logo.png";
 
 const LINKS = [
   "Home",
@@ -25,7 +25,7 @@ export default function Navbar() {
         </div>
         <nav className="links">
           {LINKS.map((link) => (
-            <a key={link} href="#">
+            <a key={link} href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}>
               {link}
             </a>
           ))}
