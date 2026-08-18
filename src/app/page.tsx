@@ -6,6 +6,7 @@ import Testimonials from "@/components/Testimonials";
 import HowItWorks from "@/components/HowItWorks";
 import TeamCta from "@/components/TeamCta";
 import Footer from "@/components/Footer";
+import YouTubeChannel from "@/components/Youtubechannel";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <Features />
       <Testimonials />
       <HowItWorks />
+      <YouTubeChannel />
       <TeamCta />
       <Footer />
     </main>

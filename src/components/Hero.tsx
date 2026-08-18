@@ -10,7 +10,8 @@ export default function Hero() {
     <section className="hero" style={{ padding: 0 }}>
       <div className="hero-inner">
         <div className="hero-content">
-          <div className="eyebrow-line" />
+          {/* <div className="eyebrow-line" /> */}
+          <p className="eyebrow">DISCIPLINE || CONSISTENCY || EXCELLENCE</p>
           <h1>
             PREPARE DIFFERENT.
             <br />
