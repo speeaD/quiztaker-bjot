@@ -1,0 +1,44 @@
+import Image from "next/image";
+import logo from "../../public/bjot-logo.png"
+
+const LINKS = [
+  "Home",
+  "About Us",
+  "Results",
+  "FAQ",
+  "Contact Us",
+];
+
+export default function Navbar() {
+  return (
+    <header className="nav">
+      <div className="nav-inner">
+        <div className="logo">
+          <Image
+            src={logo}
+            alt="BJOT Logo"
+            width={210}
+            height={56}
+            priority
+            className="logo-image"
+          />
+        </div>
+        <nav className="links">
+          {LINKS.map((link) => (
+            <a key={link} href="#">
+              {link}
+            </a>
+          ))}
+        </nav>
+        <div className="nav-actions">
+          <a href="#" className="btn-login">
+            Login
+          </a>
+          <a href="#" className="btn-join">
+            Join Free
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
