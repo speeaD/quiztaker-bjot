@@ -1,4 +1,8 @@
+"use client";
+
 import { User } from "lucide-react";
+import { motion } from "framer-motion";
+import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
 
 // `focal` is a CSS object-position value tuned to each photo's own framing —
 // tight headshots, close-up crops, and wider environmental shots all need
@@ -46,7 +50,7 @@ export default function TeamGrid() {
   return (
     <section className="team-grid-section">
       <div className="wrap">
-        <div className="section-head">
+        <Reveal className="section-head">
           <div className="eyebrow">Our Team</div>
           <h2>The People Behind BJOT</h2>
           <p>
@@ -54,12 +58,16 @@ export default function TeamGrid() {
             tools that help Nigerian students prepare different and score
             higher.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="team-grid">
+        <StaggerGroup className="team-grid" stagger={0.1}>
           {TEAM.map((m, i) => (
-            <div className="team-card" key={i}>
-              <div className="team-card-photo">
+            <StaggerItem className="team-card" key={i} direction="up" distance={24}>
+              <motion.div
+                className="team-card-photo"
+                whileHover={{ scale: 1.04 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              >
                 {m.img ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -73,15 +81,15 @@ export default function TeamGrid() {
                     <span>Add photo</span>
                   </div>
                 )}
-              </div>
+              </motion.div>
               <div className="team-card-body">
                 <h3>{m.name}</h3>
                 <span className="team-card-role">{m.role}</span>
                 <p>{m.bio}</p>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   );

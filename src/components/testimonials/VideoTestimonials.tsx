@@ -1,4 +1,8 @@
+"use client";
+
 import { Video } from "lucide-react";
+import { motion } from "framer-motion";
+import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
 
 // The first three are the live testimonials already used on the homepage.
 // The rest are placeholders — swap `img` and `videoLength` for the real
@@ -61,26 +65,28 @@ export default function VideoTestimonials() {
   return (
     <section className="testimonials">
       <div className="wrap">
-        <div className="section-head">
+        <Reveal className="section-head">
           <div className="eyebrow">Watch</div>
           <h2>Video Testimonials</h2>
           <p>Students sharing their BJOT experience in their own words.</p>
-        </div>
-        <div className="test-grid">
+        </Reveal>
+        <StaggerGroup className="test-grid" stagger={0.1}>
           {VIDEO_TESTIMONIALS.map((t, i) => (
-            <div className="test-card" key={i}>
+            <StaggerItem className="test-card" key={i} direction="up" distance={24}>
               {t.img ? (
-                <div
+                <motion.div
                   className="video-thumb"
                   style={{ backgroundImage: `url(${t.img})` }}
                   aria-label={`${t.name} testimonial video preview`}
+                  whileHover={{ scale: 1.03 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <div className="video-overlay" />
                   <div className="score">{t.score}</div>
                   <div className="play-badge">▶</div>
                   <div className="video-length">{t.videoLength}</div>
                   <div className="verified">✓ Verified</div>
-                </div>
+                </motion.div>
               ) : (
                 <div className="video-thumb video-thumb-placeholder">
                   <Video size={26} />
@@ -93,9 +99,9 @@ export default function VideoTestimonials() {
                   {t.name} <span>{t.role}</span>
                 </div>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   );

@@ -1,9 +1,12 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ElementType, ReactNode } from "react";
 
 type Direction = "up" | "down" | "left" | "right" | "none";
+
+/** Any tag framer-motion has a motion.* component for (motion.div, motion.ul, motion.li, ...) */
+type MotionTag = keyof typeof motion;
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -32,6 +35,7 @@ interface RevealProps {
   amount?: number;
   className?: string;
   style?: CSSProperties;
+  as?: MotionTag;
 }
 
 /**
@@ -48,8 +52,10 @@ export function Reveal({
   amount = 0.2,
   className,
   style,
+  as = "div",
 }: RevealProps) {
   const prefersReducedMotion = useReducedMotion();
+  const MotionTag = motion[as] as typeof motion.div;
 
   const variants: Variants = {
     hidden: { opacity: 0, ...offsetFor(direction, distance) },
@@ -62,15 +68,16 @@ export function Reveal({
   };
 
   if (prefersReducedMotion) {
+    const Tag = as as ElementType;
     return (
-      <div className={className} style={style}>
+      <Tag className={className} style={style}>
         {children}
-      </div>
+      </Tag>
     );
   }
 
   return (
-    <motion.div
+    <MotionTag
       className={className}
       style={style}
       initial="hidden"
@@ -79,7 +86,7 @@ export function Reveal({
       variants={variants}
     >
       {children}
-    </motion.div>
+    </MotionTag>
   );
 }
 
@@ -91,6 +98,7 @@ interface StaggerGroupProps {
   delayChildren?: number;
   once?: boolean;
   amount?: number;
+  as?: MotionTag;
 }
 
 /**
@@ -105,8 +113,10 @@ export function StaggerGroup({
   delayChildren = 0,
   once = true,
   amount = 0.15,
+  as = "div",
 }: StaggerGroupProps) {
   const prefersReducedMotion = useReducedMotion();
+  const MotionTag = motion[as] as typeof motion.div;
 
   const container: Variants = {
     hidden: {},
@@ -116,15 +126,16 @@ export function StaggerGroup({
   };
 
   if (prefersReducedMotion) {
+    const Tag = as as ElementType;
     return (
-      <div className={className} style={style}>
+      <Tag className={className} style={style}>
         {children}
-      </div>
+      </Tag>
     );
   }
 
   return (
-    <motion.div
+    <MotionTag
       className={className}
       style={style}
       initial="hidden"
@@ -133,7 +144,7 @@ export function StaggerGroup({
       variants={container}
     >
       {children}
-    </motion.div>
+    </MotionTag>
   );
 }
 
@@ -144,6 +155,7 @@ interface StaggerItemProps {
   duration?: number;
   className?: string;
   style?: CSSProperties;
+  as?: MotionTag;
   "aria-label"?: string;
 }
 
@@ -155,8 +167,11 @@ export function StaggerItem({
   duration = 0.5,
   className,
   style,
+  as = "div",
   ...rest
 }: StaggerItemProps) {
+  const MotionTag = motion[as] as typeof motion.div;
+
   const variants: Variants = {
     hidden: { opacity: 0, ...offsetFor(direction, distance) },
     visible: {
@@ -168,8 +183,8 @@ export function StaggerItem({
   };
 
   return (
-    <motion.div className={className} style={style} variants={variants} {...rest}>
+    <MotionTag className={className} style={style} variants={variants} {...rest}>
       {children}
-    </motion.div>
+    </MotionTag>
   );
 }

@@ -1,8 +1,10 @@
+import { Reveal } from "@/components/motion/Reveal";
+
 export default function TestimonialsCTA() {
   return (
     <section className="testimonials-cta-section">
       <div className="wrap">
-        <div className="cta-block cta-standalone">
+        <Reveal className="cta-block cta-standalone" distance={22}>
           <h2>Your Result Could Be Next</h2>
           <p>
             Join thousands of students already preparing smarter with BJOT.
@@ -16,7 +18,7 @@ export default function TestimonialsCTA() {
               Explore Premium
             </a>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

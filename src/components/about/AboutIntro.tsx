@@ -1,3 +1,5 @@
+import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+
 const ECOSYSTEM = [
   "Structured classes",
   "Expert tutors",
@@ -12,7 +14,7 @@ export default function AboutIntro() {
     <>
       <section className="about-intro">
         <div className="wrap about-intro-grid">
-          <div className="about-intro-copy">
+          <Reveal className="about-intro-copy" direction="left" distance={30}>
             <div className="eyebrow">What We Do</div>
             <h2>A Complete Preparatory Ecosystem</h2>
             <p>
@@ -28,18 +30,24 @@ export default function AboutIntro() {
               students need to build a solid academic foundation and make
               measurable progress throughout their preparation.
             </p>
-          </div>
+          </Reveal>
 
-          <ul className="about-ecosystem-list">
+          <StaggerGroup
+            className="about-ecosystem-list"
+            as="ul"
+            stagger={0.08}
+          >
             {ECOSYSTEM.map((item) => (
-              <li key={item}>{item}</li>
+              <StaggerItem className="about-ecosystem-item" key={item} direction="right" distance={20}>
+                {item}
+              </StaggerItem>
             ))}
-          </ul>
+          </StaggerGroup>
         </div>
       </section>
 
       <section className="standard-banner">
-        <div className="wrap standard-inner">
+        <Reveal className="wrap standard-inner" amount={0.4}>
           <div className="eyebrow">Our Standard</div>
           <div className="standard-words">
             <span>Discipline</span>
@@ -49,7 +57,7 @@ export default function AboutIntro() {
             <span>Excellence</span>
           </div>
           <p>BJOT — helping students prepare better, one day at a time.</p>
-        </div>
+        </Reveal>
       </section>
     </>
   );
