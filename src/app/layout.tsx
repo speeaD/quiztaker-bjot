@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   description: "BJOT Student's application in preparation for UTME, POST-UTME and WAEC examinations. Take mock exams and see reviews of performances and how to get better to ace your upccomin exams.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0f3d2c",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
