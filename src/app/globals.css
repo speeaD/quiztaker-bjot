@@ -1698,6 +1698,8 @@ footer {
     padding: 8px 12px;
   }
   .nav-menu-toggle {
+    /* position: relative;
+    z-index: 11; */
     display: inline-flex;
     align-items: center;
     justify-content: center;
