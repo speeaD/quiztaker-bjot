@@ -94,7 +94,7 @@ export default function Navbar() {
             {link}
           </a>
         ))}
-        <a href="#" className="mobile-nav-login" onClick={() => setMenuOpen(false)}>
+        <a href="/login" className="mobile-nav-login" onClick={() => setMenuOpen(false)}>
           Login
         </a>
         <a href="#" className="mobile-nav-join" onClick={() => setMenuOpen(false)}>
