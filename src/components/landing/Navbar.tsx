@@ -57,7 +57,7 @@ export default function Navbar() {
           ))}
         </nav>
         <div className="nav-actions">
-          <a href="#" className="btn-login">
+          <a href="/login" className="btn-login">
             Login
           </a>
           <a href="#" className="btn-join">
