@@ -357,23 +357,23 @@ const QuizTakerDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[hsl(var(--background))]">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 py-4 sm:py-8 px-4 sm:px-6">
         {/* Header */}
         <DashboardHeader studentName={email} />
 
         {/* Auto-Submit Notification */}
         {submitNotification && (
-          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg">
+          <div className="bg-[hsl(var(--stat-yellow-bg))] border-l-4 border-[hsl(var(--stat-yellow))]/50 p-4 rounded-lg">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-[hsl(var(--stat-yellow))]/60 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-semibold text-orange-800 mb-1">Quiz Auto-Submitted</h3>
-                <p className="text-sm text-orange-700">{submitNotification}</p>
+                <h3 className="font-semibold text-[hsl(var(--stat-yellow))]/80 mb-1">Quiz Auto-Submitted</h3>
+                <p className="text-sm text-[hsl(var(--stat-yellow))]/70">{submitNotification}</p>
               </div>
               <button
                 onClick={() => setSubmitNotification(null)}
-                className="text-orange-600 hover:text-orange-800"
+                className="text-[hsl(var(--stat-yellow))]/60 hover:text-[hsl(var(--stat-yellow))]/80"
               >
                 <XCircle className="w-5 h-5" />
               </button>
@@ -384,36 +384,36 @@ const QuizTakerDashboard = () => {
         {/* Statistics Cards */}
         {totalExams > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100">
+            <div className="bg-[hsl(var(--card))] rounded-lg p-3 sm:p-4 shadow-[var(--shadow-card)] border border-[hsl(var(--border))]">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-blue-50 rounded-lg">
-                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <div className="p-1.5 sm:p-2 bg-[hsl(var(--stat-yellow-bg))] rounded-lg">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--stat-yellow))]" />
                 </div>
                 <div>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{totalExams}</p>
-                  <p className="text-xs sm:text-sm text-gray-600">Total Exams</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))]">{totalExams}</p>
+                  <p className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Total Exams</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100">
+            <div className="bg-[hsl(var(--card))] rounded-lg p-3 sm:p-4 shadow-[var(--shadow-card)] border border-[hsl(var(--border))]">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-green-50 rounded-lg">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                <div className="p-1.5 sm:p-2 bg-[hsl(var(--stat-green-bg))] rounded-lg">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--stat-green))]" />
                 </div>
                 <div>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{averageScore}%</p>
-                  <p className="text-xs sm:text-sm text-gray-600">Average Score</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))]">{averageScore}%</p>
+                  <p className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Average Score</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100">
+            <div className="bg-[hsl(var(--card))] rounded-lg p-3 sm:p-4 shadow-[var(--shadow-card)] border border-[hsl(var(--border))]">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-purple-50 rounded-lg">
-                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                <div className="p-1.5 sm:p-2 bg-[hsl(var(--stat-purple-bg))] rounded-lg">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--stat-purple))]" />
                 </div>
                 <div>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{highestScore}%</p>
-                  <p className="text-xs sm:text-sm text-gray-600">Highest Score</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[hsl(var(--foreground))]">{highestScore}%</p>
+                  <p className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Highest Score</p>
                 </div>
               </div>
             </div>
@@ -421,10 +421,10 @@ const QuizTakerDashboard = () => {
         )}
 
         {/* Assigned Quizzes Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+        <div className="bg-[hsl(var(--card))] rounded-lg shadow-[var(--shadow-card)] border border-[hsl(var(--border))] p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-            <h2 className="font-semibold text-gray-900 text-base sm:text-lg">Assigned Exams</h2>
+            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--stat-blue))]" />
+            <h2 className="font-semibold text-[hsl(var(--foreground))] text-base sm:text-lg">Assigned Exams</h2>
           </div>
 
           {assignedQuizzes.length > 0 && (
@@ -435,14 +435,14 @@ const QuizTakerDashboard = () => {
                   onClick={() => handleAssignedFilterChange(tab.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
                     assignedFilter === tab.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-[hsl(var(--stat-blue))]/90 text-[hsl(var(--primary-foreground))]'
+                      : 'bg-[hsl(var(--background))]/50 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--background))]'
                   }`}
                 >
                   {tab.label}
                   <span
                     className={`text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full ${
-                      assignedFilter === tab.id ? 'bg-white/20' : 'bg-white text-gray-500'
+                      assignedFilter === tab.id ? 'bg-[hsl(var(--primary-foreground))]/20' : 'bg-[hsl(var(--card))] text-[hsl(var(--muted-foreground))]'
                     }`}
                   >
                     {tab.count}
@@ -696,18 +696,18 @@ const QuizTakerDashboard = () => {
           </div>
 
           {/* Recent History */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+          <div className="bg-[hsl(var(--card))] rounded-lg shadow-[var(--shadow-card)] border border-[hsl(var(--border))] p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                <h2 className="font-semibold text-gray-900 text-base sm:text-lg">Recent History</h2>
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--muted-foreground))]" />
+                <h2 className="font-semibold text-[hsl(var(--foreground))] text-base sm:text-lg">Recent History</h2>
               </div>
               {totalExams > 0 && (
                 <div className="flex items-center gap-3">
                   <span className="text-xs sm:text-sm text-gray-500">{totalExams} exam{totalExams !== 1 ? 's' : ''}</span>
                   <button 
                     onClick={fetchSubmissions}
-                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-xs sm:text-sm text-[hsl(var(--stat-blue))]/60 hover:text-[hsl(var(--stat-blue))]/80 font-medium"
                   >
                     Refresh
                   </button>
@@ -717,19 +717,19 @@ const QuizTakerDashboard = () => {
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-8 sm:py-12">
-                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-spin mb-2 sm:mb-3" />
-                <p className="text-gray-500 text-xs sm:text-sm">Loading history...</p>
+                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-[hsl(var(--stat-blue))] animate-spin mb-2 sm:mb-3" />
+                <p className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm">Loading history...</p>
               </div>
             ) : error ? (
               <div className="text-center py-8 sm:py-12">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
+                  <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-[hsl(var(--destructive))]" />
                 </div>
-                <p className="text-gray-700 font-medium text-xs sm:text-sm mb-2">{error}</p>
-                <p className="text-gray-400 text-xs mb-3 sm:mb-4">Make sure you&apos;re logged in to view your history</p>
+                <p className="text-[hsl(var(--foreground))] font-medium text-xs sm:text-sm mb-2">{error}</p>
+                <p className="text-[hsl(var(--muted-foreground))] text-xs mb-3 sm:mb-4">Make sure you&apos;re logged in to view your history</p>
                 <button
                   onClick={fetchSubmissions}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[hsl(var(--stat-blue))] text-[hsl(var(--primary-foreground))] text-xs sm:text-sm rounded-lg hover:bg-[hsl(var(--stat-blue))]/90 transition-colors"
                 >
                   Try Again
                 </button>
@@ -737,17 +737,17 @@ const QuizTakerDashboard = () => {
             ) : submissions.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                  <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-[hsl(var(--muted-foreground))]/50" />
                 </div>
-                <p className="text-gray-500 text-xs sm:text-sm mb-1 sm:mb-2">No exam history yet</p>
-                <p className="text-gray-400 text-xs mb-3 sm:mb-4">Take your first exam to see results here</p>
+                <p className="text-[hsl(var(--muted-foreground))] text-xs sm:text-sm mb-1 sm:mb-2">No exam history yet</p>
+                <p className="text-[hsl(var(--muted-foreground))] text-xs mb-3 sm:mb-4">Take your first exam to see results here</p>
               </div>
             ) : (
               <div className="space-y-2 sm:space-y-3">
                 {submissions.slice(0, 10).map((submission) => (
-                  <div 
+                  <div
                     key={submission.id}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 sm:px-6 sm:py-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors gap-3 sm:gap-0"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-[hsl(var(--background))] p-4 sm:px-6 sm:py-4 rounded-lg border border-[hsl(var(--border))] hover:border-[hsl(var(--border))]/20 transition-colors gap-3 sm:gap-0"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-1 flex-wrap">
@@ -755,17 +755,17 @@ const QuizTakerDashboard = () => {
                           {submission.quizTitle}
                         </h3>
                         {submission.examType === 'multi-subject' && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded whitespace-nowrap">
+                          <span className="px-2 py-1 bg-[hsl(var(--stat-blue-bg))] text-[hsl(var(--stat-blue))] text-xs font-medium rounded whitespace-nowrap">
                             Multi-Subject
                           </span>
                         )}
                         {submission.examType === 'single-subject' && (
-                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded whitespace-nowrap">
+                          <span className="px-2 py-1 bg-[hsl(var(--stat-yellow-bg))] text-[hsl(var(--stat-yellow))] text-xs font-medium rounded whitespace-nowrap">
                             Single Subject
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {formatDate(submission.completedAt)}
@@ -782,7 +782,7 @@ const QuizTakerDashboard = () => {
                       <div className={`text-base sm:text-lg font-bold ${getPercentageColor(submission.percentage)}`}>
                         {submission.percentage}%
                       </div>
-                      <div className="text-xs sm:text-sm text-gray-500">
+                      <div className="text-xs sm:text-sm text-[hsl(var(--muted-foreground))]">
                         {submission.score}/{submission.totalPoints}
                       </div>
                     </div>
@@ -790,7 +790,7 @@ const QuizTakerDashboard = () => {
                 ))}
                 
                 {submissions.length > 10 && (
-                  <button className="w-full py-2 sm:py-3 text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <button className="w-full py-2 sm:py-3 text-xs sm:text-sm text-[hsl(var(--stat-blue))]/60 hover:text-[hsl(var(--stat-blue))]/80 font-medium">
                     View all {submissions.length} exams →
                   </button>
                 )}

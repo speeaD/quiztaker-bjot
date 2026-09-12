@@ -37,7 +37,6 @@ export default function Login() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                   
                     email: formData.email,
                 }),
             });
@@ -61,7 +60,7 @@ export default function Login() {
                     },
                     body: JSON.stringify({
                         token: data.token,
-                    
+
                     }),
                 });
                 localStorage.setItem('quizTaker', data.quizTaker.id);
@@ -103,32 +102,32 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-paper flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">
+                    <h1 className="text-3xl font-bold text-foreground mb-2">
                         BJOT Portal
                     </h1>
-                    <p className="text-slate-600">
+                    <p className="text-muted-foreground">
                         Enter your email address to sign in.
                     </p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="bg-white rounded-2xl shadow-card p-6">
                     {errors.general && (
-                        <div className="mb-5 p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-600">{errors.general}</p>
+                        <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                            <p className="text-sm text-destructive">{errors.general}</p>
                         </div>
                     )}
 
                     <div className="space-y-5">
-                       
+
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                                 Email
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
                                 <input
                                     id="email"
                                     name="email"
@@ -136,24 +135,23 @@ export default function Login() {
                                     onChange={handleChange}
                                     onKeyPress={handleKeyPress}
                                     disabled={isLoading}
-                                    className={`w-full pl-11 pr-11 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                                        errors.accessCode
-                                            ? 'border-red-300 focus:ring-red-200'
-                                            : 'border-slate-300 focus:ring-slate-200'
-                                    }`}
+                                    className={`w-full pl-10 pr-4 py-3 bg-white text-foreground placeholder:text-muted-foreground border border-input/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${errors.email
+                                            ? 'border-destructive/50 focus:ring-destructive/20'
+                                            : 'border-border'
+                                        }`}
                                     placeholder="email address"
                                 />
-                                
+
                             </div>
-                            {errors.accessCode && (
-                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                            {errors.email && (
+                                <p className="mt-1 text-sm text-destructive">{errors.email}</p>
                             )}
                         </div>
 
                         <button
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="w-full bg-slate-900 text-white py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                            className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                             {isLoading ? (
                                 <>

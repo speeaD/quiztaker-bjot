@@ -1,5 +1,5 @@
 @import "tailwindcss";
-:root {
+@layer base {:root {
     --blue-bg: #52a2c2;
     --background: rgb(246 247 249);
     --foreground: 222 47% 11%;
@@ -67,7 +67,43 @@
     --line: #ffff;
   }
 
-  /* .dark {
+  @theme inline {
+  --color-background: rgb(246 247 249);
+  --color-foreground: hsl(222 47% 11%);
+
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222 47% 11%);
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(222 47% 11%);
+
+  --color-primary: hsl(217 91% 60%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(210 40% 96%);
+  --color-secondary-foreground: hsl(222 47% 11%);
+
+  --color-muted: hsl(220 14% 96%);
+  --color-muted-foreground: hsl(220 9% 46%);
+
+  --color-accent: hsl(210 40% 96%);
+  --color-accent-foreground: hsl(222 47% 11%);
+
+  --color-destructive: hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-border: hsl(220 13% 91%);
+  --color-input: hsl(220 13% 91%);
+  --color-ring: hsl(217 91% 60%);
+
+  /* Custom tokens used in login page */
+  --color-paper: #fbfaf6;
+
+  --shadow-card: 0 2px 8px -2px hsl(220 20% 80% / 0.5);
+  --shadow-card-hover: 0 8px 24px -4px hsl(220 20% 70% / 0.3);
+}
+
+  .dark {
     --background: 222 47% 8%;
     --foreground: 210 40% 98%;
 
@@ -95,9 +131,9 @@
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 212 27% 84%;
-  } */
+  }
 
-/* @theme inline {
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-blue-bg: var(--blue-bg);
@@ -109,7 +145,7 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-} */
+} 
 
 * {
   box-sizing: border-box;
@@ -126,7 +162,6 @@ body {
 
 a {
   text-decoration: none;
-  color: inherit;
 }
 
 /* Respect users who've asked for reduced motion at the OS level */
@@ -1883,4 +1918,4 @@ footer {
     justify-content: center;
     padding-top: 18px;
   }
-}
+}}
