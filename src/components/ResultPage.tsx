@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, CheckCircle, XCircle, Clock, Award, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import PortalLogo from '@/components/PortalLogo';
 
 const API_BASE_URL = '/api/quiztaker';
 
@@ -111,7 +112,7 @@ const ResultsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="portal-utility min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading results...</p>
@@ -122,7 +123,7 @@ const ResultsPage = () => {
 
   if (error || !submission) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="portal-utility min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-400" />
@@ -146,13 +147,13 @@ const ResultsPage = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="portal-utility min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm sm:text-lg">B</span>
+            <div className="h-8 w-[76px] sm:h-10 sm:w-24 flex items-center justify-center">
+              <PortalLogo size={96} priority />
             </div>
             <span className="font-semibold text-sm sm:text-base">Quiz Results</span>
           </div>

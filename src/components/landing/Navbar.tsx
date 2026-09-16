@@ -60,7 +60,7 @@ export default function Navbar() {
           <a href="/login" className="btn-login">
             Login
           </a>
-          <a href="#" className="btn-join">
+          <a href="/register" className="btn-join">
             Join Free
           </a>
         </div>
@@ -97,7 +97,7 @@ export default function Navbar() {
         <a href="/login" className="mobile-nav-login" onClick={() => setMenuOpen(false)}>
           Login
         </a>
-        <a href="#" className="mobile-nav-join" onClick={() => setMenuOpen(false)}>
+        <a href="/register" className="mobile-nav-join" onClick={() => setMenuOpen(false)}>
           Join Free
         </a>
       </nav>

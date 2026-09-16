@@ -1,23 +1,23 @@
 @import "tailwindcss";
 @layer base {:root {
     --blue-bg: #52a2c2;
-    --background: rgb(246 247 249);
-    --foreground: 222 47% 11%;
+    --background: 247 249 251; /* #F7F9FB - Surface */
+    --foreground: 25 28 30; /* #191C1E - On Surface */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 255 255 255; /* #FFFFFF - Surface Container Lowest */
+    --card-foreground: 25 28 30; /* #191C1E - On Surface */
 
-    --popover: 0 0% 100%;
+    --popover: 255 255 255;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 13 59 46; /* #0D3B2E - Forest Emerald */
+    --primary-foreground: 255 255 255;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 144 77 0; /* #904D00 - Athletic Gold */
+    --secondary-foreground: 255 255 255;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 65 72 69; /* #414845 - On Surface Variant */
 
     --accent: 210 40% 96%;
     --accent-foreground: 222 47% 11%;
@@ -30,6 +30,38 @@
     --ring: 217 91% 60%;
 
     --radius: 0.75rem;
+    --radius-sm: 0.125rem; /* 2px */
+    --radius-md: 0.375rem; /* 6px */
+    --radius-lg: 0.5rem; /* 8px */
+    --radius-xl: 0.75rem; /* 12px */
+
+    /* Design System Color Tokens */
+    --surface: 247 249 251; /* #F7F9FB */
+    --surface-dim: 216 218 220; /* #D8DADC */
+    --surface-bright: 247 249 251; /* #F7F9FB */
+    --surface-container-lowest: 255 255 255; /* #FFFFFF */
+    --surface-container-low: 242 244 246; /* #F2F4F6 */
+    --surface-container: 236 238 240; /* #ECEEF0 */
+    --surface-container-high: 230 232 234; /* #E6E8EA */
+    --surface-container-highest: 224 227 229; /* #E0E3E5 */
+    --on-surface: 25 28 30; /* #191C1E */
+    --on-surface-variant: 65 72 69; /* #414845 */
+    --inverse-surface: 45 49 51; /* #2D3133 */
+    --inverse-on-surface: 239 241 243; /* #EFF1F3 */
+    --outline: 113 121 116; /* #717974 */
+    --outline-variant: 192 200 195; /* #C0C8C3 */
+    --surface-tint: 60 102 88; /* #3C6658 */
+
+    /* Spacing Scale */
+    --space-xs: 0.25rem; /* 4px */
+    --space-sm: 0.5rem; /* 8px */
+    --space-md: 1rem; /* 16px */
+    --space-lg: 1.5rem; /* 24px */
+    --space-xl: 2.5rem; /* 40px */
+    --gutter: 1.5rem; /* 24px */
+    --gutter-mobile: 1rem; /* 16px */
+    --margin: 2rem; /* 32px */
+    --margin-mobile: 1rem; /* 16px */
 
     /* Custom stat card colors */
     --stat-blue: 217 91% 60%;
@@ -54,6 +86,8 @@
     /* Shadows */
     --shadow-card: 0 2px 8px -2px hsl(220 20% 80% / 0.5);
     --shadow-card-hover: 0 8px 24px -4px hsl(220 20% 70% / 0.3);
+    --shadow-elevation: 0 4px 20px -2px hsl(13 59 46% / 0.06), 0 2px 6px -1px hsl(0 0% 0% / 0.03);
+    --shadow-primary-action: 0 8px 16px -4px hsl(38 92% 50% / 0.35);
     --green-950: #0b2b1f;
     --green-900: #0f3d2c;
     --green-800: #144a35;
@@ -137,7 +171,75 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-blue-bg: var(--blue-bg);
-  --font-sans: var(--font-sans);
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  --color-surface: hsl(var(--surface));
+  --color-surface-dim: hsl(var(--surface-dim));
+  --color-surface-bright: hsl(var(--surface-bright));
+  --color-surface-container-lowest: hsl(var(--surface-container-lowest));
+  --color-surface-container-low: hsl(var(--surface-container-low));
+  --color-surface-container: hsl(var(--surface-container));
+  --color-surface-container-high: hsl(var(--surface-container-high));
+  --color-surface-container-highest: hsl(var(--surface-container-highest));
+  --color-on-surface: hsl(var(--on-surface));
+  --color-on-surface-variant: hsl(var(--on-surface-variant));
+  --color-inverse-surface: hsl(var(--inverse-surface));
+  --color-inverse-on-surface: hsl(var(--inverse-on-surface));
+  --color-outline: hsl(var(--outline));
+  --color-outline-variant: hsl(var(--outline-variant));
+  --color-surface-tint: hsl(var(--surface-tint));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-stat-blue: hsl(var(--stat-blue));
+  --color-stat-blue-bg: hsl(var(--stat-blue-bg));
+  --color-stat-yellow: hsl(var(--stat-yellow));
+  --color-stat-yellow-bg: hsl(var(--stat-yellow-bg));
+  --color-stat-cyan: hsl(var(--stat-cyan));
+  --color-stat-cyan-bg: hsl(var(--stat-cyan-bg));
+  --color-stat-green: hsl(var(--stat-green));
+  --color-stat-green-bg: hsl(var(--stat-green-bg));
+  --color-stat-purple: hsl(var(--stat-purple));
+  --color-stat-purple-bg: hsl(var(--stat-purple-bg));
+
+  --color-status-pending: hsl(var(--status-pending));
+  --color-status-pending-bg: hsl(var(--status-pending-bg));
+  --color-status-completed: hsl(var(--status-completed));
+  --color-status-completed-bg: hsl(var(--status-completed-bg));
+  --color-status-progress: hsl(var(--status-progress));
+  --color-status-progress-bg: hsl(var(--status-progress-bg));
+
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-elevation: var(--shadow-elevation);
+  --shadow-primary-action: var(--shadow-primary-action);
+
+  --radius: var(--radius);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --space-xs: var(--space-xs);
+  --space-sm: var(--space-sm);
+  --space-md: var(--space-md);
+  --space-lg: var(--space-lg);
+  --space-xl: var(--space-xl);
+  --gutter: var(--gutter);
+  --gutter-mobile: var(--gutter-mobile);
+  --margin: var(--margin);
+  --margin-mobile: var(--margin-mobile);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -158,6 +260,7 @@ body {
   color: var(--ink);
   /* background: var(--paper); */
   -webkit-font-smoothing: antialiased;
+  background-color: hsl(var(--background));
 }
 
 a {
@@ -489,6 +592,218 @@ nav.links a:hover {
 /* ---------- SECTION SHARED ---------- */
 section {
   padding: 64px 0;
+}
+
+/* The marketing pages use generous section rhythm. The student dashboard is a
+   dense workspace, so its panels must opt out of that global vertical padding. */
+.dashboard-main > section {
+  padding-block: 0;
+}
+
+/* Student utility screens predate the dashboard redesign. Keep their existing
+   layouts while mapping their legacy utility colours into the portal system. */
+.portal-utility {
+  color: #17231e;
+}
+
+.portal-utility.bg-gray-50,
+.portal-utility .bg-gray-50 {
+  background-color: #f4f7f5 !important;
+}
+
+.portal-utility .bg-white {
+  border-color: #dce5df;
+  box-shadow: 0 3px 12px rgba(13, 59, 46, 0.05);
+}
+
+.portal-utility .border-gray-200,
+.portal-utility .border-gray-300,
+.portal-utility .divide-gray-200 {
+  border-color: #dce5df !important;
+}
+
+.portal-utility .text-gray-900,
+.portal-utility .text-gray-800,
+.portal-utility .text-gray-700 {
+  color: #17231e !important;
+}
+
+.portal-utility .text-gray-600,
+.portal-utility .text-gray-500 {
+  color: #64726a !important;
+}
+
+.portal-utility .bg-blue-600,
+.portal-utility .bg-blue-700,
+.portal-utility .bg-blue-500,
+.portal-utility .bg-gradient-to-r.from-blue-500,
+.portal-utility .bg-gradient-to-br.from-blue-500 {
+  background-color: #0d3b2e !important;
+  background-image: none !important;
+}
+
+.portal-utility .hover\:bg-blue-700:hover,
+.portal-utility .hover\:bg-blue-800:hover,
+.portal-utility .hover\:bg-blue-600:hover {
+  background-color: #14513c !important;
+}
+
+.portal-utility .text-blue-600,
+.portal-utility .text-blue-700,
+.portal-utility .text-blue-800,
+.portal-utility .text-blue-900 {
+  color: #15513e !important;
+}
+
+.portal-utility .bg-blue-50,
+.portal-utility .bg-blue-100 {
+  background-color: #eaf3ed !important;
+}
+
+.portal-utility .border-blue-200,
+.portal-utility .border-blue-300,
+.portal-utility .border-blue-500 {
+  border-color: #b7cfbf !important;
+}
+
+.portal-utility .bg-gray-100,
+.portal-utility .bg-gray-200 {
+  background-color: #edf3ef !important;
+}
+
+.portal-utility .hover\:bg-gray-50:hover,
+.portal-utility .hover\:bg-gray-100:hover,
+.portal-utility .hover\:bg-gray-200:hover {
+  background-color: #e3eee6 !important;
+}
+
+/* --------------------------------------------------------------------------
+   STUDENT PORTAL UI SYSTEM
+   Reusable semantic classes for authenticated product screens. Prefer these
+   over ad-hoc colour/shadow combinations when building new portal widgets.
+   -------------------------------------------------------------------------- */
+:root {
+  --portal-canvas: #f4f7f5;
+  --portal-surface: #ffffff;
+  --portal-surface-muted: #edf3ef;
+  --portal-surface-strong: #dcebe1;
+  --portal-ink: #17231e;
+  --portal-ink-muted: #64726a;
+  --portal-border: #dce5df;
+  --portal-primary: #0d3b2e;
+  --portal-primary-hover: #14513c;
+  --portal-primary-soft: #eaf3ed;
+  --portal-gold: #efb948;
+  --portal-gold-soft: #fff2d1;
+  --portal-orange: #b85b26;
+  --portal-danger-soft: #fff0ec;
+  --portal-radius: 0.75rem;
+  --portal-shadow: 0 3px 12px rgba(13, 59, 46, 0.05);
+  --portal-shadow-raised: 0 12px 24px rgba(13, 59, 46, 0.10);
+}
+
+.portal-page {
+  min-height: 100vh;
+  background: var(--portal-canvas);
+  color: var(--portal-ink);
+}
+
+.portal-topbar {
+  border-bottom: 1px solid var(--portal-border);
+  background: var(--portal-surface);
+}
+
+.portal-card {
+  border: 1px solid var(--portal-border);
+  border-radius: var(--portal-radius);
+  background: var(--portal-surface);
+  box-shadow: var(--portal-shadow);
+}
+
+.portal-card--raised {
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.portal-card--raised:hover {
+  border-color: #b7ccbf;
+  box-shadow: var(--portal-shadow-raised);
+  transform: translateY(-2px);
+}
+
+.portal-button-primary,
+.portal-button-secondary,
+.portal-button-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.25rem;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.portal-button-primary {
+  background: var(--portal-primary);
+  color: #fff;
+}
+
+.portal-button-primary:hover {
+  background: var(--portal-primary-hover);
+}
+
+.portal-button-secondary {
+  border: 1px solid #c9d8cf;
+  background: var(--portal-surface);
+  color: #15513e;
+}
+
+.portal-button-secondary:hover {
+  background: var(--portal-surface-muted);
+}
+
+.portal-button-gold {
+  background: var(--portal-gold);
+  color: #163329;
+}
+
+.portal-button-gold:hover {
+  background: #f8cc70;
+}
+
+.portal-eyebrow {
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #718078;
+}
+
+.portal-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.portal-badge--success {
+  background: var(--portal-primary-soft);
+  color: #15513e;
+}
+
+.portal-badge--gold {
+  background: var(--portal-gold-soft);
+  color: #9a5a00;
+}
+
+.portal-badge--danger {
+  background: var(--portal-danger-soft);
+  color: var(--portal-orange);
 }
 .section-head {
   text-align: center;

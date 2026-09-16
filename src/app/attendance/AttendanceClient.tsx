@@ -68,7 +68,7 @@ export default function AttendanceHistoryClient({
   const hasMore = pagination.skip + records.length < pagination.total;
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="portal-utility max-w-6xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance History</h1>
         <p className="text-gray-600">View your complete attendance record</p>

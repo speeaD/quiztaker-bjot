@@ -1,129 +1,67 @@
 'use client';
 
+import GameHubPanel from '@/components/game-hub/GameHubPanel';
+import GameModeCard from '@/components/game-hub/GameModeCard';
+import { ArrowLeft, CircleDollarSign, Gamepad2, Timer, Trophy, Zap } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import PortalLogo from '@/components/PortalLogo';
+
+const gameModes = [
+  {
+    title: 'Time Attack',
+    description: 'Race the clock through quick questions. Build accuracy while keeping your pace high.',
+    detail: 'Fast rounds',
+    action: 'Start time attack',
+    icon: Timer,
+    accent: 'emerald' as const,
+    route: '/time-attack',
+  },
+  {
+    title: 'Sudden Death',
+    description: 'Every answer matters. One wrong answer ends the round, so stay sharp from the start.',
+    detail: 'High stakes',
+    action: 'Enter sudden death',
+    icon: Zap,
+    accent: 'orange' as const,
+    route: '/sudden-death',
+  },
+  {
+    title: 'Scholar’s Wager',
+    description: 'Back your knowledge, wager your points, and move up the cohort rankings with each round.',
+    detail: 'Earn XP',
+    action: 'Place a wager',
+    icon: CircleDollarSign,
+    accent: 'gold' as const,
+    route: '/scholars-wager',
+  },
+];
 
 export default function GameHub() {
   const router = useRouter();
-
-  const games = [
-    {
-      id: 'time-attack',
-      name: 'Time Attack',
-      description: 'Race against the clock',
-      icon: '⏱️',
-      color: 'from-blue-400 to-blue-600',
-      route: '/time-attack',
-    },
-    {
-      id: 'sudden-death',
-      name: 'Sudden Death',
-      description: 'One wrong move and it\'s over',
-      icon: '⚡',
-      color: 'from-red-400 to-red-600',
-      route: '/sudden-death',
-    },
-    {
-      id: 'scholars-wager',
-      name: 'Scholar\'s Wager',
-      description: 'Bet points on your confidence',
-      icon: '💰',
-      color: 'from-yellow-400 to-yellow-600',
-      route: '/scholars-wager',
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-3xl font-bold text-gray-900 mb-4">
-            Game Hub
-          </h1>
-          <p className="text-md text-gray-600">
-            Choose your challenge
-          </p>
+    <div className="portal-page">
+      <header className="border-b border-[#dce5df] bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <span className="grid"><PortalLogo size={75} priority /></span>
+            <span><small className="block text-[14px] font-bold uppercase tracking-[0.13em] text-[#a5660c]">Game Hub</small></span>
+          </Link>
+          <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#15513e] hover:bg-[#edf3ef]"><ArrowLeft size={14} />Dashboard</Link>
         </div>
+      </header>
 
-        {/* Games Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {games.map((game) => (
-            <button
-              key={game.id}
-              onClick={() => router.push(game.route)}
-              className="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
-            >
-              {/* Gradient Background */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
-              
-              {/* Content */}
-              <div className="relative p-8">
-                {/* Icon */}
-                <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform">
-                  {game.icon}
-                </div>
-                
-                {/* Name */}
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {game.name}
-                </h2>
-                
-                {/* Description */}
-                <p className="text-gray-600">
-                  {game.description}
-                </p>
-                
-                {/* Play Arrow */}
-                <div className="mt-6 flex items-center justify-center">
-                  <div className={`bg-gradient-to-r ${game.color} text-white px-6 py-2 rounded-full font-semibold flex items-center space-x-2 group-hover:px-8 transition-all`}>
-                    <span>Play</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Additional Features */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Leaderboard */}
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center mb-4">
-              <svg className="w-6 h-6 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              <h3 className="text-xl font-semibold text-gray-900">Leaderboard</h3>
-            </div>
-            <p className="text-gray-600 mb-4">See who&apos;s on top</p>
-            <button 
-              onClick={() => router.push('/leaderboard')}
-              className="text-blue-600 hover:text-blue-800 font-semibold"
-            >
-              View Rankings →
-            </button>
+      <main className="dashboard-main mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-6">
+        <section className="mt-5 rounded-xl bg-[#0d3b2e] p-6 text-white shadow-[0_8px_24px_rgba(13,59,46,0.16)] sm:p-8">
+          <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div><span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#b9d2c4]"><Gamepad2 size={12} />Skill arena</span><h1 className="mt-4 text-3xl font-black tracking-[-0.05em]">Make practice feel like play.</h1><p className="mt-2 max-w-xl text-sm leading-6 text-[#d8e6de]">Choose a challenge, sharpen recall, and earn your place on the leaderboard.</p></div>
+            <div className="flex items-center gap-3 rounded-lg bg-white/10 p-3"><span className="grid size-9 place-items-center rounded-md bg-[#efb948] text-[#0d3b2e]"><Trophy size={18} /></span><span><strong className="block text-sm">Ready to compete?</strong><small className="text-[11px] text-[#b9d2c4]">Every round builds confidence.</small></span></div>
           </div>
+        </section>
 
-          {/* History */}
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center mb-4">
-              <svg className="w-6 h-6 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-              </svg>
-              <h3 className="text-xl font-semibold text-gray-900">Game History</h3>
-            </div>
-            <p className="text-gray-600 mb-4">Review your past games</p>
-            <button 
-              onClick={() => router.push('/scholars-wager/history')}
-              className="text-blue-600 hover:text-blue-800 font-semibold"
-            >
-              View History →
-            </button>
-          </div>
-        </div>
-      </div>
+        <section className="mt-10"><div className="mb-3"><h2 className="text-sm font-black tracking-[-0.02em]">Choose your challenge</h2><p className="mt-0.5 text-[11px] text-[#718078]">Different formats for different ways to learn.</p></div><div className="grid gap-4 md:grid-cols-3">{gameModes.map((mode) => <GameModeCard key={mode.title} {...mode} onPlay={() => router.push(mode.route)} />)}</div></section>
+        <section className="mt-5 grid gap-4 md:grid-cols-2"><GameHubPanel type="leaderboard" onClick={() => router.push('/leaderboard')} /><GameHubPanel type="history" onClick={() => router.push('/scholars-wager/history')} /></section>
+      </main>
     </div>
   );
 }
