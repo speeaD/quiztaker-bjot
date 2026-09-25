@@ -8,6 +8,8 @@ interface SimulatorHeaderProps {
   showCalculator?: boolean;
   onCalculatorToggle?: () => void;
   onSubmit?: () => void;
+  homeHref?: string;
+  homeLabel?: string;
 }
 
 export default function SimulatorHeader({
@@ -16,11 +18,13 @@ export default function SimulatorHeader({
   showCalculator = false,
   onCalculatorToggle,
   onSubmit,
+  homeHref = '/dashboard',
+  homeLabel = 'Dashboard',
 }: SimulatorHeaderProps) {
   return (
     <header className="border-b border-[#dce5df] bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href={homeHref} className="flex items-center gap-3">
           <span className="grid"><PortalLogo size={70} priority /></span>
           <span>
             <strong className="block text-sm tracking-[-0.02em] text-[#17231e]">CBT</strong>
@@ -33,7 +37,7 @@ export default function SimulatorHeader({
         {mode === 'exam' ? (
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden rounded-md bg-[#edf3ef] px-3 py-2 text-sm font-black text-[#0d3b2e] sm:block">{timer}</span>
-            <button
+            {onCalculatorToggle && <button
               onClick={onCalculatorToggle}
               className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-bold transition ${
                 showCalculator
@@ -43,16 +47,16 @@ export default function SimulatorHeader({
             >
               <Calculator size={15} />
               <span className="hidden sm:inline">Calculator</span>
-            </button>
+            </button>}
             <button onClick={onSubmit} className="inline-flex items-center gap-2 rounded-md bg-[#b85b26] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#99471a]">
               <Send size={14} />
               Submit
             </button>
           </div>
         ) : (
-          <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#15513e] hover:bg-[#edf3ef]">
+          <Link href={homeHref} className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#15513e] hover:bg-[#edf3ef]">
             {mode === 'result' ? <Play size={14} /> : <LogOut size={14} />}
-            Dashboard
+            {homeLabel}
           </Link>
         )}
       </div>

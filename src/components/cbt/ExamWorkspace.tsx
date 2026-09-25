@@ -50,7 +50,15 @@ export default function ExamWorkspace({
             <span>Question {currentGlobalIndex + 1} of {totalQuestions}</span>
           </div>
           <p className="mt-6 text-lg font-medium leading-8 text-[#17231e]">{currentQuestion.question}</p>
+          {currentQuestion.passage && <p className="mt-4 whitespace-pre-wrap rounded-lg bg-[#f4f7f5] p-4 text-sm leading-6 text-[#293830]">{currentQuestion.passage}</p>}
+          {currentQuestion.diagram && <div className="mt-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={currentQuestion.diagram} alt={currentQuestion.diagramAlt || 'Question diagram'} className="max-h-80 max-w-full rounded-lg object-contain" />
+          </div>}
           <div className="mt-6 space-y-3">
+            {(currentQuestion.type === 'fill-in-the-blank' || currentQuestion.type === 'fill-in-the-blanks') && <label className="block text-sm font-bold text-[#293830]">Your answer
+              <input type="text" value={answers[currentQuestion._id] || ''} onChange={(event) => onAnswer(event.target.value)} className="mt-2 w-full rounded-lg border border-[#dce5df] bg-[#fbfcfb] p-4 font-normal" maxLength={1000} />
+            </label>}
             {(currentQuestion.options || []).map((option, index) => {
               const selected = answers[currentQuestion._id] === option;
               return <button key={option} onClick={() => onAnswer(option)} className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition ${selected ? 'border-[#0d3b2e] bg-[#edf7f0]' : 'border-[#dce5df] bg-[#fbfcfb] hover:border-[#aac4b3] hover:bg-[#f4f8f5]'}`}>

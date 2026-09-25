@@ -6,7 +6,7 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   
   // Define public routes
-  const publicRoutes = ['/', '/login', '/register', '/about-us', '/support', '/testimonials']
+  const publicRoutes = ['/', '/login', '/register', '/about-us', '/support', '/testimonials', '/free-mock', '/topic-test']
   const isPublicRoute = publicRoutes.includes(pathname)
   
   // Redirect to login if not authenticated and trying to access protected route
@@ -15,7 +15,7 @@ export function proxy(request: NextRequest) {
   }
   
   // Redirect to home if authenticated and trying to access auth pages
-  if (isAuthenticated && isPublicRoute) {
+  if (isAuthenticated && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
   
