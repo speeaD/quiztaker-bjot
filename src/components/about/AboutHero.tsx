@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
+import type { SectionContent } from "@/lib/landing-content";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -19,7 +20,7 @@ const line: Variants = {
   visible: { opacity: 1, scaleX: 1, transition: { duration: 0.5, ease: EASE } },
 };
 
-export default function AboutHero() {
+export default function AboutHero({ content }: { content: SectionContent }) {
   const prefersReducedMotion = useReducedMotion();
 
   return (
@@ -32,16 +33,13 @@ export default function AboutHero() {
       >
         <motion.div className="eyebrow-line" style={{ originX: 0 }} variants={line} />
         <motion.div className="eyebrow" variants={item}>
-          About Us
+          {content.eyebrow}
         </motion.div>
         <motion.h1 variants={item}>
-          Helping Students <span>Prepare Better</span>, One Day At A Time
+          {content.heading}
         </motion.h1>
         <motion.p variants={item}>
-          BJOT (Blast JAMB Online Tutorial) is a leading educational
-          programme and online tutorial in Nigeria, built to help students
-          prepare smarter, study consistently, and perform confidently in
-          major examinations.
+          {content.description}
         </motion.p>
       </motion.div>
     </section>

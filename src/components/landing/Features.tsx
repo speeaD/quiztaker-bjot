@@ -4,35 +4,11 @@ import { useEffect, useState } from "react";
 import { BookOpen, FileText, Medal, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+import type { SectionContent } from "@/lib/landing-content";
 
-const FEATURES = [
-  {
-    icon: <BookOpen size={26} color="white" />,
-    step: "01",
-    title: "Learn",
-    desc: "Structured video lessons by the best tutors in the country.",
-  },
-  {
-    icon: <FileText size={26} color="white" />,
-    step: "02",
-    title: "Practice",
-    desc: "Thousands of CBT-style questions and past exam papers.",
-  },
-  {
-    icon: <TrendingUp size={26} color="white" />,
-    step: "03",
-    title: "Track",
-    desc: "Monitor your progress and performance across every subject.",
-  },
-  {
-    icon: <Medal size={26} color="white" />,
-    step: "04",
-    title: "Perform",
-    desc: "Walk into exams confident and get the results you deserve.",
-  },
-];
+const ICONS = [<BookOpen size={26} color="white" key="b" />, <FileText size={26} color="white" key="f" />, <TrendingUp size={26} color="white" key="t" />, <Medal size={26} color="white" key="m" />];
 
-export default function Features() {
+export default function Features({ content }: { content: SectionContent }) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -47,9 +23,9 @@ export default function Features() {
     <section>
       <div className="wrap">
         <Reveal className="section-head">
-          <div className="eyebrow">Why BJOT</div>
-          <h2>More Than Just A Tutorial</h2>
-          <p>Everything you need to excel in your exams, in one place.</p>
+          <div className="eyebrow">{content.eyebrow}</div>
+          <h2>{content.heading}</h2>
+          <p>{content.description}</p>
         </Reveal>
 
         <StaggerGroup
@@ -66,19 +42,19 @@ export default function Features() {
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           />
-          {FEATURES.map((f) => (
-            <StaggerItem className="feature-card" key={f.title} direction="up" distance={24}>
+          {(content.steps ?? []).map((f, index) => (
+            <StaggerItem className="feature-card" key={`${f.title}-${index}`} direction="up" distance={24}>
               <motion.div
                 className="feature-icon-badge"
                 whileHover={{ scale: 1.08, rotate: -4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
               >
-                {f.icon}
+                {ICONS[index % ICONS.length]}
               </motion.div>
-              <div className="feature-step-num">Step {f.step}</div>
+              <div className="feature-step-num">Step {String(index + 1).padStart(2, "0")}</div>
               <div className="feature-body">
                 <h3>{f.title}</h3>
-                <p>{f.desc}</p>
+                <p>{f.description}</p>
               </div>
             </StaggerItem>
           ))}

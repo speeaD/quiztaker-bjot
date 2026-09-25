@@ -1,22 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/motion/Reveal";
+import type { Contact, SectionContent } from "@/lib/landing-content";
 
-export default function Footer() {
+export default function Footer({ content, contact }: { content: SectionContent; contact: Contact | null }) {
   return (
     <footer>
       <div className="wrap">
         <Reveal className="footer-grid" distance={16} amount={0.1}>
           <div>
-            <div className="footer-logo">BJOT</div>
-            <p className="desc">
-              Prepare Different, Score Higher. Nigeria&apos;s most trusted
-              platform for JAMB, WAEC, NECO &amp; POST-UTME success.
-            </p>
+            <div className="footer-logo">{content.brand}</div>
+            <p className="desc">{content.tagline}</p>
             <div className="socials">
-              <span><Image src="/whatsapp.svg" alt="WhatsApp" width={20} height={20} /></span>
-              <span><Image src="/youtube.svg" alt="YouTube" width={20} height={20} /></span>
-              <span><Image src="/maildotru.svg" alt="Email" width={20} height={20} /></span>
+              {contact?.whatsapp && <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`} aria-label="WhatsApp"><Image src="/whatsapp.svg" alt="" width={20} height={20} /></a>}
+              {contact?.youtube && <a href={contact.youtube.startsWith("http") ? contact.youtube : `https://www.youtube.com/results?search_query=${encodeURIComponent(contact.youtube)}`} aria-label="YouTube"><Image src="/youtube.svg" alt="" width={20} height={20} /></a>}
+              {contact?.email && <a href={`mailto:${contact.email}`} aria-label="Email"><Image src="/maildotru.svg" alt="" width={20} height={20} /></a>}
             </div>
           </div>
           <div>
@@ -39,14 +37,14 @@ export default function Footer() {
           <div>
             <h4>Connect With Us</h4>
             <ul>
-              <li>blastjambonlinetutorial@gmail.com</li>
-              <li>+234 916 489 6938</li>
-              <li>Lagos, Nigeria</li>
+              {contact?.email && <li>{contact.email}</li>}
+              {contact?.phone && <li>{contact.phone}</li>}
+              {contact?.address && <li>{contact.address}</li>}
             </ul>
           </div>
         </Reveal>
         <div className="footer-bottom">
-          <span>© 2026 BJOT Blast Jamb Online Tutorial. All rights reserved.</span>
+          <span>{content.copyright}</span>
         </div>
       </div>
     </footer>

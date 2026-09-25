@@ -1,32 +1,23 @@
 import { Star, Calendar, TrendingUp, Trophy } from "lucide-react";
 import { StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
 import { Counter } from "@/components/motion/Counter";
+import type { SectionContent } from "@/lib/landing-content";
 
-const STATS = [
-  { icon: <Trophy color="white" size={40} />, num: "5,000+", lbl: "Students Passed\nJAMB & WAEC" },
-  { icon: <Star color="white" size={40} />, num: "368", lbl: "Highest UTME\nScore Recorded" },
-  { icon: <TrendingUp color="white" size={40} />, num: "30,000+", lbl: "Students Reached\nNationwide" },
-  { icon: <Calendar color="white" size={40} />, num: "4+", lbl: "Years of Impact\n(2022 – 2026)" },
-];
+const ICONS = [<Trophy color="white" size={40} key="t" />, <Star color="white" size={40} key="s" />, <TrendingUp color="white" size={40} key="u" />, <Calendar color="white" size={40} key="c" />];
 
-export default function StatsBar() {
+export default function StatsBar({ content }: { content: SectionContent }) {
   return (
     <div className="stats-bar">
       <StaggerGroup className="stats-inner" stagger={0.1}>
-        {STATS.map((s) => (
-          <StaggerItem className="stat" key={s.num} direction="up" distance={20}>
-            <div className="icon">{s.icon}</div>
+        {(content.items ?? []).map((s, index) => (
+          <StaggerItem className="stat" key={`${s.label}-${index}`} direction="up" distance={20}>
+            <div className="icon">{ICONS[index % ICONS.length]}</div>
             <div className="stat-text">
               <div className="num">
-                <Counter value={s.num} />
+                <Counter value={s.value} />
               </div>
               <div className="lbl">
-                {s.lbl.split("\n").map((line, i) => (
-                  <span key={i}>
-                    {line}
-                    {i === 0 && <br />}
-                  </span>
-                ))}
+                {s.label}
               </div>
             </div>
           </StaggerItem>

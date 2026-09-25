@@ -1,11 +1,8 @@
 import { Youtube, Video, Users, PlayCircle } from "lucide-react";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+import type { SectionContent } from "@/lib/landing-content";
 
-const STATS = [
-  { icon: <Video size={18} />, label: "Lesson Videos", value: "120+" },
-  { icon: <Users size={18} />, label: "Subscribers", value: "15k+" },
-  { icon: <PlayCircle size={18} />, label: "Total Views", value: "500k+" },
-];
+const ICONS = [<Video size={18} key="v" />, <Users size={18} key="u" />, <PlayCircle size={18} key="p" />];
 
 const BTS_PHOTOS = [
   {
@@ -20,23 +17,19 @@ const BTS_PHOTOS = [
   },
 ];
 
-export default function YouTubeChannel() {
+export default function YouTubeChannel({ content }: { content: SectionContent }) {
   return (
     <section className="yt-section">
       <div className="wrap yt-wrap">
         <Reveal className="yt-copy" direction="left" distance={30}>
-          <div className="eyebrow">Watch &amp; Learn</div>
-          <h2>Free Lessons, Every Week, On YouTube</h2>
-          <p>
-            Every BJOT lesson starts right here in our own studio — real
-            tutors breaking down JAMB and WAEC topics step by step, filmed
-            and uploaded so you can rewatch anytime, for free.
-          </p>
+          <div className="eyebrow">{content.eyebrow}</div>
+          <h2>{content.heading}</h2>
+          <p>{content.description}</p>
 
           <div className="yt-stats">
-            {STATS.map((s) => (
-              <div className="yt-stat" key={s.label}>
-                <span className="yt-stat-icon">{s.icon}</span>
+            {(content.metrics ?? []).map((s, index) => (
+              <div className="yt-stat" key={`${s.label}-${index}`}>
+                <span className="yt-stat-icon">{ICONS[index % ICONS.length]}</span>
                 <div>
                   <div className="yt-stat-value">{s.value}</div>
                   <div className="yt-stat-label">{s.label}</div>
@@ -45,29 +38,29 @@ export default function YouTubeChannel() {
             ))}
           </div>
 
-          <a
-            href="https://youtube.com/@bjot"
+          {content.cta && <a
+            href={content.cta.href}
             target="_blank"
             rel="noopener noreferrer"
             className="yt-cta"
           >
             <Youtube size={18} />
-            Subscribe on YouTube
-          </a>
+            {content.cta.label}
+          </a>}
         </Reveal>
 
         <StaggerGroup className="yt-gallery" stagger={0.15}>
-          {BTS_PHOTOS.map((p) => (
+          {(content.gallery ?? []).map((p, index) => (
             <StaggerItem
               className="yt-photo"
-              key={p.caption}
+              key={`${p.caption}-${index}`}
               direction="right"
               distance={30}
-              style={{ backgroundImage: `url(${p.img})` }}
+              style={{ backgroundImage: `url(${p.imageUrl ?? BTS_PHOTOS[index]?.img ?? ""})` }}
               aria-label={`${p.caption} behind the scenes photo`}
             >
               <div className="yt-photo-overlay" />
-              <span className="yt-photo-tag">{p.tag}</span>
+              <span className="yt-photo-tag">{p.label}</span>
               <div className="yt-photo-play">
                 <PlayCircle size={20} />
               </div>

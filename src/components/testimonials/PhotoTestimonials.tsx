@@ -3,56 +3,10 @@
 import { User } from "lucide-react";
 import { motion } from "framer-motion";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+import type { Testimonial } from "@/lib/landing-content";
 
-// PLACEHOLDER DATA — replace name, role, score, quote, and img for every
-// entry before this section goes live. Cards with img: null render a
-// neutral placeholder rather than a stand-in photo.
-const PHOTO_TESTIMONIALS = [
-  {
-    img: null,
-    score: "[Score]",
-    quote: "[Add this student's written testimonial here.]",
-    name: "[Student Name]",
-    role: "[Course, School]",
-  },
-  {
-    img: null,
-    score: "[Score]",
-    quote: "[Add this student's written testimonial here.]",
-    name: "[Student Name]",
-    role: "[Course, School]",
-  },
-  {
-    img: null,
-    score: "[Score]",
-    quote: "[Add this student's written testimonial here.]",
-    name: "[Student Name]",
-    role: "[Course, School]",
-  },
-  {
-    img: null,
-    score: "[Score]",
-    quote: "[Add this student's written testimonial here.]",
-    name: "[Student Name]",
-    role: "[Course, School]",
-  },
-  {
-    img: null,
-    score: "[Score]",
-    quote: "[Add this student's written testimonial here.]",
-    name: "[Student Name]",
-    role: "[Course, School]",
-  },
-  {
-    img: null,
-    score: "[Score]",
-    quote: "[Add this student's written testimonial here.]",
-    name: "[Student Name]",
-    role: "[Course, School]",
-  },
-];
-
-export default function PhotoTestimonials() {
+export default function PhotoTestimonials({ testimonials }: { testimonials: Testimonial[] }) {
+  if (!testimonials.length) return null;
   return (
     <section className="photo-test-section">
       <div className="wrap">
@@ -63,29 +17,28 @@ export default function PhotoTestimonials() {
         </Reveal>
 
         <StaggerGroup className="photo-test-grid" stagger={0.09}>
-          {PHOTO_TESTIMONIALS.map((t, i) => (
-            <StaggerItem className="photo-test-card" key={i} direction="up" distance={22}>
+          {testimonials.map((t) => (
+            <StaggerItem className="photo-test-card" key={t.id} direction="up" distance={22}>
               <div className="photo-test-photo">
-                {t.img ? (
+                {t.imageUrl ? (
                   <motion.img
-                    src={t.img}
-                    alt={t.name}
+                    src={t.imageUrl}
+                    alt={t.studentName}
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   />
                 ) : (
                   <div className="photo-test-photo-placeholder">
                     <User size={28} />
-                    <span>Add photo</span>
                   </div>
                 )}
-                <div className="photo-test-score">{t.score}</div>
+                {t.score && <div className="photo-test-score">{t.score}</div>}
               </div>
               <div className="photo-test-body">
                 <p>&quot;{t.quote}&quot;</p>
                 <div className="photo-test-who">
-                  <strong>{t.name}</strong>
-                  <span>{t.role}</span>
+                  <strong>{t.studentName}</strong>
+                  <span>{[t.course, t.school].filter(Boolean).join(", ")}</span>
                 </div>
               </div>
             </StaggerItem>

@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/motion/Reveal";
+import type { SectionContent } from "@/lib/landing-content";
 
-export default function TeamCta() {
+export default function TeamCta({ content }: { content: SectionContent }) {
   return (
     <section>
       <div className="wrap">
@@ -18,18 +19,11 @@ export default function TeamCta() {
             </a>
           </Reveal>
           <Reveal className="cta-block" direction="right" distance={30} delay={0.1}>
-            <h2>Join Thousands Of Successful Students Today</h2>
-            <p>
-              Your success story begins here. Start learning, practicing, and
-              improving with BJOT — completely free to join.
-            </p>
+            <h2>{content.heading}</h2>
+            <p>{content.description}</p>
             <div className="ctas">
-              <a href="#" className="btn btn-gold">
-                Join BJOT Free
-              </a>
-              <a href="#" className="btn btn-ghost">
-                Explore Premium
-              </a>
+              {content.primaryCta && <a href={content.primaryCta.href} className="btn btn-gold">{content.primaryCta.label}</a>}
+              {content.secondaryCta && <a href={content.secondaryCta.href} className="btn btn-ghost">{content.secondaryCta.label}</a>}
             </div>
           </Reveal>
         </div>

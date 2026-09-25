@@ -2,38 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+import type { Testimonial } from "@/lib/landing-content";
 
-const TESTIMONIALS = [
-  {
-    // Solo portrait, Nigeria — free to use under the Unsplash License (Micheal Awala)
-    img: "https://images.unsplash.com/photo-1543579281-eeacc097d696?q=80&w=2070&auto=format&fit=crop",
-    score: "341/400",
-    quote:
-      "BJOT changed my JAMB prep completely — the shortcut CBT and mock exams made all the difference.",
-    name: "Adebayo T.",
-    role: "Studying Pharmacy, OAU Ife",
-  },
-  {
-    // Solo portrait, laptop/engineering context — free to use under the Unsplash License (Kojo Kwarteng)
-    img: "https://images.unsplash.com/photo-1620829813573-7c9e1877706f?q=80&w=500&auto=format&fit=crop",
-    score: "338/400",
-    quote:
-      "The best platform I used for my UTME prep — it covers every subject with clarity and depth.",
-    name: "David O.",
-    role: "Engineering, UNILAG",
-  },
-  {
-    // Solo portrait — free to use under the Unsplash License (Annie Spratt)
-    img: "https://images.unsplash.com/photo-1686213011624-8578b598ef0f?q=80&w=2543&auto=format&fit=crop",
-    score: "350/400",
-    quote:
-      "BJOT helped me build confidence and master all my subjects before the big exam day.",
-    name: "Ruth I.",
-    role: "Law, University of Cyprus",
-  },
-];
 
-export default function Testimonials() {
+
+export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   return (
     <section className="testimonials">
       <div className="wrap">
@@ -43,31 +16,31 @@ export default function Testimonials() {
           <p>Hear from students who transformed their scores with BJOT.</p>
         </Reveal>
         <StaggerGroup className="test-grid" stagger={0.13}>
-          {TESTIMONIALS.map((t) => (
-            <StaggerItem className="test-card" key={t.name} direction="up" distance={26}>
+          {testimonials.slice(0, 3).map((t) => (
+            <StaggerItem className="test-card" key={t.id} direction="up" distance={26}>
               <motion.div
                 className="video-thumb"
-                style={{ backgroundImage: `url(${t.img})` }}
-                aria-label={`${t.name} testimonial video preview`}
+                style={t.imageUrl ? { backgroundImage: `url(${t.imageUrl})` } : undefined}
+                aria-label={`${t.studentName} testimonial preview`}
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className="video-overlay" />
-                <div className="score">{t.score}</div>
-                <div className="play-badge">▶</div>
-                <div className="video-length">02:14</div>
-                <div className="verified">✓ Verified</div>
+                {t.score && <div className="score">{t.score}</div>}
+                {t.videoUrl && <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="play-badge" aria-label={`Watch ${t.studentName}'s testimonial`}>▶</a>}
+                {t.videoDuration && <div className="video-length">{t.videoDuration}</div>}
+                {t.isVerified && <div className="verified">✓ Verified</div>}
               </motion.div>
               <div className="test-body">
                 <p>&quot;{t.quote}&quot;</p>
                 <div className="who">
-                  {t.name} <span>{t.role}</span>
+                  {t.studentName} <span>{[t.course, t.school].filter(Boolean).join(", ")}</span>
                 </div>
               </div>
             </StaggerItem>
           ))}
         </StaggerGroup>
-        <a href="#" className="see-more">
+        <a href="/testimonials" className="see-more">
           See More Results →
         </a>
       </div>

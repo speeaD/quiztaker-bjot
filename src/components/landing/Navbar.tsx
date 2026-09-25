@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import logo from "../../../public/bjot-logo.png";
 
-const LINKS = ["Home", "About Us", "Testimonials", "Support"];
+const LINKS = ["Home", "About Us", "Testimonials", "Support", "Free Mock"];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);

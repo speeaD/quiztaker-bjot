@@ -3,50 +3,17 @@
 import { User } from "lucide-react";
 import { motion } from "framer-motion";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+import type { StaffMember } from "@/lib/landing-content";
 
-// `focal` is a CSS object-position value tuned to each photo's own framing —
-// tight headshots, close-up crops, and wider environmental shots all need
-// a different crop point, so this isn't a shared constant. Re-check this
-// value any time a member's photo is replaced.
-const TEAM = [
-  {
-    name: "Mr. Emmanuel",
-    role: "Medicine and Surgery",
-    bio: "Dedicated science instructor focused on simplifying complex biological concepts to help students secure admissions into competitive medical programs.",
-    img: "/team/emmanuel.jpg",
-    focal: "center 25%",
-  },
-  {
-    name: "Mr. Evidence",
-    role: "Quantity Surveying",
-    bio: "Analytical tutor specializing in mathematical reasoning and quantitative problem-solving for aspiring engineering and science students.",
-    img: "/team/evidence.jpg",
-    focal: "center 20%",
-  },
-  {
-    name: "Miss Chioma",
-    role: "Medical Laboratory Science",
-    bio: "Experienced educator passionate about breaking down difficult scientific principles and guiding students toward academic excellence.",
-    img: "/team/chioma.jpg",
-    focal: "center 15%",
-  },
-  {
-    name: "Miss Joy",
-    role: "Law",
-    bio: "Expert arts and humanities instructor dedicated to sharpening students' critical thinking, language skills, and essay performance.",
-    img: "/team/joy.jpg",
-    focal: "center 85%",
-  },
-  {
-    name: "Miss Phebe",
-    role: "Pure and Industrial Chemistry",
-    bio: "Dynamic science tutor focused on building rock-solid foundations in core chemistry to help students ace their examinations.",
-    img: "/team/phebe.jpg",
-    focal: "center 55%",
-  },
-];
+const LOCAL_PHOTOS: Record<string, string> = {
+  "Mr. Emmanuel": "/team/emmanuel.jpg",
+  "Mr. Evidence": "/team/evidence.jpg",
+  "Miss Chioma": "/team/chioma.jpg",
+  "Miss Joy": "/team/joy.jpg",
+  "Miss Phebe": "/team/phebe.jpg",
+};
 
-export default function TeamGrid() {
+export default function TeamGrid({ staff }: { staff: StaffMember[] }) {
   return (
     <section className="team-grid-section">
       <div className="wrap">
@@ -61,30 +28,28 @@ export default function TeamGrid() {
         </Reveal>
 
         <StaggerGroup className="team-grid" stagger={0.1}>
-          {TEAM.map((m, i) => (
-            <StaggerItem className="team-card" key={i} direction="up" distance={24}>
+          {staff.map((m) => (
+            <StaggerItem className="team-card" key={m.id} direction="up" distance={24}>
               <motion.div
                 className="team-card-photo"
                 whileHover={{ scale: 1.04 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
-                {m.img ? (
+                {m.imageUrl || LOCAL_PHOTOS[m.name] ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={m.img}
+                    src={m.imageUrl || LOCAL_PHOTOS[m.name]}
                     alt={m.name}
-                    style={{ objectPosition: m.focal }}
                   />
                 ) : (
                   <div className="team-card-photo-placeholder">
                     <User size={32} />
-                    <span>Add photo</span>
                   </div>
                 )}
               </motion.div>
               <div className="team-card-body">
                 <h3>{m.name}</h3>
-                <span className="team-card-role">{m.role}</span>
+                <span className="team-card-role">{m.course || m.role}</span>
                 <p>{m.bio}</p>
               </div>
             </StaggerItem>

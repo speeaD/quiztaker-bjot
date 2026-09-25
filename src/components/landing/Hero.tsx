@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
+import type { SectionContent } from "@/lib/landing-content";
 
 const AVATARS = [
   "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=100&auto=format&fit=crop",
@@ -21,7 +22,7 @@ const item: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
 };
 
-export default function Hero() {
+export default function Hero({ content, highlight }: { content: SectionContent; highlight?: { value: string; label: string } }) {
   const prefersReducedMotion = useReducedMotion();
 
   return (
@@ -34,24 +35,17 @@ export default function Hero() {
           variants={container}
         >
           <motion.p className="eyebrow" variants={item}>
-            DISCIPLINE || CONSISTENCY || EXCELLENCE
+            {content.eyebrow}
           </motion.p>
           <motion.h1 variants={item}>
-            PREPARE DIFFERENT.
-            <br />
-            <span>SCORE HIGHER.</span>
+            {content.heading}
           </motion.h1>
           <motion.p variants={item}>
-            Nigeria&apos;s most trusted online platform for JAMB, WAEC, NECO
-            &amp; POST-UTME preparation.
+            {content.description}
           </motion.p>
           <motion.div className="hero-ctas" variants={item}>
-            <a href="#" className="btn btn-primary">
-              Join BJOT Free
-            </a>
-            <a href="#" className="btn btn-gold">
-              Explore Premium
-            </a>
+            {content.primaryCta && <a href={content.primaryCta.href} className="btn btn-primary">{content.primaryCta.label}</a>}
+            {content.secondaryCta && <a href={content.secondaryCta.href} className="btn btn-gold">{content.secondaryCta.label}</a>}
           </motion.div>
           <motion.div className="hero-trust" variants={item}>
             <div className="avatar-stack">
@@ -66,25 +60,19 @@ export default function Hero() {
                 />
               ))}
             </div>
-            <div className="trust-text">
-              Trusted by <b>30,000+</b> students
-            </div>
+            <div className="trust-text">{content.trustText}</div>
           </motion.div>
         </motion.div>
       </div>
-      <motion.div
+      {highlight && <motion.div
         className="hero-badge"
         initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.7, rotate: -8 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1, rotate: 0 }}
         transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
       >
-        <div className="num">368</div>
-        <div className="lbl">
-          Highest JAMB
-          <br />
-          Score Recorded
-        </div>
-      </motion.div>
+        <div className="num">{highlight.value}</div>
+        <div className="lbl">{highlight.label}</div>
+      </motion.div>}
     </section>
   );
 }
