@@ -88,7 +88,8 @@ export default function Navbar() {
         {LINKS.map((link) => (
           <a
             key={link}
-            href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
+            href={link === "Home" ? "/" : `/${link.toLowerCase().replace(/\s+/g, "-")}`}
+            // href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
             onClick={() => setMenuOpen(false)}
           >
             {link}
