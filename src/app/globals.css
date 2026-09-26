@@ -258,9 +258,9 @@
 body {
   font-family: var(--font-sans);
   color: var(--ink);
-  /* background: var(--paper); */
+  /* Keep the page canvas explicit; --background mixes RGB and dark-mode hex values. */
+  background-color: var(--paper);
   -webkit-font-smoothing: antialiased;
-  background-color: hsl(var(--background));
 }
 
 a {
