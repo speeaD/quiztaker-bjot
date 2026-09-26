@@ -19,7 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PortalLogo from "@/components/PortalLogo";
-import { QuestionSet } from "@/types/global";
+import { isEnglishSubject, normalizeRegistrationSubjects, validRegistrationCombination, type RegistrationSubject } from "@/lib/registration-subjects";
 
 const inputClass =
   "w-full rounded-xl border border-[#bdcadb] bg-[#fbfcff] py-3 pl-11 pr-4 text-sm text-[#10213b] outline-none transition placeholder:text-[#8b9db9] focus:border-[#0a4a37] focus:bg-white focus:ring-4 focus:ring-[#d9eee4] disabled:cursor-not-allowed disabled:opacity-60";
@@ -38,7 +38,7 @@ export default function RegisterPage() {
   const [selectedQuestionSets, setSelectedQuestionSets] = useState<string[]>(
     [],
   );
-  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
+  const [questionSets, setQuestionSets] = useState<RegistrationSubject[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,14 @@ export default function RegisterPage() {
           cache: "no-store",
         });
         if (!response.ok) throw new Error();
-        setQuestionSets(await response.json());
+        const subjects = normalizeRegistrationSubjects(await response.json());
+        const english = subjects.filter((subject) => isEnglishSubject(subject.title));
+        if (english.length !== 1) {
+          setError("Compulsory English is currently unavailable. Please contact support before registering.");
+          return;
+        }
+        setQuestionSets(subjects);
+        setSelectedQuestionSets([english[0]._id]);
       } catch {
         setError("Failed to load question sets. Please try again later.");
       } finally {
@@ -58,17 +65,19 @@ export default function RegisterPage() {
     };
     void load();
   }, []);
-  const toggleSubject = (id: string) =>
+  const englishId = questionSets.find((subject) => isEnglishSubject(subject.title))?._id;
+  const toggleSubject = (id: string) => {
+    if (id === englishId || !questionSets.some((subject) => subject._id === id)) return;
     setSelectedQuestionSets((current) => {
       if (current.includes(id)) return current.filter((item) => item !== id);
       if (current.length < 4) return [...current, id];
-      setError("Select exactly four subjects for your combination.");
       return current;
     });
+  };
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (selectedQuestionSets.length !== 4) {
-      setError("Please select exactly four subjects.");
+    if (!validRegistrationCombination(selectedQuestionSets, questionSets)) {
+      setError("Please select exactly three subjects in addition to compulsory English.");
       return;
     }
     setIsSubmitting(true);
@@ -139,7 +148,7 @@ export default function RegisterPage() {
               
               <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-[#8ce3bb] bg-[#effcf5] px-3 py-1 text-[10px] font-extrabold tracking-[0.1em] text-[#07583e]">
                 <span className="size-1.5 rounded-full bg-[#14b879]" />
-                2026/2027 UTME SESSION ENROLLMENT
+                2027 UTME SESSION ENROLLMENT
               </p>
               <h1 className="mt-3 text-3xl font-black tracking-[-0.05em]">
                 BJOT Registration
@@ -283,7 +292,7 @@ export default function RegisterPage() {
                       <span className="text-[#df3e32]">*</span>
                     </h2>
                     <p className="mt-1 text-xs text-[#657aa0]">
-                      Choose exactly 4 subjects including compulsory English
+                      English is compulsory and already selected. Choose 3 other subjects.
                     </p>
                   </div>
                   <span
@@ -305,6 +314,7 @@ export default function RegisterPage() {
                       );
                       const unavailable =
                         !selected && selectedQuestionSets.length >= 4;
+                      const compulsory = subject._id === englishId;
                       return (
                         <label
                           key={subject._id}
@@ -312,7 +322,7 @@ export default function RegisterPage() {
                         >
                           <span>
                             {subject.title}
-                            {subject.title.toLowerCase() === "english" && (
+                            {compulsory && (
                               <span className="ml-2 rounded bg-[#fff1bc] px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-[#a55200]">
                                 COMPULSORY
                               </span>
@@ -322,7 +332,7 @@ export default function RegisterPage() {
                             type="checkbox"
                             checked={selected}
                             onChange={() => toggleSubject(subject._id)}
-                            disabled={disabled || unavailable}
+                            disabled={disabled || unavailable || compulsory}
                             className="sr-only"
                           />
                           <span
@@ -350,7 +360,7 @@ export default function RegisterPage() {
                   disabled ||
                   !email ||
                   !name ||
-                  selectedQuestionSets.length !== 4
+                  !validRegistrationCombination(selectedQuestionSets, questionSets)
                 }
                 className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#084635] py-4 text-base font-extrabold text-white shadow-[0_6px_14px_rgba(7,70,52,0.25)] transition hover:bg-[#0c5c45] disabled:cursor-not-allowed disabled:opacity-50"
               >

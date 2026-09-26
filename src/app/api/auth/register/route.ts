@@ -1,3 +1,5 @@
+import { normalizeRegistrationSubjects, validRegistrationCombination } from "@/lib/registration-subjects";
+
 export async function POST(request: Request) {
   try {
     const {
@@ -32,26 +34,30 @@ export async function POST(request: Request) {
       !email ||
       !firstname ||
       !lastname ||
-      !selectedQuestionSets ||
-      selectedQuestionSets.length !== 4
+      !Array.isArray(selectedQuestionSets) ||
+      selectedQuestionSets.length !== 4 ||
+      !selectedQuestionSets.every((id) => typeof id === "string" && id.trim()) ||
+      new Set(selectedQuestionSets).size !== 4
     ) {
-      console.log("Invalid input:", {
-        email,
-        firstname,
-        lastname,
-        selectedQuestionSets,
-        accountType,
-      });
       return new Response(
         JSON.stringify({
           error:
-            "Invalid input. Please provide all required fields and select exactly 4 question sets.",
+            "Please provide all required fields and select English plus exactly three other subjects.",
         }),
         { status: 400 },
       );
     }
 
     const BACKEND_URL = process.env.BACKEND_URL;
+    const subjectsResponse = await fetch(`${BACKEND_URL}/questionset?isActive=true`, { cache: "no-store" });
+    if (!subjectsResponse.ok) {
+      return Response.json({ error: "Unable to validate your subjects. Please try again later." }, { status: 503 });
+    }
+    const subjectsData = await subjectsResponse.json();
+    const subjects = normalizeRegistrationSubjects(subjectsData.questionSets);
+    if (!validRegistrationCombination(selectedQuestionSets, subjects)) {
+      return Response.json({ error: "Please select compulsory English plus exactly three other active subjects." }, { status: 400 });
+    }
     const response = await fetch(`${BACKEND_URL}/auth/quiztaker/register`, {
       method: "POST",
       headers: {
