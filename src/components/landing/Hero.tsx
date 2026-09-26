@@ -1,14 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import type { SectionContent } from "@/lib/landing-content";
-
-const AVATARS = [
-  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=100&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=100&auto=format&fit=crop",
-];
+import type { SectionContent, Testimonial } from "@/lib/landing-content";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -22,15 +15,19 @@ const item: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
 };
 
-export default function Hero({ content, highlight }: { content: SectionContent; highlight?: { value: string; label: string } }) {
+export default function Hero({ content, highlight, testimonials }: { content: SectionContent; highlight?: { value: string; label: string }; testimonials: Testimonial[] }) {
   const prefersReducedMotion = useReducedMotion();
+  const portraits = testimonials.flatMap((testimonial) => {
+    const src = typeof testimonial.imageUrl === 'string' ? testimonial.imageUrl.trim() : '';
+    return src ? [{ id: testimonial.id, name: testimonial.studentName, src }] : [];
+  }).slice(0, 4);
 
   return (
     <section className="hero" style={{ padding: 0 }}>
       <div className="hero-inner">
         <motion.div
           className="hero-content"
-          initial={prefersReducedMotion ? undefined : "hidden"}
+          initial={false}
           animate={prefersReducedMotion ? undefined : "visible"}
           variants={container}
         >
@@ -48,18 +45,18 @@ export default function Hero({ content, highlight }: { content: SectionContent; 
             {content.secondaryCta && <a href={content.secondaryCta.href} className="btn btn-gold">{content.secondaryCta.label}</a>}
           </motion.div>
           <motion.div className="hero-trust" variants={item}>
-            <div className="avatar-stack">
-              {AVATARS.map((src, i) => (
+            {portraits.length > 0 && <div className="avatar-stack">
+              {portraits.map(({ id, name, src }, i) => (
                 <motion.img
-                  key={src}
+                  key={id}
                   src={src}
-                  alt=""
+                  alt={name}
                   initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.6 }}
                   animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: 0.7 + i * 0.08, ease: EASE }}
                 />
               ))}
-            </div>
+            </div>}
             <div className="trust-text">{content.trustText}</div>
           </motion.div>
         </motion.div>

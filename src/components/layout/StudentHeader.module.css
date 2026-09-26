@@ -1,0 +1,58 @@
+/* Shared student navigation, extracted from the weekly leaderboard. */
+.header {
+  --green: #073f30;
+  --ink: #0b1426;
+  --muted: #6b7d99;
+  --line: #e0e8f2;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.header a:focus-visible { outline: 3px solid #49a58a; outline-offset: 4px; }
+.header { background: #fff; border-bottom: 1px solid var(--line); }
+.headerInner { max-width: 1400px; min-height: 68px; margin: 0 auto; padding: 10px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.brand { display: flex; align-items: center; gap: 7px; color: var(--ink); flex-shrink: 0; }
+.brand img { width: 42px; height: 42px; object-fit: contain; }
+.brand strong { display: flex; align-items: center; gap: 5px; font-size: 16px; letter-spacing: -.7px; }
+.brand strong small { color: #be6500; background: #fff3c9; padding: 0 5px; font-size: 10px; font-weight: 500; letter-spacing: 1.2px; }
+.brand em { display: block; font-size: 8px; font-style: normal; letter-spacing: .55px; color: #586983; }
+.nav { display: flex; align-items: center; gap: 5px; }
+.nav a { padding: 8px 12px; white-space: nowrap; font-size: 12px; color: var(--ink); border: 1px solid transparent; border-radius: 8px; }
+.nav a:hover { background: #f4f7fa; }
+.nav a.navActive { color: var(--green); background: #ecfdf5; border-color: #c9f5e3; }
+.nav i { width: 6px; height: 6px; display: inline-block; background: #10b981; border-radius: 50%; margin-right: 6px; }
+.headerRight { display: flex; align-items: center; gap: 18px; }
+.weeklyBadge { color: var(--ink); display: flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 30px; background: #f8fafc; font-size: 10px; white-space: nowrap; }
+.weeklyBadge svg { color: #ed9800; }
+.profile { display: flex; align-items: center; gap: 9px; color: var(--ink); }
+.profile > span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--green); color: #fff; font-weight: 500; border: 2px solid white; box-shadow: 0 0 0 1px #cddbd4; }
+.profile strong { display: block; font-size: 11px; font-weight: 500; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile small { display: block; color: var(--muted); font-size: 9px; }
+@media (max-width: 1150px) {
+  .headerInner { gap: 15px; padding: 9px 24px; }
+  .nav a { padding: 7px 8px; font-size: 10px; }
+  .weeklyBadge { color: var(--ink); display: none; }
+  .profile > div { display: none; }
+}
+@media (max-width: 650px) {
+  .headerInner { padding: 10px 16px 0; gap: 10px; flex-wrap: wrap; }
+  .brand img { width: 34px; height: 34px; }
+  .brand strong { font-size: 14px; }
+  .brand em { font-size: 7px; }
+  .nav { order: 3; width: 100%; overflow-x: auto; justify-content: space-between; padding: 6px 0 10px; gap: 2px; }
+  .nav a { font-size: 9px; padding: 6px; }
+  .profile > div { display: block; }
+  .profile strong { max-width: 100px; font-size: 10px; }
+  .profile small { font-size: 8px; }
+  .profile > span { width: 30px; height: 30px; font-size: 11px; }
+}
+@media (min-width: 651px) and (max-width: 1150px) {
+  .headerInner { min-height: 46px; padding-top: 7px; padding-bottom: 7px; }
+  .brand img { width: 30px; height: 30px; }
+  .brand strong { font-size: 14px; }
+  .brand em { font-size: 7px; }
+  .profile > span { width: 30px; height: 30px; }
+}

@@ -1,7 +1,4 @@
-import GamePlay from '@/components/scholars-wager/GamePlay';
-
-
-export default async function PlayPage({ params }: { params: Promise<{ sessionId: string }> }) {
-    const { sessionId } = await params;
-    return <GamePlay sessionId={sessionId} />;
+import { redirect } from 'next/navigation';
+export default async function Page({ params }: { params: Promise<{ sessionId: string }> }) {
+  redirect(`/game-hub/play/${(await params).sessionId}`);
 }

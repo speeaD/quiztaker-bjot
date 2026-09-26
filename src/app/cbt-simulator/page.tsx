@@ -8,7 +8,7 @@ import { CbtQuestion, CbtQuestionSet } from "@/components/cbt/types";
 import { Award, Clock3, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = "https://bjot-backend-nine.vercel.app/api";
+const API_BASE_URL = "/api";
 
 type Phase = "selection" | "exam" | "result";
 interface SubmissionResult {
@@ -37,8 +37,6 @@ export default function CBTSimulator() {
     string[]
   >([]);
   const [sessionId, setSessionId] = useState("");
-  const [quizTakerId, setQuizTakerId] = useState("");
-  const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [questionsBySetId, setQuestionsBySetId] = useState<
     Record<string, CbtQuestion[]>
   >({});
@@ -76,9 +74,11 @@ export default function CBTSimulator() {
       setError("");
       const response = await fetch(`${API_BASE_URL}/cbt/question-sets`);
       const data = await response.json();
-      if (!data.success)
+      if (!response.ok || !data.success)
         throw new Error(data.message || "Unable to load subjects");
-      setAvailableQuestionSets(data.questionSets || []);
+      if (!Array.isArray(data.questionSets) || !data.questionSets.length)
+        throw new Error("No subjects have available questions yet.");
+      setAvailableQuestionSets(data.questionSets);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Unable to connect to the server",
@@ -107,45 +107,30 @@ export default function CBTSimulator() {
     currentQuestionIndex;
 
   const handleStartExam = async () => {
-    if (selectedQuestionSetIds.length !== maxSubjects) return;
+    if (loading || selectedQuestionSetIds.length !== maxSubjects) return;
     try {
       setLoading(true);
       setError("");
-      const email =
-        localStorage.getItem("quizTakerEmail") || "student@example.com";
       const sessionResponse = await fetch(`${API_BASE_URL}/cbt/start-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionSetIds: selectedQuestionSetIds, email }),
+        body: JSON.stringify({ questionSetIds: selectedQuestionSetIds }),
       });
       const sessionData = await sessionResponse.json();
-      if (!sessionData.success)
+      if (!sessionResponse.ok || !sessionData.success)
         throw new Error(sessionData.message || "Unable to start this exam");
 
-      const questionsData: Record<string, CbtQuestion[]> = {};
-      for (const id of selectedQuestionSetIds) {
-        const response = await fetch(
-          `${API_BASE_URL}/cbt/question-set/${id}/questions`,
-        );
-        const data = await response.json();
-        if (!data.success) throw new Error("Unable to prepare exam questions");
-        const subject = availableQuestionSets.find((item) => item._id === id);
-        const questionLimit = subject?.title.toLowerCase().includes("english")
-          ? 60
-          : 40;
-        questionsData[id] = [...(data.questionSet.questions || [])]
-          .sort(() => Math.random() - 0.5)
-          .slice(0, questionLimit);
+      const questionsData: Record<string, CbtQuestion[]> = sessionData.session?.questionsBySet;
+      if (!sessionData.session?.sessionId || !questionsData ||
+          selectedQuestionSetIds.some((id) => !Array.isArray(questionsData[id]) || !questionsData[id].length)) {
+        throw new Error("No questions are available for one or more selected subjects.");
       }
-
       setSessionId(sessionData.session.sessionId);
-      setQuizTakerId(sessionData.session.quizTakerId);
-      setStartedAt(new Date(sessionData.session.startedAt));
       setQuestionsBySetId(questionsData);
       setCurrentQuestionSetIndex(0);
       setCurrentQuestionIndex(0);
       setAnswers({});
-      setTimeRemaining(7200);
+      setTimeRemaining(sessionData.session.durationSeconds);
       setPhase("exam");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to start the exam");
@@ -155,6 +140,7 @@ export default function CBTSimulator() {
   };
 
   const handleSubmit = async (isAuto = false) => {
+    if (loading) return;
     const questions = getAllQuestions();
     if (
       !isAuto &&
@@ -170,17 +156,14 @@ export default function CBTSimulator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId,
-          quizTakerId,
-          questionSetIds: selectedQuestionSetIds,
           answers: Object.entries(answers).map(([questionId, answer]) => ({
             questionId,
             answer,
           })),
-          startedAt: startedAt?.toISOString(),
         }),
       });
       const data = await response.json();
-      if (!data.success)
+      if (!response.ok || !data.success)
         throw new Error(data.message || "Unable to submit this exam");
       setSubmissionResult(data.submission);
       setPhase("result");

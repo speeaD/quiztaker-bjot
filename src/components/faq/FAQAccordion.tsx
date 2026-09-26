@@ -32,7 +32,7 @@ export default function FAQAccordion({ categories }: { categories: NonNullable<S
                       {item.question}
                       <ChevronDown size={18} className="faq-chevron" />
                     </button>
-                    {isOpen && <p className="faq-answer">{item.answer}</p>}
+                    <p className="faq-answer" hidden={!isOpen}>{item.answer}</p>
                   </div>
                 );
               })}

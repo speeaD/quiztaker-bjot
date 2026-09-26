@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import StudentPortalHeader from "@/components/layout/StudentHeader";
+import { siteDescription, siteUrl } from "@/lib/seo";
 
 const poppins = Poppins({
   variable: '--font-sans',
@@ -10,8 +12,12 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "BJOT Student",
-  description: "BJOT Student's application in preparation for UTME, POST-UTME and WAEC examinations. Take mock exams and see reviews of performances and how to get better to ace your upccomin exams.",
+  metadataBase: new URL(siteUrl),
+  title: { default: "BJOT | Blast JAMB Online Tutorial", template: "%s | BJOT" },
+  description: siteDescription,
+  // Public editorial pages explicitly opt in to indexing.
+  robots: { index: false, follow: true },
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
 };
 
 export const viewport = {
@@ -30,6 +36,7 @@ export default function RootLayout({
       <body
         className={`${poppins.variable}`}
       >
+        <StudentPortalHeader />
         {children}
       </body>
     </html>

@@ -22,6 +22,8 @@ export default function Footer({ content, contact }: { content: SectionContent; 
             <ul>
               <li><Link href="/">Home</Link></li>
               <li><Link href="/about-us">About Us</Link></li>
+              <li><Link href="/about-us#tutors">BJOT Tutors</Link></li>
+              <li><Link href="/utme-preparation-guide">UTME Preparation Guide</Link></li>
               <li><Link href="/testimonials">Testimonials</Link></li>
             </ul>
           </div>

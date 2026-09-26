@@ -15,11 +15,11 @@ const LOCAL_PHOTOS: Record<string, string> = {
 
 export default function TeamGrid({ staff }: { staff: StaffMember[] }) {
   return (
-    <section className="team-grid-section">
+    <section className="team-grid-section" id="tutors">
       <div className="wrap">
         <Reveal className="section-head">
           <div className="eyebrow">Our Team</div>
-          <h2>The People Behind BJOT</h2>
+          <h2>Meet the BJOT Tutors and Team</h2>
           <p>
             A passionate team committed to student success, building the
             tools that help Nigerian students prepare different and score
@@ -48,7 +48,7 @@ export default function TeamGrid({ staff }: { staff: StaffMember[] }) {
                 )}
               </motion.div>
               <div className="team-card-body">
-                <h3>{m.name}</h3>
+                <h3 id={`tutor-${encodeURIComponent(m.id)}`} className="scroll-mt-28">{m.name}</h3>
                 <span className="team-card-role">{m.course || m.role}</span>
                 <p>{m.bio}</p>
               </div>

@@ -1,5 +1,2 @@
-import SubjectSelection from '@/components/scholars-wager/SubjectSelection';
-
-export default function SubjectsPage() {
-  return <SubjectSelection />;
-}
+import GameStart from '@/components/games/GameStart';
+export default function Page() { return <GameStart gameId="scholars-wager" />; }

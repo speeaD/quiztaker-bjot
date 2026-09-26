@@ -215,7 +215,7 @@ export default function Login() {
             </div>
           </form>
         </div>
-        <div className="mt-4 flex items-center justify-between gap-4 rounded-md bg-[#f2f3f3]/90 px-5 py-3 text-[#35423c] shadow-sm">
+        {/* <div className="mt-4 flex items-center justify-between gap-4 rounded-md bg-[#f2f3f3]/90 px-5 py-3 text-[#35423c] shadow-sm">
           <span className="flex items-center gap-3">
             <span className="grid size-9 place-items-center rounded bg-[#ffeed5] text-[#a76000]">
               <Trophy size={20} />
@@ -232,7 +232,7 @@ export default function Login() {
           <span className="hidden rounded bg-[#fff6ee] px-4 py-2 text-sm font-extrabold tracking-[0.14em] text-[#667168] sm:block">
             368 PEAK RECORD
           </span>
-        </div>
+        </div> */}
       </section>
     </main>
   );

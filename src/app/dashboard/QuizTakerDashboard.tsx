@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import PortalLogo from '@/components/PortalLogo';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import DashboardLogoutButton from '@/components/dashboard/DashboardLogoutButton';
+import { StudentHeader } from '@/components/layout/StudentHeader';
 
 interface Submission {
   id: string; quizTitle: string; score: number; totalPoints: number; percentage: number;
@@ -25,7 +25,6 @@ type Filter = 'all' | 'pending' | 'in-progress' | 'completed';
 
 const formatDate = (value: string) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const formatDuration = (value?: { hours: number; minutes: number; seconds: number }) => !value ? 'Flexible time' : value.hours ? `${value.hours}h ${value.minutes}m` : `${value.minutes}m`;
-const initials = (value: string) => value.split(/[ @._-]/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'ST';
 const getGreeting = () => {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good Morning';
@@ -58,13 +57,13 @@ export default function QuizTakerDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [focusTopic, setFocusTopic] = useState<{ id: string; title: string; averagePercentage: number; attempts: number } | null>(null);
   const [assignedQuizzes, setAssignedQuizzes] = useState<AssignedQuiz[]>([]);
+  const [studentName, setStudentName] = useState('');
   const [loading, setLoading] = useState(true);
   const [assignedLoading, setAssignedLoading] = useState(true);
   const [error, setError] = useState('');
   const [assignedError, setAssignedError] = useState('');
   const [submitNotification, setSubmitNotification] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
-  const email = typeof window !== 'undefined' ? localStorage.getItem('quizTakerEmail') || 'Student' : 'Student';
   const greeting = getGreeting();
 
   const fetchSubmissions = async () => {
@@ -86,7 +85,8 @@ export default function QuizTakerDashboard() {
       setAssignedLoading(true); setAssignedError('');
       const response = await fetch('/api/quiztaker/dashboard');
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Unable to load assigned exams');
+      if (!response.ok || !data.success) throw new Error(data.message || 'Unable to load your dashboard');
+      setStudentName(typeof data.quizTaker?.name === 'string' ? data.quizTaker.name.trim() : '');
       setAssignedQuizzes(data.success ? data.quizTaker?.assignedQuizzes || [] : []);
     } catch (err) {
       setAssignedQuizzes([]); setAssignedError(err instanceof Error ? err.message : 'Unable to load assigned exams');
@@ -105,7 +105,8 @@ export default function QuizTakerDashboard() {
   const mockCount = submissions.filter((item) => item.type === 'mock').length;
   const averageScore = totalExams ? Math.round(submissions.reduce((sum, item) => sum + item.percentage, 0) / totalExams) : 0;
   const highestScore = totalExams ? Math.max(...submissions.map((item) => item.percentage)) : 0;
-  const readiness = totalExams ? Math.min(95, Math.max(18, Math.round((averageScore + Math.min(totalExams * 4, 25)) / 1.2))) : 18;
+  const readiness = !loading && !error && totalExams ? Math.min(100, Math.max(0, averageScore)) : null;
+  const readinessStatus = loading ? 'Loading results…' : error ? 'Results unavailable' : 'No results yet';
   const pendingCount = assignedQuizzes.filter((item) => item.status === 'pending').length;
   const completedCount = assignedQuizzes.filter((item) => item.status === 'completed').length;
 
@@ -118,22 +119,24 @@ export default function QuizTakerDashboard() {
   const startQuiz = (quiz: AssignedQuiz) => { window.location.href = `/assigned-quiz/${quiz.quizId._id}`; };
   const viewResults = (id: string) => { window.location.href = `/results/${id}`; };
   return (
-    <div className="portal-page text-[1.105rem] text-[#17231e]">
-      <DashboardSidebar readiness={readiness} />
-
-      <main className="dashboard-main mx-auto max-w-[1210px] px-4 py-4 lg:ml-64 lg:px-8 lg:py-5">
-        <header className="flex items-center justify-between lg:mb-4">
-          <div className="flex items-center gap-3 lg:hidden"><span className="grid"><PortalLogo size={90} priority /></span></div>
-          <div className="hidden lg:block"><p className="text-[0.690625rem] font-extrabold uppercase tracking-[0.16em] text-[#718078]">Student command centre</p><h1 className="mt-1 text-[1.6575rem] font-black tracking-[-0.04em]">Hello, {email.split('@')[0]}</h1></div>
-          <div className="flex items-center gap-3"><span className="hidden text-right sm:block"><strong className="block text-[0.82875rem]">{email}</strong><small className="text-[0.690625rem] text-[#718078]">BJOT learner</small></span><span className="grid size-9 place-items-center rounded-full bg-[#dcebe1] text-[0.82875rem] font-black text-[#0d3b2e]">{initials(email)}</span></div>
-        </header>
+    <>
+      <StudentHeader displayName={studentName || 'Student'} />
+      <div className="portal-page text-[1.105rem] text-[#17231e]">
+      <main className="dashboard-main mx-auto max-w-[1210px] px-4 py-4 lg:px-8 lg:py-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+          <p className="text-[0.690625rem] font-extrabold uppercase tracking-[0.16em] text-[#718078]">Student command centre</p>
+          <h1 className="mt-1 text-[1.6575rem] font-black tracking-[-0.04em]">Your dashboard</h1>
+          </div>
+          <DashboardLogoutButton />
+        </div>
 
         {submitNotification && <div className="mb-3 flex items-start gap-3 rounded-lg border border-[#f1c779] bg-[#fff8e8] p-3 text-[0.966875rem] text-[#744700]"><AlertCircle size={18} /><div className="flex-1"><strong className="block text-[0.82875rem]">Quiz auto-submitted</strong>{submitNotification}</div><button onClick={() => setSubmitNotification(null)} aria-label="Dismiss notification"><X size={17} /></button></div>}
 
         <section className="mb-6 grid gap-4 lg:grid-cols-[1.65fr_.9fr]">
           <div className="rounded-xl border border-[#dce5df] bg-white shadow-[0_2px_8px_rgba(13,59,46,0.04)] p-5 sm:p-6">
             <span className="inline-flex rounded-full border border-[#c8dbce] bg-[#f1f7f3] px-2.5 py-1 text-[0.690625rem] font-extrabold uppercase tracking-wide text-[#18533d]">PREMIUM STUDENT (september cohort)</span>
-            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-[1.38125rem] font-black tracking-[-0.035em]">{greeting}, {email.split('@')[0]}.</h2><p className="mt-1 max-w-lg text-[0.82875rem] leading-[1.38125rem] text-[#65736a]">Stay consistent with focused practice. Your dashboard keeps your next best learning action within reach.</p></div><Link href="/cbt-simulator" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-[#0d3b2e] px-4 py-2.5 text-[0.82875rem] font-bold text-white transition hover:bg-[#14513c]"><Play size={14} fill="currentColor" />Resume CBT mock</Link></div>
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-[1.38125rem] font-black tracking-[-0.035em]">{greeting}{studentName ? `, ${studentName}` : ''}.</h2><p className="mt-1 max-w-lg text-[0.82875rem] leading-[1.38125rem] text-[#65736a]">Stay consistent with focused practice. Your dashboard keeps your next best learning action within reach.</p></div><Link href="/cbt-simulator" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-[#0d3b2e] px-4 py-2.5 text-[0.82875rem] font-bold text-white transition hover:bg-[#14513c]"><Play size={14} fill="currentColor" />Resume CBT mock</Link></div>
             <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#e7eee9] pt-4 sm:grid-cols-4">
               {([['Study tests', String(studyCount), Trophy], ['Tests done', String(totalExams), CheckCircle2], ['Overall score', `${averageScore}%`, TrendingUp], ['Best score', `${highestScore}%`, Award]] as const).map(([label, value, Icon]) => <div key={label} className="flex gap-2"><span className="grid size-8 place-items-center rounded-md bg-[#edf3ef] text-[#15513e]"><Icon size={14} /></span><span><b className="block text-[0.82875rem]">{value}</b><small className="block text-[0.690625rem] leading-[1.105rem] text-[#718078]">{label}</small></span></div>)}
             </div>
@@ -142,22 +145,23 @@ export default function QuizTakerDashboard() {
             <p className="text-[0.690625rem] font-bold uppercase tracking-[0.15em] text-[#b9d2c4]">Projected readiness</p>
             <div className="mt-4 flex items-center gap-5">
               <div
-                className="grid size-24 place-items-center rounded-full border-4 border-[#efb948]"
-                style={{ background: `conic-gradient(#efb948 ${readiness * 3.6}deg, #215641 0deg)` }}
+                className="grid size-24 shrink-0 place-items-center rounded-full"
+                style={{ background: `conic-gradient(#efb948 ${(readiness ?? 0) * 3.6}deg, #215641 0deg)` }}
               >
                 <span className="grid size-[70px] place-items-center rounded-full bg-[#0d3b2e] text-center">
-                  <b className="text-[1.38125rem] leading-none">{readiness}%</b>
-                  <small className="mt-1 text-[0.5525rem] uppercase text-[#b9d2c4]">ready</small>
+                  <b className="text-[1.38125rem] leading-none">{readiness === null ? '—' : `${readiness}%`}</b>
+                  <small className="mt-1 text-[0.5525rem] uppercase text-[#b9d2c4]">{readiness === null ? 'pending' : 'readiness'}</small>
                 </span>
               </div>
               <div>
                 <p className="text-[0.7596875rem] text-[#b9d2c4]">Current average</p>
-                <strong className="text-[1.6575rem]">{averageScore || '—'}%</strong>
-                <p className="mt-2 text-[0.690625rem] text-[#d8e6de]">Complete a mock to refine your projection.</p>
+                <strong className="text-[1.6575rem]">{readiness === null ? '—' : `${averageScore}%`}</strong>
+                <p className="mt-2 text-[0.690625rem] text-[#d8e6de]">{readiness === null ? readinessStatus : `Based on your average across ${totalExams} completed test${totalExams === 1 ? '' : 's'}.`}</p>
+                {!loading && !error && !totalExams && <p className="mt-1 text-[0.690625rem] text-[#d8e6de]">Complete a mock, CBT practice, or study test to see your readiness.</p>}
               </div>
             </div>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#215641]">
-              <div className="h-full rounded-full bg-[#efb948]" style={{ width: `${readiness}%` }} />
+              <div className="h-full rounded-full bg-[#efb948]" style={{ width: `${readiness ?? 0}%` }} />
             </div>
           </div>
         </section>
@@ -189,5 +193,6 @@ export default function QuizTakerDashboard() {
         </section>
       </main>
     </div>
+    </>
   );
 }

@@ -4,6 +4,13 @@ import FAQContact from "@/components/faq/FAQContact";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { getLandingContent, section } from "@/lib/landing-content";
+import { publicMetadata } from "@/lib/seo";
+
+export async function generateMetadata() {
+  const content = await getLandingContent();
+  const metadata = publicMetadata("BJOT FAQs, Online Classes & Support", "Find answers about BJOT online tutorials, UTME preparation, classes, CBT practice and student support. Contact Blast JAMB Online Tutorial.", "/support");
+  return content ? metadata : { ...metadata, robots: { index: false, follow: true } };
+}
 
 export default async function FAQPage() {
   const content = await getLandingContent();

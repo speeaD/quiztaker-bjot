@@ -8,7 +8,7 @@ import { CbtQuestion, CbtQuestionSet } from '@/components/cbt/types';
 import { Award, Clock3, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const API_BASE_URL = 'https://bjot-backend-nine.vercel.app/api';
+const API_BASE_URL = '/api';
 type Phase = 'selection' | 'exam' | 'result';
 interface SubmissionResult { score: number; totalPoints: number; percentage: number; timeTaken: number; }
 const formatTime = (seconds: number) => `${Math.floor(seconds / 3600)}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
@@ -22,8 +22,6 @@ export default function SubjectTestPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(3600);
   const [sessionId, setSessionId] = useState('');
-  const [quizTakerId, setQuizTakerId] = useState('');
-  const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [result, setResult] = useState<SubmissionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -46,32 +44,31 @@ export default function SubjectTestPage() {
       setLoading(true); setError('');
       const response = await fetch(`${API_BASE_URL}/cbt/question-sets`);
       const data = await response.json();
-      if (!data.success) throw new Error(data.message || 'Unable to load subjects');
-      setQuestionSets(data.questionSets || []);
+      if (!response.ok || !data.success) throw new Error(data.message || 'Unable to load subjects');
+      if (!Array.isArray(data.questionSets) || !data.questionSets.length) throw new Error('No subjects have available questions yet.');
+      setQuestionSets(data.questionSets);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to connect to the server');
     } finally { setLoading(false); }
   };
 
   const start = async () => {
-    if (!selectedId) return;
+    if (loading || !selectedId) return;
     try {
       setLoading(true); setError('');
-      const email = localStorage.getItem('quizTakerEmail') || 'student@example.com';
       const response = await fetch(`${API_BASE_URL}/cbt/start-single-subject`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionSetId: selectedId, email }),
+        body: JSON.stringify({ questionSetId: selectedId }),
       });
       const data = await response.json();
-      if (!data.success) throw new Error(data.message || 'Unable to start the subject test');
-      const questionResponse = await fetch(`${API_BASE_URL}/cbt/question-set/${selectedId}/questions`);
-      const questionData = await questionResponse.json();
-      if (!questionData.success) throw new Error('Unable to prepare questions');
+      if (!response.ok || !data.success) throw new Error(data.message || 'Unable to start the subject test');
+      const selectedQuestions = data.session?.questionsBySet?.[selectedId];
+      if (!data.session?.sessionId || !Array.isArray(selectedQuestions) || !selectedQuestions.length) {
+        throw new Error('No questions are available for this subject.');
+      }
       setSessionId(data.session.sessionId);
-      setQuizTakerId(data.session.quizTakerId);
-      setStartedAt(new Date(data.session.startedAt));
-      setQuestions([...(questionData.questionSet.questions || [])].sort(() => Math.random() - 0.5).slice(0, 40));
-      setAnswers({}); setCurrentQuestionIndex(0); setTimeRemaining(3600); setPhase('exam');
+      setQuestions(selectedQuestions);
+      setAnswers({}); setCurrentQuestionIndex(0); setTimeRemaining(data.session.durationSeconds); setPhase('exam');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to start the subject test');
     } finally { setLoading(false); }
@@ -84,10 +81,10 @@ export default function SubjectTestPage() {
       setSubmitting(true); setLoading(true); setError('');
       const response = await fetch(`${API_BASE_URL}/cbt/submit-single-subject`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, quizTakerId, questionSetId: selectedId, answers: Object.entries(answers).map(([questionId, answer]) => ({ questionId, answer })), startedAt: startedAt?.toISOString() }),
+        body: JSON.stringify({ sessionId, answers: Object.entries(answers).map(([questionId, answer]) => ({ questionId, answer })) }),
       });
       const data = await response.json();
-      if (!data.success) throw new Error(data.message || 'Unable to submit the subject test');
+      if (!response.ok || !data.success) throw new Error(data.message || 'Unable to submit the subject test');
       setResult(data.submission); setPhase('result');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to submit the subject test');
@@ -96,7 +93,7 @@ export default function SubjectTestPage() {
 
   const reset = () => {
     setPhase('selection'); setSelectedId(''); setQuestions([]); setAnswers({}); setCurrentQuestionIndex(0);
-    setTimeRemaining(3600); setResult(null); setSessionId(''); setQuizTakerId(''); setStartedAt(null); setShowCalculator(false); setError('');
+    setTimeRemaining(3600); setResult(null); setSessionId(''); setShowCalculator(false); setError('');
   };
 
   if (phase === 'selection') return <div className="min-h-screen bg-[#f4f7f5]"><SimulatorHeader mode="setup" /><SubjectTestSelection questionSets={questionSets} selectedId={selectedId} loading={loading} error={error} onSelect={setSelectedId} onStart={() => void start()} /></div>;

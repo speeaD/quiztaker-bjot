@@ -51,7 +51,7 @@ export default function Navbar() {
         </div>
         <nav className="links">
           {LINKS.map((link) => (
-            <a key={link} href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}>
+            <a key={link} href={link === "Home" ? "/" : `/${link.toLowerCase().replace(/\s+/g, "-")}`}>
               {link}
             </a>
           ))}

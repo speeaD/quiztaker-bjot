@@ -1,5 +1,8 @@
+'use client';
+
 import { Calculator, LogOut, Play, Send } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import PortalLogo from "@/components/PortalLogo";
 
 interface SimulatorHeaderProps {
@@ -21,19 +24,23 @@ export default function SimulatorHeader({
   homeHref = "/dashboard",
   homeLabel = "Dashboard",
 }: SimulatorHeaderProps) {
+  const pathname = usePathname();
+  const inPortal = pathname === '/cbt-simulator' || pathname === '/subject-test';
+  if (inPortal && mode !== 'exam') return null;
+
   return (
     <header className="border-b border-[#dce5df] bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href={homeHref} className="flex items-center gap-3">
           <span className="grid">
-            <PortalLogo size={70} priority />
+            {!inPortal && <PortalLogo size={70} priority />}
           </span>
           <span>
             <strong className="block text-sm tracking-[-0.02em] text-[#17231e]">
-              BJOT
+              {inPortal ? pathname === '/subject-test' ? 'Subject Test' : 'CBT Simulator' : 'BJOT'}
             </strong>
             <small className="block text-[9px] font-bold uppercase tracking-[0.13em] text-[#a5660c]">
-              {mode === "exam" ? "Mock Exam" : "UTME Simulator"}
+              {mode === "exam" ? "Exam in progress" : "UTME Simulator"}
             </small>
           </span>
         </Link>
