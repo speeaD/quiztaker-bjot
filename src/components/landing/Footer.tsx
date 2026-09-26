@@ -13,7 +13,7 @@ export default function Footer({ content, contact }: { content: SectionContent; 
             <p className="desc">{content.tagline}</p>
             <div className="socials">
               {contact?.whatsapp && <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`} aria-label="WhatsApp"><Image src="/whatsapp.svg" alt="" width={20} height={20} /></a>}
-              {contact?.youtube && <a href={contact.youtube.startsWith("http") ? contact.youtube : `https://www.youtube.com/results?search_query=${encodeURIComponent(contact.youtube)}`} aria-label="YouTube"><Image src="/youtube.svg" alt="" width={20} height={20} /></a>}
+              {contact?.youtube && <a href={contact.youtube.startsWith("http") ? contact.youtube : `https://youtube.com/@bjotofficial?si=a55l0qTH0QKldHbQ`} aria-label="YouTube"><Image src="/youtube.svg" alt="" width={20} height={20} /></a>}
               {contact?.email && <a href={`mailto:${contact.email}`} aria-label="Email"><Image src="/maildotru.svg" alt="" width={20} height={20} /></a>}
             </div>
           </div>
