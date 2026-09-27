@@ -6,7 +6,7 @@ export const siteUrl = new URL(process.env.SITE_URL || "https://www.bjotofficial
 export const siteName = "BJOT";
 export const organizationName = "Blast JAMB Online Tutorial";
 export const siteDescription = "Prepare for JAMB UTME with BJOT (Blast JAMB Online Tutorial): tutor-led lessons, CBT practice, mock exams and a practical UTME study guide.";
-export const publicPages = ["/", "/about-us", "/utme-preparation-guide", "/testimonials", "/support"] as const;
+export const publicPages = ["/", "/about-us", "/utme-preparation-guide", "/testimonials", "/support", "/privacy-policy", "/terms-of-use"] as const;
 
 export function absoluteUrl(path: string) {
   return new URL(path, `${siteUrl}/`).toString();
