@@ -4,11 +4,9 @@ import {
   ArrowRight,
   Clipboard,
   CircleHelp,
-  Info,
   KeyRound,
   Loader2,
   ShieldCheck,
-  Trophy,
 } from "lucide-react";
 import { useState } from "react";
 import PortalLogo from "@/components/PortalLogo";
@@ -88,7 +86,7 @@ export default function Login() {
           </div>
         </div>
         <a
-          href="/support"
+          href="https://wa.me/2349164896938"
           className="pt-2 text-sm font-bold text-[#35403b] transition hover:text-[#a76000]"
         >
           Help Desk
@@ -105,7 +103,7 @@ export default function Login() {
               
               <p className="mx-auto mt-3 inline-flex items-center gap-2 rounded-full bg-[#e4f7ee] px-3 py-1 text-xs font-extrabold tracking-[0.1em] text-[#063f30]">
                 <span className="size-2 rounded-full bg-[#16a36a]" />
-                2026/2027 SESSION
+                2027 UTME SESSION
               </p>
               <h1 className="mt-3 text-3xl font-black tracking-[-0.05em] text-[#042e23] sm:text-4xl">
                 BJOT Student Portal
@@ -148,16 +146,13 @@ export default function Login() {
                   }}
                   disabled={isLoading}
                   autoComplete="username"
-                  placeholder="e.g. BJOT-2026-X89K"
+                  placeholder="e.g. 202-X8K"
                   className={`w-full rounded-md border bg-[#f4f5f6] py-4 pl-16 pr-4 text-xl font-semibold tracking-[0.03em] text-[#202824] outline-none transition placeholder:text-[#808883] focus:bg-white focus:ring-4 focus:ring-[#d9eee4] disabled:cursor-not-allowed disabled:opacity-60 ${error ? "border-[#d94b38]" : "border-transparent focus:border-[#0b4b39]"}`}
                 />
               </div>
               <div className="mt-3 flex items-center justify-between gap-3 text-sm text-[#65706a]">
-                <span className="flex items-center gap-1.5">
-                  <Info size={17} />
-                  Case-insensitive 12-character candidate key
-                </span>
-                <span className="font-bold">{accessCode.length} / 12</span>
+                
+                <span className="font-bold">{accessCode.length} / 6</span>
               </div>
               {error && (
                 <p
@@ -185,22 +180,22 @@ export default function Login() {
                 <p>
                   Don&apos;t have an access key?{" "}
                   <a
-                    href="/support#contact"
+                    href="https://wa.me/2349164896938"
                     className="font-extrabold text-[#a76000] hover:underline"
                   >
                     Contact Study Coordinator
                   </a>
                 </p>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-xs font-medium">
-                  <a
+                  {/* <a
                     href="/support"
                     className="inline-flex items-center gap-1.5 hover:text-[#074634]"
                   >
                     <CircleHelp size={16} />
                     Verify Code Status
-                  </a>
+                  </a> */}
                   <a
-                    href="/suppor#contact"
+                    href="https://wa.me/2349164896938"
                     className="inline-flex items-center gap-1.5 hover:text-[#074634]"
                   >
                     <CircleHelp size={16} />

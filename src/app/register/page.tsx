@@ -11,7 +11,6 @@ import {
   Mail,
   Phone,
   ShieldCheck,
-  Star,
   Trophy,
   User,
   Users,
@@ -395,25 +394,7 @@ export default function RegisterPage() {
             </div>
           </form>
         </div>
-        <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-[#dce5e0] bg-white px-5 py-4 text-xs shadow-sm">
-          <span className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-lg border border-[#ffd976] bg-[#fffaf0] text-[#a76000]">
-              <Star size={17} fill="currentColor" />
-            </span>
-            <span>
-              <strong className="block text-[#1b2635]">
-                NIGERIA&apos;S BEST UTME PREP NETWORK
-              </strong>
-              <span className="text-[#667895]">
-                Over 1,000+ candidates blasting UTME above 300+
-              </span>
-            </span>
-          </span>
-          <span className="hidden items-center gap-2 rounded-lg border border-[#ffd976] bg-[#fffaf0] px-3 py-2 font-extrabold tracking-wide text-[#9c4e00] sm:flex">
-            <Trophy size={15} />
-            368 PEAK RECORD
-          </span>
-        </div>
+        
       </section>
       <footer className="flex flex-col gap-3 border-t border-[#dce7e3] bg-white px-7 py-7 text-[11px] text-[#61728d] sm:flex-row sm:items-center sm:justify-between">
         <p>© 2026 BJOT Blast JAMB Online Tutorials. All rights reserved.</p>
