@@ -4,7 +4,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import logo from "../../../public/bjot-logo.png";
 
 const LINKS = ["Home", "About Us", "Testimonials", "Support", "Free Mock"];
 
@@ -41,7 +40,7 @@ export default function Navbar() {
       <div className="nav-inner">
         <div className="logo">
           <Image
-            src={logo}
+            src="/bjot-logo.png"
             alt="BJOT Logo"
             width={250}
             height={150}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, CheckCircle, XCircle, Clock, Award, Home, ChevronDown, ChevronUp, MinusCircle } from 'lucide-react';
+import { ScoreMeme } from '@/components/cbt/CompletionReview';
 
 const API_BASE_URL = '/api/quiztaker';
 
@@ -11,6 +12,7 @@ interface Answer {
   type: string;
   yourAnswer: string | null;
   correctAnswer: string;
+  explanation?: string;
   isCorrect: boolean | null;
   pointsAwarded: number;
   pointsPossible: number;
@@ -243,11 +245,13 @@ const ResultsPage = () => {
           )}
         </div>
 
+        <ScoreMeme percentage={submission.percentage} />
+
         {/* Detailed Answers by Question Set */}
         {submission.answersByQuestionSet && submission.answersByQuestionSet.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 sm:p-6 border-b border-gray-200">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Detailed Review</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Corrections and explanations</h2>
               <p className="text-sm text-gray-600 mt-1">Review your answers for each subject</p>
             </div>
 
@@ -367,6 +371,8 @@ const ResultsPage = () => {
                                 </p>
                               </div>
                             )}
+
+                            {answer.explanation && <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700"><strong>Explanation:</strong> {answer.explanation}</p>}
 
                             {/* Points */}
                             <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">

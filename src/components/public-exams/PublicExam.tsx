@@ -1,6 +1,7 @@
 "use client";
 
 import ExamWorkspace from "@/components/cbt/ExamWorkspace";
+import { Corrections, ScoreMeme, type ReviewedAnswer } from "@/components/cbt/CompletionReview";
 import SimulatorHeader from "@/components/cbt/SimulatorHeader";
 import type { CbtQuestion, CbtQuestionSet } from "@/components/cbt/types";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -62,6 +63,7 @@ export default function PublicExam({
   const [seconds, setSeconds] = useState(0);
   const [result, setResult] = useState<Result | null>(null);
   const [gradedResult, setGradedResult] = useState<Result | null>(null);
+  const [review, setReview] = useState<ReviewedAnswer[]>([]);
   const [countsForGrade, setCountsForGrade] = useState(true);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -157,16 +159,19 @@ export default function PublicExam({
             attempt: Result;
             gradedResult: Result;
             countsForGrade: boolean;
+            review: ReviewedAnswer[];
           }>(`mock/sessions/${encodeURIComponent(sessionId)}/submit`, payload);
           setResult(data.attempt);
           setGradedResult(data.gradedResult);
           setCountsForGrade(data.countsForGrade);
+          setReview(data.review || []);
         } else {
-          const data = await api<{ result: Result }>("topic/submit", {
+          const data = await api<{ result: Result; review: ReviewedAnswer[] }>("topic/submit", {
             ...payload,
             topicId: topicData?.topic.id,
           });
           setResult(data.result);
+          setReview(data.review || []);
         }
         setPhase("result");
       } catch (err) {
@@ -241,6 +246,7 @@ export default function PublicExam({
       setSetIndex(0);
       setQuestionIndex(0);
       setResult(null);
+      setReview([]);
       setPhase("exam");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to start the test");
@@ -435,7 +441,10 @@ export default function PublicExam({
                   : `Your first score remains graded: ${gradedResult.score}/${gradedResult.totalPoints} (${gradedResult.percentage}%).`}
               </p>
             )}
-            <button
+          </section>
+          <ScoreMeme percentage={result.percentage} />
+          <Corrections answers={review} />
+          <button
               type="button"
               onClick={() => {
                 setResult(null);
@@ -445,7 +454,6 @@ export default function PublicExam({
             >
               {mode === "mock" ? "Retake exam" : "Retry topic test"}
             </button>
-          </section>
         </main>
       )}
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import CalculatorWidget from '@/components/cbt/CalculatorWidget';
+import { Corrections, ScoreMeme, type ReviewedAnswer } from '@/components/cbt/CompletionReview';
 import ExamWorkspace from '@/components/cbt/ExamWorkspace';
 import SimulatorHeader from '@/components/cbt/SimulatorHeader';
 import SubjectTestSelection from '@/components/cbt/SubjectTestSelection';
@@ -10,7 +11,7 @@ import { useEffect, useState } from 'react';
 
 const API_BASE_URL = '/api';
 type Phase = 'selection' | 'exam' | 'result';
-interface SubmissionResult { score: number; totalPoints: number; percentage: number; timeTaken: number; }
+interface SubmissionResult { score: number; totalPoints: number; percentage: number; timeTaken: number; review: ReviewedAnswer[]; }
 const formatTime = (seconds: number) => `${Math.floor(seconds / 3600)}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
 
 export default function SubjectTestPage() {
@@ -100,7 +101,7 @@ export default function SubjectTestPage() {
 
   if (phase === 'result' && result) {
     const subject = questionSets.find((item) => item._id === selectedId)?.title || 'Subject Test';
-    return <div className="min-h-screen bg-[#f4f7f5]"><SimulatorHeader mode="result" /><main className="mx-auto max-w-3xl px-4 py-8 sm:py-12"><section className="rounded-xl border border-[#dce5df] bg-white p-6 text-center shadow-[0_6px_20px_rgba(13,59,46,0.07)] sm:p-10"><span className="mx-auto grid size-20 place-items-center rounded-full bg-[#fff2d1] text-[#9a5a00]"><Award size={34} /></span><p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a5660c]">Subject test complete</p><h1 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#17231e]">{result.percentage}% score</h1><p className="mt-2 text-sm text-[#64726a]">Your {subject} result is ready.</p><div className="mt-7 grid gap-3 sm:grid-cols-3">{[[result.score, 'Your score'], [result.totalPoints, 'Total points'], [`${Math.floor(result.timeTaken / 60)}m`, 'Time taken']].map(([value, label]) => <div key={label as string} className="rounded-lg bg-[#edf3ef] p-4"><strong className="block text-2xl text-[#0d3b2e]">{value}</strong><small className="text-[11px] text-[#64726a]">{label}</small></div>)}</div><button onClick={reset} className="mt-7 inline-flex items-center gap-2 rounded-md bg-[#0d3b2e] px-5 py-3 text-sm font-bold text-white hover:bg-[#14513c]"><RotateCcw size={16} />Take another subject test</button></section></main></div>;
+    return <div className="min-h-screen bg-[#f4f7f5]"><SimulatorHeader mode="result" /><main className="mx-auto max-w-3xl px-4 py-8 sm:py-12"><section className="rounded-xl border border-[#dce5df] bg-white p-6 text-center shadow-[0_6px_20px_rgba(13,59,46,0.07)] sm:p-10"><span className="mx-auto grid size-20 place-items-center rounded-full bg-[#fff2d1] text-[#9a5a00]"><Award size={34} /></span><p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#a5660c]">Subject test complete</p><h1 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#17231e]">{result.percentage}% score</h1><p className="mt-2 text-sm text-[#64726a]">Your {subject} result is ready.</p><div className="mt-7 grid gap-3 sm:grid-cols-3">{[[result.score, 'Your score'], [result.totalPoints, 'Total points'], [`${Math.floor(result.timeTaken / 60)}m`, 'Time taken']].map(([value, label]) => <div key={label as string} className="rounded-lg bg-[#edf3ef] p-4"><strong className="block text-2xl text-[#0d3b2e]">{value}</strong><small className="text-[11px] text-[#64726a]">{label}</small></div>)}</div><button onClick={reset} className="mt-7 inline-flex items-center gap-2 rounded-md bg-[#0d3b2e] px-5 py-3 text-sm font-bold text-white hover:bg-[#14513c]"><RotateCcw size={16} />Take another subject test</button></section><ScoreMeme percentage={result.percentage} /><Corrections answers={result.review || []} /></main></div>;
   }
 
   const currentQuestion = questions[currentQuestionIndex] || null;

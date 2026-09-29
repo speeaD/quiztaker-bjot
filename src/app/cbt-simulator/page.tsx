@@ -1,6 +1,7 @@
 "use client";
 
 import CalculatorWidget from "@/components/cbt/CalculatorWidget";
+import { Corrections, ScoreMeme, type ReviewedAnswer } from "@/components/cbt/CompletionReview";
 import ExamWorkspace from "@/components/cbt/ExamWorkspace";
 import SimulatorHeader from "@/components/cbt/SimulatorHeader";
 import SubjectSelection from "@/components/cbt/SubjectSelection";
@@ -16,6 +17,7 @@ interface SubmissionResult {
   totalPoints: number;
   percentage: number;
   timeTaken: number;
+  review: ReviewedAnswer[];
 }
 
 const formatTime = (seconds: number) => {
@@ -270,6 +272,8 @@ export default function CBTSimulator() {
               Take another exam
             </button>
           </section>
+          <ScoreMeme percentage={submissionResult.percentage} />
+          <Corrections answers={submissionResult.review || []} />
         </main>
       </div>
     );
