@@ -15,7 +15,10 @@ export type SectionContent = {
   metrics?: { value: string; label: string }[];
   gallery?: { label: string; caption: string; imageUrl?: string }[];
   highlights?: string[];
-  categories?: { title: string; items: { question: string; answer: string }[] }[];
+  categories?: {
+    title: string;
+    items: { question: string; answer: string }[];
+  }[];
   brand?: string;
   tagline?: string;
   copyright?: string;
@@ -84,25 +87,53 @@ export async function getLandingContent(): Promise<LandingContent | null> {
   }
 }
 
-function isLandingResponse(value: unknown): value is { success: true; content: LandingContent } {
+function isLandingResponse(
+  value: unknown,
+): value is { success: true; content: LandingContent } {
   if (!value || typeof value !== "object") return false;
   const payload = value as Record<string, unknown>;
-  if (payload.success !== true || !payload.content || typeof payload.content !== "object") return false;
+  if (
+    payload.success !== true ||
+    !payload.content ||
+    typeof payload.content !== "object"
+  )
+    return false;
   const content = payload.content as Record<string, unknown>;
-  return Array.isArray(content.sections) && content.sections.every((item: unknown) =>
-      isRecord(item) && typeof item.key === "string" && isRecord(item.content)) &&
-    Array.isArray(content.staff) && content.staff.every((item: unknown) =>
-      isRecord(item) && typeof item.id === "string" && typeof item.name === "string") &&
-    Array.isArray(content.testimonials) && content.testimonials.every((item: unknown) =>
-      isRecord(item) && typeof item.id === "string" && typeof item.studentName === "string" &&
-      typeof item.quote === "string" && typeof item.type === "string") &&
-    (content.contact === null || isRecord(content.contact));
+  return (
+    Array.isArray(content.sections) &&
+    content.sections.every(
+      (item: unknown) =>
+        isRecord(item) &&
+        typeof item.key === "string" &&
+        isRecord(item.content),
+    ) &&
+    Array.isArray(content.staff) &&
+    content.staff.every(
+      (item: unknown) =>
+        isRecord(item) &&
+        typeof item.id === "string" &&
+        typeof item.name === "string",
+    ) &&
+    Array.isArray(content.testimonials) &&
+    content.testimonials.every(
+      (item: unknown) =>
+        isRecord(item) &&
+        typeof item.id === "string" &&
+        typeof item.studentName === "string" &&
+        typeof item.quote === "string" &&
+        typeof item.type === "string",
+    ) &&
+    (content.contact === null || isRecord(content.contact))
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-export function section(content: LandingContent, key: string): SectionContent | null {
+export function section(
+  content: LandingContent,
+  key: string,
+): SectionContent | null {
   return content.sections.find((entry) => entry.key === key)?.content ?? null;
 }

@@ -53,13 +53,13 @@ export default function Hero({
           <motion.p variants={item}>{content.description}</motion.p>
           <motion.div className="hero-ctas" variants={item}>
             {content.primaryCta && (
-              <a href={content.primaryCta.href} className="btn btn-primary">
-                {content.primaryCta.label}
+              <a href="/register" className="btn btn-primary">
+                Join BJOT
               </a>
             )}
             {content.secondaryCta && (
-              <a href={content.secondaryCta.href} className="btn btn-gold">
-                {content.secondaryCta.label}
+              <a href="/free-mock" className="btn btn-gold">
+                Free BJOT Mock
               </a>
             )}
           </motion.div>
