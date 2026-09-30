@@ -52,16 +52,18 @@ export function publicMetadata(
       url: absoluteUrl(path),
       images: [
         {
-          url: absoluteUrl("/group-bjot.png"),
-          alt: "Blast JAMB Online Tutorial (BJOT)",
+          url: absoluteUrl("/bjot-logo-cropped.png"),
+          width: 520,
+          height: 520,
+          alt: "BJOT logo",
         },
       ],
     },
     twitter: {
-      card: "summary_large_image",
+      card: "summary",
       title,
       description,
-      images: [absoluteUrl("/group-bjot.png")],
+      images: [absoluteUrl("/bjot-logo-cropped.png")],
     },
   };
 }

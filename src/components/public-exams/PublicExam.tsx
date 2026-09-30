@@ -2,7 +2,7 @@
 
 import ExamWorkspace from "@/components/cbt/ExamWorkspace";
 import { Corrections, ScoreMeme, type ReviewedAnswer } from "@/components/cbt/CompletionReview";
-import SimulatorHeader from "@/components/cbt/SimulatorHeader";
+import PublicHeader from "@/components/PublicHeader";
 import type { CbtQuestion, CbtQuestionSet } from "@/components/cbt/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -267,17 +267,13 @@ export default function PublicExam({
       .slice(0, setIndex)
       .reduce((sum, id) => sum + (questionsBySet[id]?.length || 0), 0) +
     questionIndex;
-  const homeHref = mode === "mock" ? "/" : "/";
-
   return (
     <div className="min-h-screen bg-[#f4f7f5]">
-      <SimulatorHeader
-        mode={phase === "setup" ? "setup" : phase}
-        homeHref={homeHref}
-        homeLabel={mode === "mock" ? "Home" : "Home"}
-        timer={`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
-        onSubmit={() => void submit()}
-      />
+      <PublicHeader exam={phase === "exam" ? {
+        timer: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
+        onSubmit: () => void submit(),
+        submitting: busy,
+      } : undefined} />
       {error && (
         <p
           role="alert"

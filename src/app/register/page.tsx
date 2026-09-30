@@ -5,7 +5,6 @@ import {
   BookOpen,
   Check,
   ChevronDown,
-  CircleHelp,
   GraduationCap,
   Loader2,
   Mail,
@@ -17,7 +16,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import PortalLogo from "@/components/PortalLogo";
+import PublicHeader from "@/components/PublicHeader";
 import { isEnglishSubject, normalizeRegistrationSubjects, validRegistrationCombination, type RegistrationSubject } from "@/lib/registration-subjects";
 
 const inputClass =
@@ -116,29 +115,7 @@ export default function RegisterPage() {
   const disabled = isSubmitting || isLoadingSubjects;
   return (
     <main className="min-h-screen bg-[#f5faf7] text-[#071b34]">
-      <header className="flex h-16 items-center justify-between border-b border-[#dce7e3] bg-white px-5 sm:px-10">
-        <PortalLogo
-          size={100}
-          priority
-          className=""
-        />
-        <nav className="flex items-center gap-4 text-xs text-[#445b7e]">
-          <span className="hidden sm:inline">Already have an access key?</span>
-          <a
-            href="/login"
-            className="rounded-lg border border-[#bdc8d1] px-4 py-2 font-bold tracking-wide text-[#092235] transition hover:border-[#0a4a37] hover:text-[#0a4a37]"
-          >
-            SIGN IN
-          </a>
-          <a
-            href="/support"
-            className="hidden items-center gap-1.5 font-bold tracking-wide text-[#34465e] hover:text-[#a76000] sm:inline-flex"
-          >
-            <CircleHelp size={15} className="text-[#e9971c]" />
-            HELP DESK
-          </a>
-        </nav>
-      </header>
+      <PublicHeader />
       <section className="mx-auto w-full max-w-[720px] px-4 py-10 sm:py-12">
         <div className="overflow-hidden rounded-2xl border border-[#dce5e0] bg-white shadow-[0_10px_28px_rgba(11,69,51,0.11)]">
           <div className="h-2 bg-gradient-to-r from-[#084635] via-[#0a4a37] to-[#efa51d]" />
