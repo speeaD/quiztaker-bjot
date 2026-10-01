@@ -164,10 +164,9 @@ export default function QuizTakerDashboard() {
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#215641]">
               <div className="h-full rounded-full bg-[#efb948]" style={{ width: `${readiness ?? 0}%` }} />
             </div>
+            <LearningStreak variant="readiness" />
           </div>
         </section>
-
-        <div className="mb-6"><LearningStreak /></div>
 
         <section><div className="mb-3"><h2 className="text-[0.966875rem] font-black tracking-[-0.02em]">Core Learning Hubs</h2><p className="mt-0.5 text-[0.7596875rem] text-[#718078]">Select a simulator or interactive workspace.</p></div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
