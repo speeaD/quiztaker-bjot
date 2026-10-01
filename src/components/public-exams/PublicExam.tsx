@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type Result = { score: number; totalPoints: number; percentage: number };
 type Mode = "mock" | "topic";
+type Mock = { id: string; title: string; questionSetIds: string[]; questionCount: number; durationSeconds: number };
 type MockResponse = {
   session: {
     id: string;
@@ -50,7 +51,8 @@ export default function PublicExam({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [sets, setSets] = useState<CbtQuestionSet[]>([]);
-  const [combinations, setCombinations] = useState<string[][]>([]);
+  const [mocks, setMocks] = useState<Mock[]>([]);
+  const [selectedMockId, setSelectedMockId] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [topicData, setTopicData] = useState<TopicResponse | null>(null);
   const [questionsBySet, setQuestionsBySet] = useState<
@@ -75,12 +77,12 @@ export default function PublicExam({
     if (mode === "mock") {
       api<{
         questionSets: CbtQuestionSet[];
-        availableCombinations: string[][];
+        mocks: Mock[];
       }>("question-sets")
         .then((data) => {
           if (active) {
             setSets(data.questionSets || []);
-            setCombinations(data.availableCombinations || []);
+            setMocks(data.mocks || []);
           }
         })
         .catch((err) => {
@@ -197,20 +199,13 @@ export default function PublicExam({
       if (
         !name.trim() ||
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ||
-        selected.length !== 4
+        !selectedMockId
       ) {
-        setError("Enter your name, a valid email, and exactly four subjects.");
+        setError("Enter your name, a valid email, and choose a free mock.");
         return;
       }
-      if (
-        !combinations.some(
-          (combo) =>
-            combo.length === 4 && combo.every((id) => selected.includes(id)),
-        )
-      ) {
-        setError(
-          "No free mock is available for this subject combination. Choose a different set of subjects.",
-        );
+      if (!mocks.some((mock) => mock.id === selectedMockId && mock.questionSetIds.length === 4)) {
+        setError("This free mock is no longer available. Choose another exam.");
         return;
       }
     } else if (!topicData?.questions.length) {
@@ -223,6 +218,7 @@ export default function PublicExam({
         const data = await api<MockResponse>("mock/sessions", {
           name: name.trim(),
           email: email.trim().toLowerCase(),
+          quizId: selectedMockId,
           questionSetIds: selected,
         });
         if (
@@ -292,7 +288,7 @@ export default function PublicExam({
             </h1>
             <p className="mt-2 text-sm text-[#64726a]">
               {mode === "mock"
-                ? "Enter your details and choose four subjects. Your first completed score for this mock is the graded score."
+                ? "Enter your details and choose an exam. Your first completed score for this mock is the graded score."
                 : "Answer questions from the lesson, then see your score."}
             </p>
             {loading && (
@@ -300,12 +296,12 @@ export default function PublicExam({
                 Loading available questions…
               </p>
             )}
-            {mode === "mock" && !loading && sets.length === 0 && (
+            {mode === "mock" && !loading && mocks.length === 0 && (
               <p className="mt-6 text-sm text-[#64726a]">
                 No free mock is available right now.
               </p>
             )}
-            {mode === "mock" && sets.length > 0 && (
+            {mode === "mock" && mocks.length > 0 && (
               <>
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   <label className="text-sm font-bold">
@@ -328,28 +324,26 @@ export default function PublicExam({
                     />
                   </label>
                 </div>
-                <p className="mt-6 text-sm font-bold">
-                  Subjects selected: {selected.length}/4
-                </p>
+                <p className="mt-6 text-sm font-bold">Choose a free mock</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {sets.map((set) => (
+                  {mocks.map((mock) => (
                     <button
                       type="button"
-                      key={set._id}
-                      aria-pressed={selected.includes(set._id)}
-                      disabled={
-                        !selected.includes(set._id) && selected.length === 4
-                      }
-                      onClick={() =>
-                        setSelected((current) =>
-                          current.includes(set._id)
-                            ? current.filter((id) => id !== set._id)
-                            : [...current, set._id],
-                        )
-                      }
-                      className={`rounded-lg border p-4 text-left text-sm font-bold disabled:opacity-40 ${selected.includes(set._id) ? "border-[#0d3b2e] bg-[#edf7f0]" : "border-[#dce5df]"}`}
+                      key={mock.id}
+                      aria-pressed={selectedMockId === mock.id}
+                      onClick={() => {
+                        setSelectedMockId(mock.id);
+                        setSelected(mock.questionSetIds);
+                      }}
+                      className={`rounded-lg border p-4 text-left text-sm ${selectedMockId === mock.id ? "border-[#0d3b2e] bg-[#edf7f0]" : "border-[#dce5df]"}`}
                     >
-                      {set.title}
+                      <span className="block font-bold">{mock.title}</span>
+                      <span className="mt-1 block text-[#64726a]">
+                        {mock.questionSetIds.map((id) => sets.find((set) => set._id === id)?.title || id).join(" · ")}
+                      </span>
+                      <span className="mt-1 block text-[#64726a]">
+                        {mock.questionCount} questions · {Math.ceil(mock.durationSeconds / 60)} minutes
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -367,7 +361,7 @@ export default function PublicExam({
                 busy ||
                 loading ||
                 (mode === "mock"
-                  ? sets.length === 0 || selected.length !== 4
+                  ? !selectedMockId
                   : !topicData)
               }
               onClick={() => void start()}

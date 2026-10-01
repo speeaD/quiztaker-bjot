@@ -28,6 +28,7 @@ export default function SimulatorHeader({
   const inPortal = pathname === '/cbt-simulator' || pathname === '/subject-test';
   if (inPortal && mode !== 'exam') return null;
 
+  
   return (
     <header className="border-b border-[#dce5df] bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">

@@ -22,8 +22,8 @@ export default function TeamCta({ content }: { content: SectionContent }) {
             <h2>{content.heading}</h2>
             <p>{content.description}</p>
             <div className="ctas">
-              {content.primaryCta && <a href={content.primaryCta.href} className="btn btn-gold">{content.primaryCta.label}</a>}
-              {content.secondaryCta && <a href={content.secondaryCta.href} className="btn btn-ghost">{content.secondaryCta.label}</a>}
+              {content.primaryCta && <a href="/register" className="btn btn-gold">Join BJOT</a>}
+              {content.secondaryCta && <a href="/about-us" className="btn btn-ghost">About Us</a>}
             </div>
           </Reveal>
         </div>

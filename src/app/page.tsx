@@ -18,7 +18,7 @@ import {
 } from "@/lib/seo";
 
 export const metadata = publicMetadata(
-  "BJOT | Online JAMB Tutorials & UTME Preparation",
+  "Online JAMB Tutorial in Nigeria | BJOT",
   siteDescription,
   "/",
 );

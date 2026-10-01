@@ -7,7 +7,7 @@ export default function PreparationOverview({ staff }: { staff: StaffMember[] })
     <div className="wrap">
       <div className="section-head">
         <p className="eyebrow">BLAST JAMB ONLINE TUTORIAL</p>
-        <h2 id="preparation-heading">Online JAMB tutorials and UTME preparation with BJOT</h2>
+        <h2 id="preparation-heading">Online JAMB tutorial in Nigeria: prepare for UTME with BJOT</h2>
         <p>BJOT (Blast JAMB Online Tutorial) helps Nigerian students prepare for UTME, WAEC, NECO and Post-UTME through lessons, practice and progress reviews.</p>
       </div>
       <div className="grid gap-8 md:grid-cols-2">

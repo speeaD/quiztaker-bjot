@@ -376,8 +376,8 @@ export default function RegisterPage() {
       <footer className="flex flex-col gap-3 border-t border-[#dce7e3] bg-white px-7 py-7 text-[11px] text-[#61728d] sm:flex-row sm:items-center sm:justify-between">
         <p>© 2026 BJOT Blast JAMB Online Tutorials. All rights reserved.</p>
         <div className="flex gap-6">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
+          <a href="/privacy-policy">Privacy Policy</a>
+          <a href="/terms-of-use">Terms of Service</a>
           <a href="/support">Support Desk</a>
         </div>
       </footer>
