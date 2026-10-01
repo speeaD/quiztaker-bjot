@@ -60,7 +60,7 @@ export default function Navbar() {
             Login
           </a>
           <a href="/register" className="btn-join">
-            Join Free
+            Join BJOT
           </a>
         </div>
         <button
@@ -98,7 +98,7 @@ export default function Navbar() {
           Login
         </a>
         <a href="/register" className="mobile-nav-join" onClick={() => setMenuOpen(false)}>
-          Join Free
+          Join BJOT
         </a>
       </nav>
     </motion.header>
