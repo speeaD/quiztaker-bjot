@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { studentApi } from '../../lib/api/attendance-client';
 import { AttendanceRecord } from '../../types/global';
+import LearningStreak from '@/components/dashboard/LearningStreak';
 import {
   formatDate,
   formatTime,
@@ -73,6 +74,8 @@ export default function AttendanceHistoryClient({
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance History</h1>
         <p className="text-gray-600">View your complete attendance record</p>
       </div>
+
+      <div className="mb-8"><LearningStreak /></div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
