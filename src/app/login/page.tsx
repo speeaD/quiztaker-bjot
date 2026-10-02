@@ -146,7 +146,7 @@ export default function Login() {
                   }}
                   disabled={isLoading}
                   autoComplete="username"
-                  placeholder="e.g. 202-X8K"
+                  placeholder="e.g. 2052-X8K6"
                   className={`w-full rounded-md border bg-[#f4f5f6] py-4 pl-16 pr-4 text-xl font-semibold tracking-[0.03em] text-[#202824] outline-none transition placeholder:text-[#808883] focus:bg-white focus:ring-4 focus:ring-[#d9eee4] disabled:cursor-not-allowed disabled:opacity-60 ${error ? "border-[#d94b38]" : "border-transparent focus:border-[#0b4b39]"}`}
                 />
               </div>
