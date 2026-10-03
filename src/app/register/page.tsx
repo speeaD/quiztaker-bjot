@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BookOpen,
   Check,
+  ClipboardCopy,
   ChevronDown,
   GraduationCap,
   Loader2,
@@ -14,7 +15,6 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PublicHeader from "@/components/PublicHeader";
 import { isEnglishSubject, normalizeRegistrationSubjects, validRegistrationCombination, type RegistrationSubject } from "@/lib/registration-subjects";
@@ -23,7 +23,8 @@ const inputClass =
   "w-full rounded-xl border border-[#bdcadb] bg-[#fbfcff] py-3 pl-11 pr-4 text-sm text-[#10213b] outline-none transition placeholder:text-[#8b9db9] focus:border-[#0a4a37] focus:bg-white focus:ring-4 focus:ring-[#d9eee4] disabled:cursor-not-allowed disabled:opacity-60";
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const [accessCode, setAccessCode] = useState<string | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -96,12 +97,14 @@ export default function RegisterPage() {
           firstJamb,
           lastJambScore: firstJamb ? 0 : lastJambScore,
           selectedQuestionSets,
-          accountType: "premium",
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Registration failed");
-      router.push("/login");
+      if (typeof data.quizTaker?.accessCode !== "string" || !data.quizTaker.accessCode) {
+        throw new Error("Your account was created, but the access code could not be shown. Contact support before registering again.");
+      }
+      setAccessCode(data.quizTaker.accessCode);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -113,6 +116,26 @@ export default function RegisterPage() {
     }
   };
   const disabled = isSubmitting || isLoadingSubjects;
+  if (accessCode) {
+    return (
+      <main className="min-h-screen bg-[#f5faf7] text-[#071b34]">
+        <PublicHeader />
+        <section className="mx-auto max-w-xl px-4 py-16">
+          <div className="rounded-2xl border border-[#dce5e0] bg-white p-8 text-center shadow-[0_10px_28px_rgba(11,69,51,0.11)]">
+            <span className="mx-auto grid size-12 place-items-center rounded-full bg-[#e5f5ea] text-[#07583e]"><Check size={26} /></span>
+            <h1 className="mt-5 text-2xl font-black">Your regular student account is ready</h1>
+            <p className="mt-3 text-sm leading-6 text-[#536b91]">You can sign in now. Save this access code; you will need it each time you log in. An admin can upgrade your account to premium later.</p>
+            <div className="mt-6 rounded-xl bg-[#f1f8f4] p-5">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#536b91]">Your student access code</p>
+              <code className="mt-2 block select-all text-2xl font-black tracking-[0.16em] text-[#084635]">{accessCode}</code>
+            </div>
+            <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(accessCode); setCodeCopied(true); } catch { setCodeCopied(false); } }} className="mt-5 inline-flex items-center gap-2 rounded-lg border border-[#b8d4c4] px-4 py-2 text-sm font-bold text-[#084635]"><ClipboardCopy size={16} />{codeCopied ? "Copied" : "Copy code"}</button>
+            <a href="/login" className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#084635] px-5 py-3 text-sm font-extrabold text-white">Continue to login <ArrowRight size={17} /></a>
+          </div>
+        </section>
+      </main>
+    );
+  }
   return (
     <main className="min-h-screen bg-[#f5faf7] text-[#071b34]">
       <PublicHeader />
@@ -130,8 +153,7 @@ export default function RegisterPage() {
                 BJOT Registration
               </h1>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#536b91]">
-                Enter your information and select your subject combination to
-                get verified access to the BJOT Student Portal.
+                Create a regular student account and start practicing now. An admin can upgrade you to premium later.
               </p>
             </div>
             <div className="mt-9 space-y-5">
@@ -364,7 +386,7 @@ export default function RegisterPage() {
                     href="/login"
                     className="font-bold text-[#0a261e] hover:underline"
                   >
-                    Sign In with Premium Access Code
+                    Sign In with Student Access Code
                   </a>
                 </p>
               </div>

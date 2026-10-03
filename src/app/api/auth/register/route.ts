@@ -14,7 +14,6 @@ export async function POST(request: Request) {
       course,
       firstJamb,
       lastJambScore,
-      accountType,
     }: {
       email: string;
       firstname: string;
@@ -27,7 +26,6 @@ export async function POST(request: Request) {
       firstJamb: boolean;
       lastJambScore: number;
       selectedQuestionSets: string[];
-      accountType: string;
     } = await request.json();
     // Validate inputs
     if (
@@ -64,7 +62,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        accountType: accountType,
+        accountType: "regular",
         email: email,
         firstname: firstname,
         lastname: lastname,
