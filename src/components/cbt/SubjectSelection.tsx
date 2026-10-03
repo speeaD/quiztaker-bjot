@@ -2,6 +2,7 @@ import { Check, CircleAlert, Loader2, Sparkles } from "lucide-react";
 import { CbtQuestionSet } from "./types";
 
 interface SubjectSelectionProps {
+  isPremium: boolean;
   questionSets: CbtQuestionSet[];
   selectedIds: string[];
   maxSubjects: number;
@@ -11,6 +12,7 @@ interface SubjectSelectionProps {
 }
 
 export default function SubjectSelection({
+  isPremium,
   questionSets,
   selectedIds,
   maxSubjects,
@@ -31,8 +33,9 @@ export default function SubjectSelection({
           Build your mock exam
         </h1>
         <p className="mt-2 max-w-lg text-sm leading-6 text-[#64726a]">
-          Choose four subjects. We will create a timed CBT simulation based on
-          your selections.
+          Choose four subjects. {isPremium
+            ? 'We will create a timed CBT simulation based on your selections.'
+            : 'Regular students get the same 10 questions per subject on every attempt. Subscribe to premium for the full question bank.'}
         </p>
 
         {loading ? (

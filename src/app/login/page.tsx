@@ -20,18 +20,17 @@ export default function Login() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!accessCode.trim()) {
-      setError("Your candidate access code is required.");
+    if (accessCode.trim().length !== 9) {
+      setError("Enter your 9-character student access code.");
       return;
     }
     setIsLoading(true);
     setError("");
     try {
-      // The existing API accepts the candidate code in its email field.
       const response = await fetch(`${backendUrl}/auth/quiztaker/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: accessCode.trim() }),
+        body: JSON.stringify({ accessCode: accessCode.trim() }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -63,7 +62,7 @@ export default function Login() {
 
   const pasteAccessCode = async () => {
     try {
-      setAccessCode((await navigator.clipboard.readText()).trim());
+      setAccessCode((await navigator.clipboard.readText()).trim().toUpperCase().slice(0, 9));
       setError("");
     } catch {
       setError("Paste is unavailable. Enter your access code manually.");
@@ -109,8 +108,7 @@ export default function Login() {
                 BJOT Student Portal
               </h1>
               <p className="mx-auto mt-2 max-w-md text-base leading-6 text-[#515c57] sm:text-medium">
-                Enter your premium access code to continue to your verified
-                exam dashboard.
+                Enter your student access code to continue to your exam dashboard.
               </p>
             </div>
             <div className="mx-auto mt-6 max-w-[480px]">
@@ -120,7 +118,7 @@ export default function Login() {
                   className="flex items-center gap-2 text-base font-extrabold text-[#09392d]"
                 >
                   <KeyRound size={19} className="text-[#a76000]" />
-                  Premium Access Code
+                  Student Access Code
                 </label>
                 <button
                   type="button"
@@ -141,18 +139,19 @@ export default function Login() {
                   name="access-code"
                   value={accessCode}
                   onChange={(event) => {
-                    setAccessCode(event.target.value);
+                    setAccessCode(event.target.value.toUpperCase());
                     setError("");
                   }}
                   disabled={isLoading}
                   autoComplete="username"
-                  placeholder="e.g. 2052-X8K6"
+                  maxLength={9}
+                  placeholder="e.g. ABC234XYZ"
                   className={`w-full rounded-md border bg-[#f4f5f6] py-4 pl-16 pr-4 text-xl font-semibold tracking-[0.03em] text-[#202824] outline-none transition placeholder:text-[#808883] focus:bg-white focus:ring-4 focus:ring-[#d9eee4] disabled:cursor-not-allowed disabled:opacity-60 ${error ? "border-[#d94b38]" : "border-transparent focus:border-[#0b4b39]"}`}
                 />
               </div>
               <div className="mt-3 flex items-center justify-between gap-3 text-sm text-[#65706a]">
                 
-                <span className="font-bold">{accessCode.length} / 6</span>
+                <span className="font-bold">{accessCode.trim().length} / 9</span>
               </div>
               {error && (
                 <p

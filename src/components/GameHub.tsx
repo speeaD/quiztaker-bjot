@@ -4,6 +4,7 @@ import GameHubPanel from '@/components/game-hub/GameHubPanel';
 import GameModeCard from '@/components/game-hub/GameModeCard';
 import { CircleDollarSign, Gamepad2, Timer, Trophy, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const gameModes = [
   {
@@ -37,8 +38,16 @@ const gameModes = [
 
 export default function GameHub() {
   const router = useRouter();
+  const [accountType, setAccountType] = useState<'premium' | 'regular' | null>(null);
+  const [premiumMessage, setPremiumMessage] = useState('');
+  useEffect(() => {
+    void fetch('/api/quiztaker/dashboard').then((response) => response.json()).then((data) => {
+      setAccountType(data.quizTaker?.accountType === 'premium' ? 'premium' : 'regular');
+    }).catch(() => setAccountType('regular'));
+  }, []);
   return (
     <div className="portal-page">
+      {premiumMessage && <div role="dialog" aria-modal="true" aria-label="Premium class required" className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"><div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"><h2 className="text-lg font-black">Premium class required</h2><p className="mt-2 text-sm">{premiumMessage}</p><button onClick={() => setPremiumMessage('')} className="mt-5 rounded-md bg-[#0d3b2e] px-4 py-2 text-sm font-bold text-white">Got it</button></div></div>}
 
       <main className="dashboard-main mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-6">
         <section className="mt-5 rounded-xl bg-[#0d3b2e] p-6 text-white shadow-[0_8px_24px_rgba(13,59,46,0.16)] sm:p-8">
@@ -48,7 +57,7 @@ export default function GameHub() {
           </div>
         </section>
 
-        <section className="mt-10"><div className="mb-3"><h2 className="text-sm font-black tracking-[-0.02em]">Choose your challenge</h2><p className="mt-0.5 text-[11px] text-[#718078]">Different formats for different ways to learn.</p></div><div className="grid gap-4 md:grid-cols-3">{gameModes.map((mode) => <GameModeCard key={mode.title} {...mode} onPlay={() => router.push(mode.route)} />)}</div></section>
+        <section className="mt-10"><div className="mb-3"><h2 className="text-sm font-black tracking-[-0.02em]">Choose your challenge</h2><p className="mt-0.5 text-[11px] text-[#718078]">Different formats for different ways to learn. Regular students can play Scholar’s Wager once per day.</p></div><div className="grid gap-4 md:grid-cols-3">{gameModes.map((mode) => <GameModeCard key={mode.title} {...mode} locked={accountType !== 'premium' && mode.route !== '/scholars-wager'} onPlay={() => accountType !== 'premium' && mode.route !== '/scholars-wager' ? setPremiumMessage(`Subscribe to the premium class to play ${mode.title}.`) : router.push(mode.route)} />)}</div></section>
         <section className="mt-5 grid gap-4 md:grid-cols-2"><GameHubPanel type="leaderboard" onClick={() => router.push('/leaderboard')} /><GameHubPanel type="history" onClick={() => router.push('/game-hub/history')} /></section>
       </main>
     </div>

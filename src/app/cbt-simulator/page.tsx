@@ -32,6 +32,7 @@ export default function CBTSimulator() {
   const [showCalculator, setShowCalculator] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isPremium, setIsPremium] = useState(true);
   const [availableQuestionSets, setAvailableQuestionSets] = useState<
     CbtQuestionSet[]
   >([]);
@@ -80,6 +81,7 @@ export default function CBTSimulator() {
         throw new Error(data.message || "Unable to load subjects");
       if (!Array.isArray(data.questionSets) || !data.questionSets.length)
         throw new Error("No subjects have available questions yet.");
+      setIsPremium(data.accountType === 'premium');
       setAvailableQuestionSets(data.questionSets);
     } catch (err) {
       setError(
@@ -209,6 +211,7 @@ export default function CBTSimulator() {
           </p>
         )}
         <SubjectSelection
+          isPremium={isPremium}
           questionSets={availableQuestionSets}
           selectedIds={selectedQuestionSetIds}
           maxSubjects={maxSubjects}

@@ -33,9 +33,9 @@ const getGreeting = () => {
   return 'Good Evening';
 };
 
-function LearningCard({ title, description, action, href, icon: Icon, accent = 'emerald', badge, locked = false }: {
+function LearningCard({ title, description, action, href, icon: Icon, accent = 'emerald', badge, locked = false, onLocked }: {
   title: string; description: string; action: string; href: string; icon: typeof Target;
-  accent?: 'emerald' | 'gold' | 'orange'; badge?: string; locked?: boolean;
+  accent?: 'emerald' | 'gold' | 'orange'; badge?: string; locked?: boolean; onLocked?: () => void;
 }) {
   const accents = { emerald: 'bg-[#e5f0eb] text-[#0d3b2e]', gold: 'bg-[#fff2d1] text-[#9a5a00]', orange: 'bg-[#fff0e4] text-[#c64d08]' };
   return (
@@ -47,9 +47,8 @@ function LearningCard({ title, description, action, href, icon: Icon, accent = '
       </div>
       <h3 className="text-[0.966875rem] font-extrabold tracking-[-0.02em] text-[#17231e]">{title}</h3>
       <p className="mt-2 text-[0.82875rem] leading-[1.38125rem] text-[#64726a]">{description}</p>
-      <Link href={locked ? '#' : href} className="mt-auto flex items-center justify-between rounded-md bg-[#edf3ef] px-3 py-2 text-[0.7596875rem] font-bold text-[#113c2e] transition group-hover:bg-[#dcebe1]" aria-disabled={locked}>
-        {action}<span aria-hidden="true">→</span>
-      </Link>
+      {locked ? <button type="button" onClick={onLocked} className="mt-auto flex items-center justify-between rounded-md bg-[#edf3ef] px-3 py-2 text-[0.7596875rem] font-bold text-[#113c2e] transition group-hover:bg-[#dcebe1]">{action}<Lock size={14} /></button>
+        : <Link href={href} className="mt-auto flex items-center justify-between rounded-md bg-[#edf3ef] px-3 py-2 text-[0.7596875rem] font-bold text-[#113c2e] transition group-hover:bg-[#dcebe1]">{action}<span aria-hidden="true">→</span></Link>}
     </article>
   );
 }
@@ -59,6 +58,8 @@ export default function QuizTakerDashboard() {
   const [focusTopic, setFocusTopic] = useState<{ id: string; title: string; averagePercentage: number; attempts: number } | null>(null);
   const [assignedQuizzes, setAssignedQuizzes] = useState<AssignedQuiz[]>([]);
   const [studentName, setStudentName] = useState('');
+  const [accountType, setAccountType] = useState<'premium' | 'regular' | null>(null);
+  const [premiumMessage, setPremiumMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [assignedLoading, setAssignedLoading] = useState(true);
   const [error, setError] = useState('');
@@ -88,6 +89,7 @@ export default function QuizTakerDashboard() {
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.message || 'Unable to load your dashboard');
       setStudentName(typeof data.quizTaker?.name === 'string' ? data.quizTaker.name.trim() : '');
+      setAccountType(data.quizTaker?.accountType === 'premium' ? 'premium' : 'regular');
       setAssignedQuizzes(data.success ? data.quizTaker?.assignedQuizzes || [] : []);
     } catch (err) {
       setAssignedQuizzes([]); setAssignedError(err instanceof Error ? err.message : 'Unable to load assigned exams');
@@ -96,6 +98,10 @@ export default function QuizTakerDashboard() {
 
   useEffect(() => {
     void fetchSubmissions(); void fetchAssignedQuizzes();
+    if (new URLSearchParams(window.location.search).get('premium') === 'required') {
+      setPremiumMessage('Subscribe to the premium class to access this feature.');
+      window.history.replaceState(null, '', '/dashboard');
+    }
     const reason = sessionStorage.getItem('quizSubmitReason');
     if (reason) { setSubmitNotification(reason); sessionStorage.removeItem('quizSubmitReason'); }
   }, []);
@@ -117,12 +123,14 @@ export default function QuizTakerDashboard() {
     return filter === 'all' ? sorted : sorted.filter((item) => item.status === filter);
   }, [assignedQuizzes, filter]);
 
-  const startQuiz = (quiz: AssignedQuiz) => { window.location.href = `/assigned-quiz/${quiz.quizId._id}`; };
+  const showPremium = (feature: string) => setPremiumMessage(`Subscribe to the premium class to access ${feature}.`);
+  const startQuiz = (quiz: AssignedQuiz) => { if (accountType !== 'premium') return showPremium('assigned mocks'); window.location.href = `/assigned-quiz/${quiz.quizId._id}`; };
   const viewResults = (id: string) => { window.location.href = `/results/${id}`; };
   return (
     <>
       <StudentHeader displayName={studentName || 'Student'} />
       <div className="portal-page text-[1.105rem] text-[#17231e]">
+      {premiumMessage && <div role="dialog" aria-modal="true" aria-label="Premium class required" className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"><div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"><Lock className="text-[#a76000]" /><h2 className="mt-3 text-lg font-black">Premium class required</h2><p className="mt-2 text-sm text-[#64726a]">{premiumMessage}</p><button onClick={() => setPremiumMessage('')} className="mt-5 rounded-md bg-[#0d3b2e] px-4 py-2 text-sm font-bold text-white">Got it</button></div></div>}
       <main className="dashboard-main mx-auto max-w-[1210px] px-4 py-4 lg:px-8 lg:py-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
@@ -170,12 +178,12 @@ export default function QuizTakerDashboard() {
 
         <section><div className="mb-3"><h2 className="text-[0.966875rem] font-black tracking-[-0.02em]">Core Learning Hubs</h2><p className="mt-0.5 text-[0.7596875rem] text-[#718078]">Select a simulator or interactive workspace.</p></div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <LearningCard title="CBT Simulator" description="Full official exam mode with a timed four-subject mock." action="Start Mock (400 Marks)" href="/cbt-simulator" icon={Target} badge="Timed UTME" />
-            <LearningCard title="Study Hub" description="Read topic lessons, watch videos, and take a focused topic test." action="Explore Study Hub" href="/study-hub" icon={BookOpen} badge="Study notes" />
-            <LearningCard title="Subject Tests" description="Choose a topic and practise focused questions at your pace." action="Choose Topic & Drill" href="/subject-test" icon={Target} accent="orange" badge="Deep practice" />
+            <LearningCard title="CBT Simulator" description={accountType === 'premium' ? 'Full official exam mode with a timed four-subject mock.' : 'Timed four-subject practice with the same 10 questions per subject.'} action={accountType === 'premium' ? 'Start Mock (400 Marks)' : 'Start 40-Question Mock'} href="/cbt-simulator" icon={Target} badge="Timed UTME" />
+            <LearningCard title="Study Hub" description="Read topic lessons, watch videos, and take a focused topic test." action="Explore Study Hub" href="/study-hub" icon={BookOpen} badge="Study notes" locked={accountType !== 'premium'} onLocked={() => showPremium('Study Hub')} />
+            <LearningCard title="Subject Tests" description="Choose a topic and practise focused questions at your pace." action="Choose Topic & Drill" href="/subject-test" icon={Target} accent="orange" badge="Deep practice" locked={accountType !== 'premium'} onLocked={() => showPremium('Subject Tests')} />
             <LearningCard title="Game Hub" description="Sharpen recall with quick rounds, challenges, and timed games." action="Enter Battle Arena" href="/game-hub" icon={Gamepad2} accent="gold" badge="Live arena" />
-            <LearningCard title="Attendance & Check-in" description="Mark attendance and keep your learning streak active." action="Check In Today" href="/todays-class" icon={UserCheck} badge="+50 XP" />
-            <LearningCard title="Class Schedule" description="View live sessions, upcoming classes, and past session notes." action="View Timetable" href="/schedule" icon={Calendar} badge="This week" />
+            <LearningCard title="Attendance & Check-in" description="Mark attendance and keep your learning streak active." action="Check In Today" href="/todays-class" icon={UserCheck} badge="+50 XP" locked={accountType !== 'premium'} onLocked={() => showPremium('Attendance & Check-in')} />
+            <LearningCard title="Class Schedule" description="View live sessions, upcoming classes, and past session notes." action="View Timetable" href="/schedule" icon={Calendar} badge="This week" locked={accountType !== 'premium'} onLocked={() => showPremium('Class Schedule')} />
           </div>
         </section>
 
@@ -187,8 +195,8 @@ export default function QuizTakerDashboard() {
           <aside className="space-y-4">
             <section className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)]">
               <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><Calendar size={16} className="text-[#c64d08]" /><h2 className="text-[0.966875rem] font-black">Assigned Exams</h2></div><span className="rounded-full bg-[#fff2d1] px-2 py-1 text-[0.690625rem] font-bold text-[#9a5a00]">{pendingCount} pending</span></div>
-              <div className="mb-3 flex gap-1 overflow-auto">{(['all', 'pending', 'in-progress', 'completed'] as Filter[]).map((item) => <button key={item} onClick={() => setFilter(item)} className={`rounded-md px-2 py-1 text-[0.690625rem] font-bold capitalize ${filter === item ? 'bg-[#0d3b2e] text-white' : 'bg-[#edf3ef] text-[#5c6a62]'}`}>{item === 'in-progress' ? 'Active' : item}</button>)}</div>
-              {assignedLoading ? <div className="grid place-items-center py-8"><Loader2 className="animate-spin text-[#15513e]" size={20} /></div> : assignedError ? <button onClick={() => void fetchAssignedQuizzes()} className="w-full rounded-md bg-[#fff1ed] p-3 text-[0.82875rem] text-[#b85b26]">{assignedError} — Retry</button> : filteredAssignments.length === 0 ? <p className="py-6 text-center text-[0.82875rem] text-[#718078]">No exams in this view.</p> : <div className="space-y-2">{filteredAssignments.slice(0, 3).map((quiz) => <article key={quiz._id} className="rounded-lg bg-[#f2f6f3] p-3"><div className="flex items-start justify-between gap-2"><h3 className="text-[0.82875rem] font-extrabold leading-[1.105rem]">{quiz.quizId.settings.title || 'Untitled quiz'}</h3><span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[0.6215625rem] font-bold ${quiz.status === 'completed' ? 'bg-[#d8eee0] text-[#236b46]' : quiz.status === 'in-progress' ? 'bg-[#e4edf7] text-[#25609a]' : 'bg-[#fff0db] text-[#9a5a00]'}`}>{quiz.status === 'in-progress' ? 'Active' : quiz.status}</span></div><p className="mt-2 flex items-center gap-1 text-[0.690625rem] text-[#718078]"><Clock3 size={11} />{formatDuration(quiz.quizId.settings.duration)}</p>{quiz.status === 'completed' && quiz.submissionId ? <button onClick={() => viewResults(quiz.submissionId!._id)} className="mt-3 w-full rounded-md border border-[#c9d8cf] py-1.5 text-[0.690625rem] font-bold text-[#15513e]">View Results</button> : <button onClick={() => startQuiz(quiz)} className="mt-3 flex w-full items-center justify-center gap-1 rounded-md bg-[#0d3b2e] py-1.5 text-[0.690625rem] font-bold text-white"><Play size={11} fill="currentColor" />{quiz.status === 'in-progress' ? 'Continue Exam' : 'Start Exam'}</button>}</article>)}</div>}
+              {accountType !== 'premium' ? <button onClick={() => showPremium('assigned mocks')} className="flex w-full items-center gap-2 rounded-md bg-[#edf3ef] p-4 text-left text-sm font-bold text-[#113c2e]"><Lock size={16} /> Subscribe to premium to access assigned mocks</button> : <><div className="mb-3 flex gap-1 overflow-auto">{(['all', 'pending', 'in-progress', 'completed'] as Filter[]).map((item) => <button key={item} onClick={() => setFilter(item)} className={`rounded-md px-2 py-1 text-[0.690625rem] font-bold capitalize ${filter === item ? 'bg-[#0d3b2e] text-white' : 'bg-[#edf3ef] text-[#5c6a62]'}`}>{item === 'in-progress' ? 'Active' : item}</button>)}</div>
+              {assignedLoading ? <div className="grid place-items-center py-8"><Loader2 className="animate-spin text-[#15513e]" size={20} /></div> : assignedError ? <button onClick={() => void fetchAssignedQuizzes()} className="w-full rounded-md bg-[#fff1ed] p-3 text-[0.82875rem] text-[#b85b26]">{assignedError} — Retry</button> : filteredAssignments.length === 0 ? <p className="py-6 text-center text-[0.82875rem] text-[#718078]">No exams in this view.</p> : <div className="space-y-2">{filteredAssignments.slice(0, 3).map((quiz) => <article key={quiz._id} className="rounded-lg bg-[#f2f6f3] p-3"><div className="flex items-start justify-between gap-2"><h3 className="text-[0.82875rem] font-extrabold leading-[1.105rem]">{quiz.quizId.settings.title || 'Untitled quiz'}</h3><span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[0.6215625rem] font-bold ${quiz.status === 'completed' ? 'bg-[#d8eee0] text-[#236b46]' : quiz.status === 'in-progress' ? 'bg-[#e4edf7] text-[#25609a]' : 'bg-[#fff0db] text-[#9a5a00]'}`}>{quiz.status === 'in-progress' ? 'Active' : quiz.status}</span></div><p className="mt-2 flex items-center gap-1 text-[0.690625rem] text-[#718078]"><Clock3 size={11} />{formatDuration(quiz.quizId.settings.duration)}</p>{quiz.status === 'completed' && quiz.submissionId ? <button onClick={() => viewResults(quiz.submissionId!._id)} className="mt-3 w-full rounded-md border border-[#c9d8cf] py-1.5 text-[0.690625rem] font-bold text-[#15513e]">View Results</button> : <button onClick={() => startQuiz(quiz)} className="mt-3 flex w-full items-center justify-center gap-1 rounded-md bg-[#0d3b2e] py-1.5 text-[0.690625rem] font-bold text-white"><Play size={11} fill="currentColor" />{quiz.status === 'in-progress' ? 'Continue Exam' : 'Start Exam'}</button>}</article>)}</div>}</>}
             </section>
             <section className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)]"><div className="flex items-center gap-2"><TrendingUp size={16} className="text-[#c64d08]" /><h2 className="text-[0.966875rem] font-black">Focus Recommendation</h2></div><div className="mt-3 rounded-lg border border-[#f2dca7] bg-[#fff9ea] p-3"><p className="text-[0.690625rem] font-bold uppercase tracking-wide text-[#a3660a]">Next best action</p><p className="mt-1 text-[0.82875rem] font-extrabold">{focusTopic ? `Review ${focusTopic.title}` : 'Take a timed CBT simulation'}</p><p className="mt-1 text-[0.690625rem] leading-[1.105rem] text-[#6f634d]">{focusTopic ? `Your average across ${focusTopic.attempts} topic test${focusTopic.attempts === 1 ? '' : 's'} is ${focusTopic.averagePercentage}%. Review the lesson and try another set of questions.` : 'One full mock will give you a clearer score projection and reveal where to focus next.'}</p><Link href={focusTopic ? `/study-hub/${focusTopic.id}` : '/cbt-simulator'} className="mt-3 inline-flex text-[0.690625rem] font-black text-[#15513e] hover:underline">{focusTopic ? 'Review topic →' : 'Start CBT practice →'}</Link></div><p className="mt-3 text-[0.690625rem] text-[#718078]">{completedCount} assigned exam{completedCount === 1 ? '' : 's'} completed so far.</p></section>
           </aside>
