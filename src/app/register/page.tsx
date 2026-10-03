@@ -124,7 +124,7 @@ export default function RegisterPage() {
           <div className="rounded-2xl border border-[#dce5e0] bg-white p-8 text-center shadow-[0_10px_28px_rgba(11,69,51,0.11)]">
             <span className="mx-auto grid size-12 place-items-center rounded-full bg-[#e5f5ea] text-[#07583e]"><Check size={26} /></span>
             <h1 className="mt-5 text-2xl font-black">Your regular student account is ready</h1>
-            <p className="mt-3 text-sm leading-6 text-[#536b91]">You can sign in now. Save this access code; you will need it each time you log in. An admin can upgrade your account to premium later.</p>
+            <p className="mt-3 text-sm leading-6 text-[#536b91]">You can sign in now. Save this access code; you will need it each time you log in.</p>
             <div className="mt-6 rounded-xl bg-[#f1f8f4] p-5">
               <p className="text-xs font-bold uppercase tracking-widest text-[#536b91]">Your student access code</p>
               <code className="mt-2 block select-all text-2xl font-black tracking-[0.16em] text-[#084635]">{accessCode}</code>
@@ -400,7 +400,9 @@ export default function RegisterPage() {
         <div className="flex gap-6">
           <a href="/privacy-policy">Privacy Policy</a>
           <a href="/terms-of-use">Terms of Service</a>
-          <a href="/support">Support Desk</a>
+          <a href="https://wa.me/2349164896938" target="_blank" rel="noopener noreferrer">
+            Support Desk
+          </a>
         </div>
       </footer>
     </main>

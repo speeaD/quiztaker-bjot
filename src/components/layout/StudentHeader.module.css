@@ -38,12 +38,14 @@
   .profile > div { display: none; }
 }
 @media (max-width: 650px) {
-  .headerInner { padding: 10px 16px 0; gap: 10px; flex-wrap: wrap; }
+  :global(body):has(.header) { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .headerInner { padding: 10px 16px; gap: 10px; }
   .brand img { width: 34px; height: 34px; }
   .brand strong { font-size: 14px; }
   .brand em { font-size: 7px; }
-  .nav { order: 3; width: 100%; overflow-x: auto; justify-content: space-between; padding: 6px 0 10px; gap: 2px; }
-  .nav a { font-size: 9px; padding: 6px; }
+  .nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; padding: 7px 6px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: #fff; box-shadow: 0 -4px 18px rgba(11, 20, 38, .07); }
+  .nav a { display: grid; min-height: 50px; place-items: center; padding: 5px 2px; font-size: 10px; line-height: 1.2; text-align: center; white-space: normal; }
+  .nav i { display: none; }
   .profile > div { display: block; }
   .profile strong { max-width: 100px; font-size: 10px; }
   .profile small { font-size: 8px; }

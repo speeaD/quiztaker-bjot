@@ -1,208 +1,783 @@
-'use client';
+"use client";
 
 import {
-  AlertCircle, Award, BookOpen, Calendar, CheckCircle2, Clock3, Gamepad2,
-  History, Loader2, Lock, Play, Target, TrendingUp, Trophy,
-  UserCheck, X,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import DashboardLogoutButton from '@/components/dashboard/DashboardLogoutButton';
-import LearningStreak from '@/components/dashboard/LearningStreak';
-import { StudentHeader } from '@/components/layout/StudentHeader';
+  AlertCircle,
+  Award,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  Clock3,
+  Gamepad2,
+  History,
+  Loader2,
+  Lock,
+  Play,
+  Target,
+  TrendingUp,
+  Trophy,
+  UserCheck,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import DashboardLogoutButton from "@/components/dashboard/DashboardLogoutButton";
+import LearningStreak from "@/components/dashboard/LearningStreak";
+import { StudentHeader } from "@/components/layout/StudentHeader";
 
 interface Submission {
-  id: string; quizTitle: string; score: number; totalPoints: number; percentage: number;
-  completedAt: string; examType?: 'single-subject' | 'multi-subject'; type?: 'mock' | 'cbt' | 'study';
+  id: string;
+  quizTitle: string;
+  score: number;
+  totalPoints: number;
+  percentage: number;
+  completedAt: string;
+  examType?: "single-subject" | "multi-subject";
+  type?: "mock" | "cbt" | "study";
 }
 interface AssignedQuiz {
   _id: string;
-  quizId: { _id: string; settings: { title: string; duration?: { hours: number; minutes: number; seconds: number } } };
-  status: 'pending' | 'in-progress' | 'completed';
+  quizId: {
+    _id: string;
+    settings: {
+      title: string;
+      duration?: { hours: number; minutes: number; seconds: number };
+    };
+  };
+  status: "pending" | "in-progress" | "completed";
   assignedAt: string;
-  submissionId?: { _id: string; score: number; totalPoints: number; percentage: number };
+  submissionId?: {
+    _id: string;
+    score: number;
+    totalPoints: number;
+    percentage: number;
+  };
 }
-type Filter = 'all' | 'pending' | 'in-progress' | 'completed';
+type Filter = "all" | "pending" | "in-progress" | "completed";
 
-const formatDate = (value: string) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const formatDuration = (value?: { hours: number; minutes: number; seconds: number }) => !value ? 'Flexible time' : value.hours ? `${value.hours}h ${value.minutes}m` : `${value.minutes}m`;
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+const formatDuration = (value?: {
+  hours: number;
+  minutes: number;
+  seconds: number;
+}) =>
+  !value
+    ? "Flexible time"
+    : value.hours
+      ? `${value.hours}h ${value.minutes}m`
+      : `${value.minutes}m`;
 const getGreeting = () => {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good Morning';
-  if (hour < 18) return 'Good Afternoon';
-  return 'Good Evening';
+  if (hour < 12) return "Good Morning";
+  if (hour < 18) return "Good Afternoon";
+  return "Good Evening";
 };
 
-function LearningCard({ title, description, action, href, icon: Icon, accent = 'emerald', badge, locked = false, onLocked }: {
-  title: string; description: string; action: string; href: string; icon: typeof Target;
-  accent?: 'emerald' | 'gold' | 'orange'; badge?: string; locked?: boolean; onLocked?: () => void;
+function LearningCard({
+  title,
+  description,
+  action,
+  href,
+  icon: Icon,
+  accent = "emerald",
+  badge,
+  locked = false,
+  onLocked,
+}: {
+  title: string;
+  description: string;
+  action: string;
+  href: string;
+  icon: typeof Target;
+  accent?: "emerald" | "gold" | "orange";
+  badge?: string;
+  locked?: boolean;
+  onLocked?: () => void;
 }) {
-  const accents = { emerald: 'bg-[#e5f0eb] text-[#0d3b2e]', gold: 'bg-[#fff2d1] text-[#9a5a00]', orange: 'bg-[#fff0e4] text-[#c64d08]' };
+  const accents = {
+    emerald: "bg-[#e5f0eb] text-[#0d3b2e]",
+    gold: "bg-[#fff2d1] text-[#9a5a00]",
+    orange: "bg-[#fff0e4] text-[#c64d08]",
+  };
   return (
     <article className="portal-card portal-card--raised group relative flex min-h-[220px] flex-col p-5">
       <div className="mb-5 flex items-start justify-between gap-3">
-        <span className={`grid size-9 place-items-center rounded-lg ${accents[accent]}`}><Icon size={18} strokeWidth={1.8} /></span>
-        {badge && <span className="rounded-full bg-[#eaf3ed] px-2 py-1 text-[0.690625rem] font-bold text-[#15513e]">{badge}</span>}
+        <span
+          className={`grid size-9 place-items-center rounded-lg ${accents[accent]}`}
+        >
+          <Icon size={18} strokeWidth={1.8} />
+        </span>
+        {badge && (
+          <span className="rounded-full bg-[#eaf3ed] px-2 py-1 text-[0.690625rem] font-bold text-[#15513e]">
+            {badge}
+          </span>
+        )}
         {locked && <Lock size={15} className="text-[#89968f]" />}
       </div>
-      <h3 className="text-[0.966875rem] font-extrabold tracking-[-0.02em] text-[#17231e]">{title}</h3>
-      <p className="mt-2 text-[0.82875rem] leading-[1.38125rem] text-[#64726a]">{description}</p>
-      {locked ? <button type="button" onClick={onLocked} className="mt-auto flex items-center justify-between rounded-md bg-[#edf3ef] px-3 py-2 text-[0.7596875rem] font-bold text-[#113c2e] transition group-hover:bg-[#dcebe1]">{action}<Lock size={14} /></button>
-        : <Link href={href} className="mt-auto flex items-center justify-between rounded-md bg-[#edf3ef] px-3 py-2 text-[0.7596875rem] font-bold text-[#113c2e] transition group-hover:bg-[#dcebe1]">{action}<span aria-hidden="true">→</span></Link>}
+      <h3 className="text-[0.966875rem] font-extrabold tracking-[-0.02em] text-[#17231e]">
+        {title}
+      </h3>
+      <p className="mt-2 text-[0.82875rem] leading-[1.38125rem] text-[#64726a]">
+        {description}
+      </p>
+      {locked ? (
+        <button
+          type="button"
+          onClick={onLocked}
+          className="mt-auto flex items-center justify-between rounded-md bg-[#edf3ef] px-3 py-2 text-[0.7596875rem] font-bold text-[#113c2e] transition group-hover:bg-[#dcebe1]"
+        >
+          {action}
+          <Lock size={14} />
+        </button>
+      ) : (
+        <Link
+          href={href}
+          className="mt-auto flex items-center justify-between rounded-md bg-[#edf3ef] px-3 py-2 text-[0.7596875rem] font-bold text-[#113c2e] transition group-hover:bg-[#dcebe1]"
+        >
+          {action}
+          <span aria-hidden="true">→</span>
+        </Link>
+      )}
     </article>
   );
 }
 
 export default function QuizTakerDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [focusTopic, setFocusTopic] = useState<{ id: string; title: string; averagePercentage: number; attempts: number } | null>(null);
+  const [focusTopic, setFocusTopic] = useState<{
+    id: string;
+    title: string;
+    averagePercentage: number;
+    attempts: number;
+  } | null>(null);
   const [assignedQuizzes, setAssignedQuizzes] = useState<AssignedQuiz[]>([]);
-  const [studentName, setStudentName] = useState('');
-  const [accountType, setAccountType] = useState<'premium' | 'regular' | null>(null);
-  const [premiumMessage, setPremiumMessage] = useState('');
+  const [studentName, setStudentName] = useState("");
+  const [accountType, setAccountType] = useState<"premium" | "regular" | null>(
+    null,
+  );
+  const [premiumMessage, setPremiumMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [assignedLoading, setAssignedLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [assignedError, setAssignedError] = useState('');
-  const [submitNotification, setSubmitNotification] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [error, setError] = useState("");
+  const [assignedError, setAssignedError] = useState("");
+  const [submitNotification, setSubmitNotification] = useState<string | null>(
+    null,
+  );
+  const [filter, setFilter] = useState<Filter>("all");
   const greeting = getGreeting();
 
   const fetchSubmissions = async () => {
     try {
-      setLoading(true); setError('');
-      const response = await fetch('/api/quiztaker/analytics');
+      setLoading(true);
+      setError("");
+      const response = await fetch("/api/quiztaker/analytics");
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Unable to load your exam history');
-      setSubmissions(data.success ? (data.results || []).map((item: { id: string; type: 'mock' | 'cbt' | 'study'; title: string; score: number; totalPoints: number; percentage: number; completedAt: string }) => ({ ...item, quizTitle: item.title })) : []);
+      if (!response.ok)
+        throw new Error(data.message || "Unable to load your exam history");
+      setSubmissions(
+        data.success
+          ? (data.results || []).map(
+              (item: {
+                id: string;
+                type: "mock" | "cbt" | "study";
+                title: string;
+                score: number;
+                totalPoints: number;
+                percentage: number;
+                completedAt: string;
+              }) => ({ ...item, quizTitle: item.title }),
+            )
+          : [],
+      );
       setFocusTopic(data.summary?.focusTopic || null);
-      if (!data.success) setError(data.message || 'No submission history found');
+      if (!data.success)
+        setError(data.message || "No submission history found");
     } catch (err) {
-      setSubmissions([]); setFocusTopic(null); setError(err instanceof Error ? err.message : 'Unable to load your exam history');
-    } finally { setLoading(false); }
+      setSubmissions([]);
+      setFocusTopic(null);
+      setError(
+        err instanceof Error ? err.message : "Unable to load your exam history",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchAssignedQuizzes = async () => {
     try {
-      setAssignedLoading(true); setAssignedError('');
-      const response = await fetch('/api/quiztaker/dashboard');
+      setAssignedLoading(true);
+      setAssignedError("");
+      const response = await fetch("/api/quiztaker/dashboard");
       const data = await response.json();
-      if (!response.ok || !data.success) throw new Error(data.message || 'Unable to load your dashboard');
-      setStudentName(typeof data.quizTaker?.name === 'string' ? data.quizTaker.name.trim() : '');
-      setAccountType(data.quizTaker?.accountType === 'premium' ? 'premium' : 'regular');
-      setAssignedQuizzes(data.success ? data.quizTaker?.assignedQuizzes || [] : []);
+      if (!response.ok || !data.success)
+        throw new Error(data.message || "Unable to load your dashboard");
+      setStudentName(
+        typeof data.quizTaker?.name === "string"
+          ? data.quizTaker.name.trim()
+          : "",
+      );
+      setAccountType(
+        data.quizTaker?.accountType === "premium" ? "premium" : "regular",
+      );
+      setAssignedQuizzes(
+        data.success ? data.quizTaker?.assignedQuizzes || [] : [],
+      );
     } catch (err) {
-      setAssignedQuizzes([]); setAssignedError(err instanceof Error ? err.message : 'Unable to load assigned exams');
-    } finally { setAssignedLoading(false); }
+      setAssignedQuizzes([]);
+      setAssignedError(
+        err instanceof Error ? err.message : "Unable to load assigned exams",
+      );
+    } finally {
+      setAssignedLoading(false);
+    }
   };
 
   useEffect(() => {
-    void fetchSubmissions(); void fetchAssignedQuizzes();
-    if (new URLSearchParams(window.location.search).get('premium') === 'required') {
-      setPremiumMessage('Subscribe to the premium class to access this feature.');
-      window.history.replaceState(null, '', '/dashboard');
+    void fetchSubmissions();
+    void fetchAssignedQuizzes();
+    if (
+      new URLSearchParams(window.location.search).get("premium") === "required"
+    ) {
+      setPremiumMessage(
+        "Subscribe to the premium class to access this feature.",
+      );
+      window.history.replaceState(null, "", "/dashboard");
     }
-    const reason = sessionStorage.getItem('quizSubmitReason');
-    if (reason) { setSubmitNotification(reason); sessionStorage.removeItem('quizSubmitReason'); }
+    const reason = sessionStorage.getItem("quizSubmitReason");
+    if (reason) {
+      setSubmitNotification(reason);
+      sessionStorage.removeItem("quizSubmitReason");
+    }
   }, []);
 
   const totalExams = submissions.length;
-  const studyCount = submissions.filter((item) => item.type === 'study').length;
-  const cbtCount = submissions.filter((item) => item.type === 'cbt').length;
-  const mockCount = submissions.filter((item) => item.type === 'mock').length;
-  const averageScore = totalExams ? Math.round(submissions.reduce((sum, item) => sum + item.percentage, 0) / totalExams) : 0;
-  const highestScore = totalExams ? Math.max(...submissions.map((item) => item.percentage)) : 0;
-  const readiness = !loading && !error && totalExams ? Math.min(100, Math.max(0, averageScore)) : null;
-  const readinessStatus = loading ? 'Loading results…' : error ? 'Results unavailable' : 'No results yet';
-  const pendingCount = assignedQuizzes.filter((item) => item.status === 'pending').length;
-  const completedCount = assignedQuizzes.filter((item) => item.status === 'completed').length;
+  const studyCount = submissions.filter((item) => item.type === "study").length;
+  const cbtCount = submissions.filter((item) => item.type === "cbt").length;
+  const mockCount = submissions.filter((item) => item.type === "mock").length;
+  const averageScore = totalExams
+    ? Math.round(
+        submissions.reduce((sum, item) => sum + item.percentage, 0) /
+          totalExams,
+      )
+    : 0;
+  const highestScore = totalExams
+    ? Math.max(...submissions.map((item) => item.percentage))
+    : 0;
+  const readiness =
+    !loading && !error && totalExams
+      ? Math.min(100, Math.max(0, averageScore))
+      : null;
+  const readinessStatus = loading
+    ? "Loading results…"
+    : error
+      ? "Results unavailable"
+      : "No results yet";
+  const pendingCount = assignedQuizzes.filter(
+    (item) => item.status === "pending",
+  ).length;
+  const completedCount = assignedQuizzes.filter(
+    (item) => item.status === "completed",
+  ).length;
 
   const filteredAssignments = useMemo(() => {
-    const priority = { 'in-progress': 0, pending: 1, completed: 2 };
-    const sorted = [...assignedQuizzes].sort((a, b) => priority[a.status] - priority[b.status]);
-    return filter === 'all' ? sorted : sorted.filter((item) => item.status === filter);
+    const priority = { "in-progress": 0, pending: 1, completed: 2 };
+    const sorted = [...assignedQuizzes].sort(
+      (a, b) => priority[a.status] - priority[b.status],
+    );
+    return filter === "all"
+      ? sorted
+      : sorted.filter((item) => item.status === filter);
   }, [assignedQuizzes, filter]);
 
-  const showPremium = (feature: string) => setPremiumMessage(`Subscribe to the premium class to access ${feature}.`);
-  const startQuiz = (quiz: AssignedQuiz) => { if (accountType !== 'premium') return showPremium('assigned mocks'); window.location.href = `/assigned-quiz/${quiz.quizId._id}`; };
-  const viewResults = (id: string) => { window.location.href = `/results/${id}`; };
+  const showPremium = (feature: string) =>
+    setPremiumMessage(`Subscribe to the premium class to access ${feature}.`);
+  const startQuiz = (quiz: AssignedQuiz) => {
+    if (accountType !== "premium") return showPremium("assigned mocks");
+    window.location.href = `/assigned-quiz/${quiz.quizId._id}`;
+  };
+  const viewResults = (id: string) => {
+    window.location.href = `/results/${id}`;
+  };
   return (
     <>
-      <StudentHeader displayName={studentName || 'Student'} />
+      <StudentHeader displayName={studentName || "Student"} />
       <div className="portal-page text-[1.105rem] text-[#17231e]">
-      {premiumMessage && <div role="dialog" aria-modal="true" aria-label="Premium class required" className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"><div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"><Lock className="text-[#a76000]" /><h2 className="mt-3 text-lg font-black">Premium class required</h2><p className="mt-2 text-sm text-[#64726a]">{premiumMessage}</p><button onClick={() => setPremiumMessage('')} className="mt-5 rounded-md bg-[#0d3b2e] px-4 py-2 text-sm font-bold text-white">Got it</button></div></div>}
-      <main className="dashboard-main mx-auto max-w-[1210px] px-4 py-4 lg:px-8 lg:py-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-          <p className="text-[0.690625rem] font-extrabold uppercase tracking-[0.16em] text-[#718078]">Student command centre</p>
-          <h1 className="mt-1 text-[1.6575rem] font-black tracking-[-0.04em]">Your dashboard</h1>
-          </div>
-          <DashboardLogoutButton />
-        </div>
-
-        {submitNotification && <div className="mb-3 flex items-start gap-3 rounded-lg border border-[#f1c779] bg-[#fff8e8] p-3 text-[0.966875rem] text-[#744700]"><AlertCircle size={18} /><div className="flex-1"><strong className="block text-[0.82875rem]">Quiz auto-submitted</strong>{submitNotification}</div><button onClick={() => setSubmitNotification(null)} aria-label="Dismiss notification"><X size={17} /></button></div>}
-
-        <section className="mb-6 grid gap-4 lg:grid-cols-[1.65fr_.9fr]">
-          <div className="self-start rounded-xl border border-[#dce5df] bg-white shadow-[0_2px_8px_rgba(13,59,46,0.04)] p-5 sm:p-6">
-            <span className="inline-flex rounded-full border border-[#c8dbce] bg-[#f1f7f3] px-2.5 py-1 text-[0.690625rem] font-extrabold uppercase tracking-wide text-[#18533d]">PREMIUM STUDENT (september cohort)</span>
-            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-[1.38125rem] font-black tracking-[-0.035em]">{greeting}{studentName ? `, ${studentName}` : ''}.</h2><p className="mt-1 max-w-lg text-[0.82875rem] leading-[1.38125rem] text-[#65736a]">Stay consistent with focused practice. Your dashboard keeps your next best learning action within reach.</p></div><Link href="/cbt-simulator" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-[#0d3b2e] px-4 py-2.5 text-[0.82875rem] font-bold text-white transition hover:bg-[#14513c]"><Play size={14} fill="currentColor" />Resume CBT mock</Link></div>
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#e7eee9] pt-4 sm:grid-cols-4">
-              {([['Study tests', String(studyCount), Trophy], ['Tests done', String(totalExams), CheckCircle2], ['Overall score', `${averageScore}%`, TrendingUp], ['Best score', `${highestScore}%`, Award]] as const).map(([label, value, Icon]) => <div key={label} className="flex gap-2"><span className="grid size-8 place-items-center rounded-md bg-[#edf3ef] text-[#15513e]"><Icon size={14} /></span><span><b className="block text-[0.82875rem]">{value}</b><small className="block text-[0.690625rem] leading-[1.105rem] text-[#718078]">{label}</small></span></div>)}
-            </div>
-          </div>
-          <div className="rounded-xl bg-[#0d3b2e] p-5 text-white shadow-[0_8px_24px_rgba(13,59,46,0.16)]">
-            <p className="text-[0.690625rem] font-bold uppercase tracking-[0.15em] text-[#b9d2c4]">Projected readiness</p>
-            <div className="mt-4 flex items-center gap-5">
-              <div
-                className="grid size-24 shrink-0 place-items-center rounded-full"
-                style={{ background: `conic-gradient(#efb948 ${(readiness ?? 0) * 3.6}deg, #215641 0deg)` }}
+        {premiumMessage && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Premium class required"
+            className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"
+          >
+            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+              <Lock className="text-[#a76000]" />
+              <h2 className="mt-3 text-lg font-black">
+                Premium class required
+              </h2>
+              <p className="mt-2 text-sm text-[#64726a]">{premiumMessage}</p>
+              <button
+                onClick={() => setPremiumMessage("")}
+                className="mt-5 rounded-md bg-[#0d3b2e] px-4 py-2 text-sm font-bold text-white"
               >
-                <span className="grid size-[70px] place-items-center rounded-full bg-[#0d3b2e] text-center">
-                  <b className="text-[1.38125rem] leading-none">{readiness === null ? '—' : `${readiness}%`}</b>
-                  <small className="mt-1 text-[0.5525rem] uppercase text-[#b9d2c4]">{readiness === null ? 'pending' : 'readiness'}</small>
-                </span>
+                Got it
+              </button>
+            </div>
+          </div>
+        )}
+        <main className="dashboard-main mx-auto max-w-[1210px] px-4 py-4 lg:px-8 lg:py-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[0.690625rem] font-extrabold uppercase tracking-[0.16em] text-[#718078]">
+                Student command centre
+              </p>
+              <h1 className="mt-1 text-[1.6575rem] font-black tracking-[-0.04em]">
+                Your dashboard
+              </h1>
+            </div>
+            <DashboardLogoutButton />
+          </div>
+
+          {submitNotification && (
+            <div className="mb-3 flex items-start gap-3 rounded-lg border border-[#f1c779] bg-[#fff8e8] p-3 text-[0.966875rem] text-[#744700]">
+              <AlertCircle size={18} />
+              <div className="flex-1">
+                <strong className="block text-[0.82875rem]">
+                  Quiz auto-submitted
+                </strong>
+                {submitNotification}
               </div>
-              <div>
-                <p className="text-[0.7596875rem] text-[#b9d2c4]">Current average</p>
-                <strong className="text-[1.6575rem]">{readiness === null ? '—' : `${averageScore}%`}</strong>
-                <p className="mt-2 text-[0.690625rem] text-[#d8e6de]">{readiness === null ? readinessStatus : `Based on your average across ${totalExams} completed test${totalExams === 1 ? '' : 's'}.`}</p>
-                {!loading && !error && !totalExams && <p className="mt-1 text-[0.690625rem] text-[#d8e6de]">Complete a mock, CBT practice, or study test to see your readiness.</p>}
+              <button
+                onClick={() => setSubmitNotification(null)}
+                aria-label="Dismiss notification"
+              >
+                <X size={17} />
+              </button>
+            </div>
+          )}
+
+          <section className="mb-6 grid gap-4 lg:grid-cols-[1.65fr_.9fr]">
+            <div className="self-start rounded-xl border border-[#dce5df] bg-white shadow-[0_2px_8px_rgba(13,59,46,0.04)] p-5 sm:p-6">
+              {/* Only show this for premium students. */}
+              {accountType === "premium" && (
+              <span className="inline-flex rounded-full border border-[#c8dbce] bg-[#f1f7f3] px-2.5 py-1 text-[0.690625rem] font-extrabold uppercase tracking-wide text-[#18533d]">
+                PREMIUM STUDENT
+              </span>
+              )}
+              <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-[1.38125rem] font-black tracking-[-0.035em]">
+                    {greeting}
+                    {studentName ? `, ${studentName}` : ""}.
+                  </h2>
+                  <p className="mt-1 max-w-lg text-[0.82875rem] leading-[1.38125rem] text-[#65736a]">
+                    Stay consistent with focused practice. Your dashboard keeps
+                    your next best learning action within reach.
+                  </p>
+                </div>
+                <Link
+                  href="/cbt-simulator"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-[#0d3b2e] px-4 py-2.5 text-[0.82875rem] font-bold text-white transition hover:bg-[#14513c]"
+                >
+                  <Play size={14} fill="currentColor" />
+                  Resume CBT mock
+                </Link>
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#e7eee9] pt-4 sm:grid-cols-4">
+                {(
+                  [
+                    ["Study tests", String(studyCount), Trophy],
+                    ["Tests done", String(totalExams), CheckCircle2],
+                    ["Overall score", `${averageScore}%`, TrendingUp],
+                    ["Best score", `${highestScore}%`, Award],
+                  ] as const
+                ).map(([label, value, Icon]) => (
+                  <div key={label} className="flex gap-2">
+                    <span className="grid size-8 place-items-center rounded-md bg-[#edf3ef] text-[#15513e]">
+                      <Icon size={14} />
+                    </span>
+                    <span>
+                      <b className="block text-[0.82875rem]">{value}</b>
+                      <small className="block text-[0.690625rem] leading-[1.105rem] text-[#718078]">
+                        {label}
+                      </small>
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#215641]">
-              <div className="h-full rounded-full bg-[#efb948]" style={{ width: `${readiness ?? 0}%` }} />
+            <div className="rounded-xl bg-[#0d3b2e] p-5 text-white shadow-[0_8px_24px_rgba(13,59,46,0.16)]">
+              <p className="text-[0.690625rem] font-bold uppercase tracking-[0.15em] text-[#b9d2c4]">
+                Projected readiness
+              </p>
+              <div className="mt-4 flex items-center gap-5">
+                <div
+                  className="grid size-24 shrink-0 place-items-center rounded-full"
+                  style={{
+                    background: `conic-gradient(#efb948 ${(readiness ?? 0) * 3.6}deg, #215641 0deg)`,
+                  }}
+                >
+                  <span className="grid size-[70px] place-items-center rounded-full bg-[#0d3b2e] text-center">
+                    <b className="text-[1.38125rem] leading-none">
+                      {readiness === null ? "—" : `${readiness}%`}
+                    </b>
+                    <small className="mt-1 text-[0.5525rem] uppercase text-[#b9d2c4]">
+                      {readiness === null ? "pending" : "readiness"}
+                    </small>
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[0.7596875rem] text-[#b9d2c4]">
+                    Current average
+                  </p>
+                  <strong className="text-[1.6575rem]">
+                    {readiness === null ? "—" : `${averageScore}%`}
+                  </strong>
+                  <p className="mt-2 text-[0.690625rem] text-[#d8e6de]">
+                    {readiness === null
+                      ? readinessStatus
+                      : `Based on your average across ${totalExams} completed test${totalExams === 1 ? "" : "s"}.`}
+                  </p>
+                  {!loading && !error && !totalExams && (
+                    <p className="mt-1 text-[0.690625rem] text-[#d8e6de]">
+                      Complete a mock, CBT practice, or study test to see your
+                      readiness.
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#215641]">
+                <div
+                  className="h-full rounded-full bg-[#efb948]"
+                  style={{ width: `${readiness ?? 0}%` }}
+                />
+              </div>
+              <LearningStreak variant="readiness" />
             </div>
-            <LearningStreak variant="readiness" />
-          </div>
-        </section>
+          </section>
 
-        <section><div className="mb-3"><h2 className="text-[0.966875rem] font-black tracking-[-0.02em]">Core Learning Hubs</h2><p className="mt-0.5 text-[0.7596875rem] text-[#718078]">Select a simulator or interactive workspace.</p></div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <LearningCard title="CBT Simulator" description={accountType === 'premium' ? 'Full official exam mode with a timed four-subject mock.' : 'Timed four-subject practice with the same 10 questions per subject.'} action={accountType === 'premium' ? 'Start Mock (400 Marks)' : 'Start 40-Question Mock'} href="/cbt-simulator" icon={Target} badge="Timed UTME" />
-            <LearningCard title="Study Hub" description="Read topic lessons, watch videos, and take a focused topic test." action="Explore Study Hub" href="/study-hub" icon={BookOpen} badge="Study notes" locked={accountType !== 'premium'} onLocked={() => showPremium('Study Hub')} />
-            <LearningCard title="Subject Tests" description="Choose a topic and practise focused questions at your pace." action="Choose Topic & Drill" href="/subject-test" icon={Target} accent="orange" badge="Deep practice" locked={accountType !== 'premium'} onLocked={() => showPremium('Subject Tests')} />
-            <LearningCard title="Game Hub" description="Sharpen recall with quick rounds, challenges, and timed games." action="Enter Battle Arena" href="/game-hub" icon={Gamepad2} accent="gold" badge="Live arena" />
-            <LearningCard title="Attendance & Check-in" description="Mark attendance and keep your learning streak active." action="Check In Today" href="/todays-class" icon={UserCheck} badge="+50 XP" locked={accountType !== 'premium'} onLocked={() => showPremium('Attendance & Check-in')} />
-            <LearningCard title="Class Schedule" description="View live sessions, upcoming classes, and past session notes." action="View Timetable" href="/schedule" icon={Calendar} badge="This week" locked={accountType !== 'premium'} onLocked={() => showPremium('Class Schedule')} />
-          </div>
-        </section>
+          <section>
+            <div className="mb-3">
+              <h2 className="text-[0.966875rem] font-black tracking-[-0.02em]">
+                Core Learning Hubs
+              </h2>
+              <p className="mt-0.5 text-[0.7596875rem] text-[#718078]">
+                Select a simulator or interactive workspace.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <LearningCard
+                title="CBT Simulator"
+                description={
+                  accountType === "premium"
+                    ? "Full official exam mode with a timed four-subject mock."
+                    : "Timed four-subject practice with the same 10 questions per subject."
+                }
+                action={
+                  accountType === "premium"
+                    ? "Start Mock (400 Marks)"
+                    : "Start 40-Question Mock"
+                }
+                href="/cbt-simulator"
+                icon={Target}
+                badge="Timed UTME"
+              />
+              <LearningCard
+                title="Study Hub"
+                description="Read topic lessons, watch videos, and take a focused topic test."
+                action="Explore Study Hub"
+                href="/study-hub"
+                icon={BookOpen}
+                badge="Study notes"
+                locked={accountType !== "premium"}
+                onLocked={() => showPremium("Study Hub")}
+              />
+              <LearningCard
+                title="Subject Tests"
+                description="Choose a topic and practise focused questions at your pace."
+                action="Choose Topic & Drill"
+                href="/subject-test"
+                icon={Target}
+                accent="orange"
+                badge="Deep practice"
+                locked={accountType !== "premium"}
+                onLocked={() => showPremium("Subject Tests")}
+              />
+              <LearningCard
+                title="Game Hub"
+                description="Sharpen recall with quick rounds, challenges, and timed games."
+                action="Enter Battle Arena"
+                href="/game-hub"
+                icon={Gamepad2}
+                accent="gold"
+                badge="Live arena"
+              />
+              <LearningCard
+                title="Attendance & Check-in"
+                description="Mark attendance and keep your learning streak active."
+                action="Check In Today"
+                href="/todays-class"
+                icon={UserCheck}
+                badge="+50 XP"
+                locked={accountType !== "premium"}
+                onLocked={() => showPremium("Attendance & Check-in")}
+              />
+              <LearningCard
+                title="Class Schedule"
+                description="View live sessions, upcoming classes, and past session notes."
+                action="View Timetable"
+                href="/schedule"
+                icon={Calendar}
+                badge="This week"
+                locked={accountType !== "premium"}
+                onLocked={() => showPremium("Class Schedule")}
+              />
+            </div>
+          </section>
 
-        <section className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.8fr)]">
-          <div className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)] sm:p-5">
-            <div className="mb-4 flex items-center justify-between"><div className="flex items-center gap-2"><History size={16} className="text-[#15513e]" /><h2 className="text-[0.966875rem] font-black">Recent Results</h2><span className="text-[0.690625rem] text-[#718078]">{mockCount} mock · {cbtCount} CBT · {studyCount} study</span></div><button onClick={() => void fetchSubmissions()} className="text-[0.7596875rem] font-bold text-[#15513e] hover:underline">Refresh</button></div>
-            {loading ? <div className="grid place-items-center py-12 text-[0.82875rem] text-[#718078]"><Loader2 className="mb-2 animate-spin text-[#15513e]" />Loading exam history…</div> : error ? <div className="py-10 text-center text-[0.82875rem] text-[#718078]"><AlertCircle className="mx-auto mb-2 text-[#b85b26]" />{error}</div> : submissions.length === 0 ? <div className="py-10 text-center text-[0.82875rem] text-[#718078]">No results yet. Complete a mock, CBT practice, or topic test to start tracking progress.</div> : <div className="space-y-2">{submissions.slice(0, 4).map((submission) => <article key={submission.id} className="flex flex-col gap-3 rounded-lg border border-[#e0e8e2] bg-[#f9fbfa] p-3 sm:flex-row sm:items-center"><span className="grid size-9 place-items-center rounded-md bg-[#e5f0eb] text-[#15513e]"><Award size={16} /></span><div className="min-w-0 flex-1"><h3 className="truncate text-[0.82875rem] font-extrabold">{submission.quizTitle}</h3><p className="mt-1 text-[0.690625rem] text-[#718078]">{formatDate(submission.completedAt)} · {submission.type === 'study' ? 'Study topic' : submission.type === 'cbt' ? 'CBT practice' : submission.examType === 'single-subject' ? 'Single subject' : 'Mock exam'}</p></div><div className="flex items-center justify-between gap-3 sm:justify-end"><span className="text-right"><b className="block text-[0.966875rem] text-[#0d3b2e]">{submission.percentage}%</b><small className="text-[0.690625rem] text-[#718078]">{submission.score}/{submission.totalPoints}</small></span>{submission.type === 'study' ? <Link href={`/study-hub/attempts/${submission.id}`} className="rounded-md border border-[#c9d8cf] px-2.5 py-1.5 text-[0.690625rem] font-bold text-[#15513e] hover:bg-[#edf3ef]">Result</Link> : submission.type !== 'cbt' ? <button onClick={() => viewResults(submission.id)} className="rounded-md border border-[#c9d8cf] px-2.5 py-1.5 text-[0.690625rem] font-bold text-[#15513e] hover:bg-[#edf3ef]">Breakdown</button> : null}</div></article>)}</div>}
-          </div>
-          <aside className="space-y-4">
-            <section className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)]">
-              <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><Calendar size={16} className="text-[#c64d08]" /><h2 className="text-[0.966875rem] font-black">Assigned Exams</h2></div><span className="rounded-full bg-[#fff2d1] px-2 py-1 text-[0.690625rem] font-bold text-[#9a5a00]">{pendingCount} pending</span></div>
-              {accountType !== 'premium' ? <button onClick={() => showPremium('assigned mocks')} className="flex w-full items-center gap-2 rounded-md bg-[#edf3ef] p-4 text-left text-sm font-bold text-[#113c2e]"><Lock size={16} /> Subscribe to premium to access assigned mocks</button> : <><div className="mb-3 flex gap-1 overflow-auto">{(['all', 'pending', 'in-progress', 'completed'] as Filter[]).map((item) => <button key={item} onClick={() => setFilter(item)} className={`rounded-md px-2 py-1 text-[0.690625rem] font-bold capitalize ${filter === item ? 'bg-[#0d3b2e] text-white' : 'bg-[#edf3ef] text-[#5c6a62]'}`}>{item === 'in-progress' ? 'Active' : item}</button>)}</div>
-              {assignedLoading ? <div className="grid place-items-center py-8"><Loader2 className="animate-spin text-[#15513e]" size={20} /></div> : assignedError ? <button onClick={() => void fetchAssignedQuizzes()} className="w-full rounded-md bg-[#fff1ed] p-3 text-[0.82875rem] text-[#b85b26]">{assignedError} — Retry</button> : filteredAssignments.length === 0 ? <p className="py-6 text-center text-[0.82875rem] text-[#718078]">No exams in this view.</p> : <div className="space-y-2">{filteredAssignments.slice(0, 3).map((quiz) => <article key={quiz._id} className="rounded-lg bg-[#f2f6f3] p-3"><div className="flex items-start justify-between gap-2"><h3 className="text-[0.82875rem] font-extrabold leading-[1.105rem]">{quiz.quizId.settings.title || 'Untitled quiz'}</h3><span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[0.6215625rem] font-bold ${quiz.status === 'completed' ? 'bg-[#d8eee0] text-[#236b46]' : quiz.status === 'in-progress' ? 'bg-[#e4edf7] text-[#25609a]' : 'bg-[#fff0db] text-[#9a5a00]'}`}>{quiz.status === 'in-progress' ? 'Active' : quiz.status}</span></div><p className="mt-2 flex items-center gap-1 text-[0.690625rem] text-[#718078]"><Clock3 size={11} />{formatDuration(quiz.quizId.settings.duration)}</p>{quiz.status === 'completed' && quiz.submissionId ? <button onClick={() => viewResults(quiz.submissionId!._id)} className="mt-3 w-full rounded-md border border-[#c9d8cf] py-1.5 text-[0.690625rem] font-bold text-[#15513e]">View Results</button> : <button onClick={() => startQuiz(quiz)} className="mt-3 flex w-full items-center justify-center gap-1 rounded-md bg-[#0d3b2e] py-1.5 text-[0.690625rem] font-bold text-white"><Play size={11} fill="currentColor" />{quiz.status === 'in-progress' ? 'Continue Exam' : 'Start Exam'}</button>}</article>)}</div>}</>}
-            </section>
-            <section className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)]"><div className="flex items-center gap-2"><TrendingUp size={16} className="text-[#c64d08]" /><h2 className="text-[0.966875rem] font-black">Focus Recommendation</h2></div><div className="mt-3 rounded-lg border border-[#f2dca7] bg-[#fff9ea] p-3"><p className="text-[0.690625rem] font-bold uppercase tracking-wide text-[#a3660a]">Next best action</p><p className="mt-1 text-[0.82875rem] font-extrabold">{focusTopic ? `Review ${focusTopic.title}` : 'Take a timed CBT simulation'}</p><p className="mt-1 text-[0.690625rem] leading-[1.105rem] text-[#6f634d]">{focusTopic ? `Your average across ${focusTopic.attempts} topic test${focusTopic.attempts === 1 ? '' : 's'} is ${focusTopic.averagePercentage}%. Review the lesson and try another set of questions.` : 'One full mock will give you a clearer score projection and reveal where to focus next.'}</p><Link href={focusTopic ? `/study-hub/${focusTopic.id}` : '/cbt-simulator'} className="mt-3 inline-flex text-[0.690625rem] font-black text-[#15513e] hover:underline">{focusTopic ? 'Review topic →' : 'Start CBT practice →'}</Link></div><p className="mt-3 text-[0.690625rem] text-[#718078]">{completedCount} assigned exam{completedCount === 1 ? '' : 's'} completed so far.</p></section>
-          </aside>
-        </section>
-      </main>
-    </div>
+          <section className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.8fr)]">
+            <div className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)] sm:p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <History size={16} className="text-[#15513e]" />
+                  <h2 className="text-[0.966875rem] font-black">
+                    Recent Results
+                  </h2>
+                  <span className="text-[0.690625rem] text-[#718078]">
+                    {mockCount} mock · {cbtCount} CBT · {studyCount} study
+                  </span>
+                </div>
+                <button
+                  onClick={() => void fetchSubmissions()}
+                  className="text-[0.7596875rem] font-bold text-[#15513e] hover:underline"
+                >
+                  Refresh
+                </button>
+              </div>
+              {loading ? (
+                <div className="grid place-items-center py-12 text-[0.82875rem] text-[#718078]">
+                  <Loader2 className="mb-2 animate-spin text-[#15513e]" />
+                  Loading exam history…
+                </div>
+              ) : error ? (
+                <div className="py-10 text-center text-[0.82875rem] text-[#718078]">
+                  <AlertCircle className="mx-auto mb-2 text-[#b85b26]" />
+                  {error}
+                </div>
+              ) : submissions.length === 0 ? (
+                <div className="py-10 text-center text-[0.82875rem] text-[#718078]">
+                  No results yet. Complete a mock, CBT practice, or topic test
+                  to start tracking progress.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {submissions.slice(0, 4).map((submission) => (
+                    <article
+                      key={submission.id}
+                      className="flex flex-col gap-3 rounded-lg border border-[#e0e8e2] bg-[#f9fbfa] p-3 sm:flex-row sm:items-center"
+                    >
+                      <span className="grid size-9 place-items-center rounded-md bg-[#e5f0eb] text-[#15513e]">
+                        <Award size={16} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-[0.82875rem] font-extrabold">
+                          {submission.quizTitle}
+                        </h3>
+                        <p className="mt-1 text-[0.690625rem] text-[#718078]">
+                          {formatDate(submission.completedAt)} ·{" "}
+                          {submission.type === "study"
+                            ? "Study topic"
+                            : submission.type === "cbt"
+                              ? "CBT practice"
+                              : submission.examType === "single-subject"
+                                ? "Single subject"
+                                : "Mock exam"}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 sm:justify-end">
+                        <span className="text-right">
+                          <b className="block text-[0.966875rem] text-[#0d3b2e]">
+                            {submission.percentage}%
+                          </b>
+                          <small className="text-[0.690625rem] text-[#718078]">
+                            {submission.score}/{submission.totalPoints}
+                          </small>
+                        </span>
+                        {submission.type === "study" ? (
+                          <Link
+                            href={`/study-hub/attempts/${submission.id}`}
+                            className="rounded-md border border-[#c9d8cf] px-2.5 py-1.5 text-[0.690625rem] font-bold text-[#15513e] hover:bg-[#edf3ef]"
+                          >
+                            Result
+                          </Link>
+                        ) : submission.type !== "cbt" ? (
+                          <button
+                            onClick={() => viewResults(submission.id)}
+                            className="rounded-md border border-[#c9d8cf] px-2.5 py-1.5 text-[0.690625rem] font-bold text-[#15513e] hover:bg-[#edf3ef]"
+                          >
+                            Breakdown
+                          </button>
+                        ) : null}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+            <aside className="space-y-4">
+              <section className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)]">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-[#c64d08]" />
+                    <h2 className="text-[0.966875rem] font-black">
+                      Assigned Exams
+                    </h2>
+                  </div>
+                  <span className="rounded-full bg-[#fff2d1] px-2 py-1 text-[0.690625rem] font-bold text-[#9a5a00]">
+                    {pendingCount} pending
+                  </span>
+                </div>
+                {accountType !== "premium" ? (
+                  <button
+                    onClick={() => showPremium("assigned mocks")}
+                    className="flex w-full items-center gap-2 rounded-md bg-[#edf3ef] p-4 text-left text-sm font-bold text-[#113c2e]"
+                  >
+                    <Lock size={16} /> Subscribe to premium to access assigned
+                    mocks
+                  </button>
+                ) : (
+                  <>
+                    <div className="mb-3 flex gap-1 overflow-auto">
+                      {(
+                        [
+                          "all",
+                          "pending",
+                          "in-progress",
+                          "completed",
+                        ] as Filter[]
+                      ).map((item) => (
+                        <button
+                          key={item}
+                          onClick={() => setFilter(item)}
+                          className={`rounded-md px-2 py-1 text-[0.690625rem] font-bold capitalize ${filter === item ? "bg-[#0d3b2e] text-white" : "bg-[#edf3ef] text-[#5c6a62]"}`}
+                        >
+                          {item === "in-progress" ? "Active" : item}
+                        </button>
+                      ))}
+                    </div>
+                    {assignedLoading ? (
+                      <div className="grid place-items-center py-8">
+                        <Loader2
+                          className="animate-spin text-[#15513e]"
+                          size={20}
+                        />
+                      </div>
+                    ) : assignedError ? (
+                      <button
+                        onClick={() => void fetchAssignedQuizzes()}
+                        className="w-full rounded-md bg-[#fff1ed] p-3 text-[0.82875rem] text-[#b85b26]"
+                      >
+                        {assignedError} — Retry
+                      </button>
+                    ) : filteredAssignments.length === 0 ? (
+                      <p className="py-6 text-center text-[0.82875rem] text-[#718078]">
+                        No exams in this view.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {filteredAssignments.slice(0, 3).map((quiz) => (
+                          <article
+                            key={quiz._id}
+                            className="rounded-lg bg-[#f2f6f3] p-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="text-[0.82875rem] font-extrabold leading-[1.105rem]">
+                                {quiz.quizId.settings.title || "Untitled quiz"}
+                              </h3>
+                              <span
+                                className={`shrink-0 rounded-full px-1.5 py-0.5 text-[0.6215625rem] font-bold ${quiz.status === "completed" ? "bg-[#d8eee0] text-[#236b46]" : quiz.status === "in-progress" ? "bg-[#e4edf7] text-[#25609a]" : "bg-[#fff0db] text-[#9a5a00]"}`}
+                              >
+                                {quiz.status === "in-progress"
+                                  ? "Active"
+                                  : quiz.status}
+                              </span>
+                            </div>
+                            <p className="mt-2 flex items-center gap-1 text-[0.690625rem] text-[#718078]">
+                              <Clock3 size={11} />
+                              {formatDuration(quiz.quizId.settings.duration)}
+                            </p>
+                            {quiz.status === "completed" &&
+                            quiz.submissionId ? (
+                              <button
+                                onClick={() =>
+                                  viewResults(quiz.submissionId!._id)
+                                }
+                                className="mt-3 w-full rounded-md border border-[#c9d8cf] py-1.5 text-[0.690625rem] font-bold text-[#15513e]"
+                              >
+                                View Results
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => startQuiz(quiz)}
+                                className="mt-3 flex w-full items-center justify-center gap-1 rounded-md bg-[#0d3b2e] py-1.5 text-[0.690625rem] font-bold text-white"
+                              >
+                                <Play size={11} fill="currentColor" />
+                                {quiz.status === "in-progress"
+                                  ? "Continue Exam"
+                                  : "Start Exam"}
+                              </button>
+                            )}
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </section>
+              <section className="rounded-xl border border-[#dce5df] bg-white p-4 shadow-[0_2px_8px_rgba(13,59,46,0.04)]">
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={16} className="text-[#c64d08]" />
+                  <h2 className="text-[0.966875rem] font-black">
+                    Focus Recommendation
+                  </h2>
+                </div>
+                <div className="mt-3 rounded-lg border border-[#f2dca7] bg-[#fff9ea] p-3">
+                  <p className="text-[0.690625rem] font-bold uppercase tracking-wide text-[#a3660a]">
+                    Next best action
+                  </p>
+                  <p className="mt-1 text-[0.82875rem] font-extrabold">
+                    {focusTopic
+                      ? `Review ${focusTopic.title}`
+                      : "Take a timed CBT simulation"}
+                  </p>
+                  <p className="mt-1 text-[0.690625rem] leading-[1.105rem] text-[#6f634d]">
+                    {focusTopic
+                      ? `Your average across ${focusTopic.attempts} topic test${focusTopic.attempts === 1 ? "" : "s"} is ${focusTopic.averagePercentage}%. Review the lesson and try another set of questions.`
+                      : "One full mock will give you a clearer score projection and reveal where to focus next."}
+                  </p>
+                  <Link
+                    href={
+                      focusTopic
+                        ? `/study-hub/${focusTopic.id}`
+                        : "/cbt-simulator"
+                    }
+                    className="mt-3 inline-flex text-[0.690625rem] font-black text-[#15513e] hover:underline"
+                  >
+                    {focusTopic ? "Review topic →" : "Start CBT practice →"}
+                  </Link>
+                </div>
+                <p className="mt-3 text-[0.690625rem] text-[#718078]">
+                  {completedCount} assigned exam
+                  {completedCount === 1 ? "" : "s"} completed so far.
+                </p>
+              </section>
+            </aside>
+          </section>
+        </main>
+      </div>
     </>
   );
 }
