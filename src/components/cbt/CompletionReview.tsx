@@ -1,4 +1,8 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { legacyScoreMemes } from "@/lib/score-memes";
 
 export type ReviewedAnswer = {
   questionId?: string;
@@ -9,20 +13,34 @@ export type ReviewedAnswer = {
   explanation?: string;
 };
 
-const memes = [
-  { below: 50, src: "/memes/0-40.jpg" },
-  { below: 65, src: "/memes/50-65.jpg" },
-  { below: 75, src: "/memes/65-75.jpg" },
-  { below: 90, src: "/memes/75-80.jpg" },
-  { below: 95, src: "/memes/90-100.jpg" },
-  { below: Infinity, src: "/memes/95-100.jpg" },
-];
-
 export function ScoreMeme({ percentage }: { percentage: number }) {
-  const meme = memes.find((item) => percentage < item.below) || memes[memes.length - 1];
+  const [meme, setMeme] = useState<{ percentage: number; src: string } | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`/api/score-meme?percentage=${encodeURIComponent(percentage)}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Could not load a score meme");
+        return response.json() as Promise<{ src: string }>;
+      })
+      .then((result) => setMeme({ percentage, src: result.src }))
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        console.error("Failed to load score meme", error);
+        setMeme({ percentage, src: legacyScoreMemes(percentage)[0] });
+      });
+
+    return () => controller.abort();
+  }, [percentage]);
+
+  const src = meme?.percentage === percentage ? meme.src : null;
+
   return <section className="mt-6 rounded-xl border border-[#dce5df] bg-white p-5 text-center" aria-label="Score meme">
     <h2 className="mb-3 text-lg font-bold text-[#17231e]">Your score meme</h2>
-    <Image src={meme.src} alt={`Meme for a score of ${percentage}%`} width={640} height={480} className="mx-auto max-h-80 max-w-full rounded-lg object-contain" />
+    {src ? <Image src={src} alt={`Meme for a score of ${percentage}%`} width={640} height={480} className="mx-auto max-h-80 max-w-full rounded-lg object-contain" /> : <div className="h-64 animate-pulse rounded-lg bg-[#edf3ef]" role="status"><span className="sr-only">Loading score meme</span></div>}
   </section>;
 }
 
