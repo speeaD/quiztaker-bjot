@@ -3,8 +3,7 @@
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
 import type { Testimonial } from "@/lib/landing-content";
 import TestimonialPlayer from "@/components/testimonials/TestimonialPlayer";
-
-
+import { ArrowUpRight } from "lucide-react";
 
 export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   return (
@@ -24,6 +23,9 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                 <div className="who">
                   {t.studentName} <span>{[t.course, t.school].filter(Boolean).join(", ")}</span>
                 </div>
+                <a href="/register" className="test-enroll">
+                  Enroll now <ArrowUpRight size={16} aria-hidden="true" />
+                </a>
               </div>
             </StaggerItem>
           ))}

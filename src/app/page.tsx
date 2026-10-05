@@ -18,7 +18,7 @@ import {
 } from "@/lib/seo";
 
 export const metadata = publicMetadata(
-  "Online JAMB Tutorial in Nigeria | BJOT",
+  "The Best Online JAMB Tutorial in Nigeria | BJOT",
   siteDescription,
   "/",
 );
@@ -53,16 +53,19 @@ export default async function Home() {
         highlight={section(content, "home.statistics")?.items?.[1]}
         testimonials={content.testimonials}
       />
-      {section(content, "home.statistics") && (
-        <StatsBar content={section(content, "home.statistics")!} />
-      )}
-      {section(content, "home.why-bjot") && (
-        <Features content={section(content, "home.why-bjot")!} />
-      )}
-      <PreparationOverview staff={content.staff} />
       {content.testimonials.length > 0 && (
         <Testimonials testimonials={content.testimonials} />
       )}
+      {section(content, "home.statistics") && (
+        <StatsBar content={section(content, "home.statistics")!} />
+      )}
+      <PreparationOverview staff={content.staff} />
+
+      {section(content, "home.why-bjot") && (
+        <Features content={section(content, "home.why-bjot")!} />
+      )}
+      
+      
       {section(content, "home.how-it-works") && (
         <HowItWorks content={section(content, "home.how-it-works")!} />
       )}

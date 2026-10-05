@@ -92,6 +92,9 @@ export default function Hero({
             )}
             <div className="trust-text">{content.trustText}</div>
           </motion.div>
+          <motion.p className="hero-rc" variants={item}>
+            RC No. 8892827
+          </motion.p>
         </motion.div>
       </div>
       {highlight && (

@@ -516,6 +516,12 @@ nav.links a:hover {
 .hero-trust .trust-text b {
   color: #fff;
 }
+.hero-rc {
+  margin-top: 12px;
+  color: #c9d6cd;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
 
 .hero-badge {
   position: absolute;
@@ -1072,7 +1078,6 @@ section {
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: space-between;
   padding: 16px 18px 20px;
 }
 .test-body p {
@@ -1082,7 +1087,8 @@ section {
   font-style: italic;
 }
 .test-body .who {
-  margin-top: 12px;
+  margin-top: auto;
+  padding-top: 12px;
   font-size: 12px;
   font-weight: 700;
   color: #fff;
@@ -1093,6 +1099,22 @@ section {
   color: #9fb0a4;
   font-size: 11px;
   margin-top: 1px;
+}
+.test-enroll {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  margin-top: 16px;
+  color: var(--gold-500);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.test-enroll:hover,
+.test-enroll:focus-visible {
+  color: #fff;
+  text-decoration: underline;
 }
 
 @media (max-width: 900px) {
