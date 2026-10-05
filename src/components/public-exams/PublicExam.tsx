@@ -230,7 +230,7 @@ export default function PublicExam({
           );
         setSessionId(data.session.id);
         setQuestionsBySet(data.session.questionsBySet);
-        setSeconds(data.session.durationSeconds || 7200);
+        setSeconds(data.session.durationSeconds || 3200);
       } else if (topicData) {
         setSets([topicData.questionSet]);
         setSelected([topicData.questionSet._id]);
