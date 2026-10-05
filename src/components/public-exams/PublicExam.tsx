@@ -284,7 +284,7 @@ export default function PublicExam({
             <h1 className="text-2xl font-black text-[#17231e]">
               {mode === "mock"
                 ? "Free mock exam"
-                : `${topicData?.topic.name || "Topic"} test`}
+                : `${topicData?.topic.name || "Topic"}`}
             </h1>
             <p className="mt-2 text-sm text-[#64726a]">
               {mode === "mock"
