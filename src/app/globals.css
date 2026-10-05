@@ -966,6 +966,18 @@ section {
   inset: 0;
   background: linear-gradient(180deg, rgba(7, 17, 12, 0.15), rgba(7, 17, 12, 0.45));
 }
+.testimonial-thumbnail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+}
+.testimonial-thumbnail.is-ready {
+  opacity: 1;
+}
 .video-overlay {
   position: absolute;
   inset: 0;
@@ -988,6 +1000,31 @@ section {
   color: #fff;
   font-size: 16px;
   z-index: 2;
+  cursor: pointer;
+}
+.play-badge:focus-visible {
+  outline: 3px solid var(--gold-500);
+  outline-offset: 3px;
+}
+.testimonial-player {
+  position: relative;
+  height: 220px;
+  flex: 0 0 220px;
+  overflow: hidden;
+  background: #000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.testimonial-player video,
+.testimonial-player iframe {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.testimonial-player video {
+  object-fit: cover;
 }
 .video-length {
   position: absolute;

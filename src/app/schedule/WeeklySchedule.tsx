@@ -4,8 +4,8 @@
 import { useState, useEffect, JSXElementConstructor, ReactElement, ReactNode, ReactPortal } from 'react';
 import { useRouter } from 'next/navigation';
 import { studentApi } from '../../lib/api/attendance-client';
-import { ClassSession, DayOfWeek, Schedule } from '../../types/global';
-import { formatTime, getDayName, getCurrentDayOfWeek } from '@/lib/utils/attendance-utils';
+import { ClassSession, DayOfWeek } from '../../types/global';
+import { formatTime, getCurrentDayOfWeek } from '@/lib/utils/attendance-utils';
 
 const DAYS: { value: DayOfWeek; label: string; short: string }[] = [
   { value: 1, label: 'Monday', short: 'Mon' },
@@ -32,10 +32,9 @@ export default function WeeklyScheduleClient({
   const currentDay = getCurrentDayOfWeek();
 
   useEffect(() => {
-    loadWeeklySchedule();
     // On mobile, default to showing today's schedule
     setSelectedDay(currentDay);
-  }, []);
+  }, [currentDay]);
 
   const loadWeeklySchedule = async () => {
     setIsLoading(true);
@@ -187,10 +186,12 @@ export default function WeeklyScheduleClient({
       {error && (
         <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm sm:text-base">
           {error}
+          <button type="button" onClick={() => void loadWeeklySchedule()} className="ml-3 font-semibold underline">Retry</button>
         </div>
       )}
 
       {/* Summary Card */}
+      {!error && (
       <div className="mb-5 sm:mb-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
@@ -205,6 +206,7 @@ export default function WeeklyScheduleClient({
           </div>
         </div>
       </div>
+      )}
 
       {/* Schedule */}
       {isLoading ? (
@@ -226,9 +228,9 @@ export default function WeeklyScheduleClient({
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No Schedule Available</h3>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">{error ? 'Schedule Unavailable' : 'No Schedule Available'}</h3>
           <p className="text-sm sm:text-base text-gray-600 px-4">
-            Your weekly class schedule hasn&apos;t been set up yet. Please contact your administrator.
+            {error ? 'Please retry loading your schedule.' : "Your weekly class schedule hasn't been set up yet. Please contact your administrator."}
           </p>
         </div>
       ) : (

@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { studentApi } from '../../lib/api/attendance-client';
 import { AttendanceRecord } from '../../types/global';
 import LearningStreak from '@/components/dashboard/LearningStreak';
 import {
-  formatDate,
   formatTime,
   formatShortDate,
   getStatusColor,
-  calculatePercentage,
 } from '../../lib/utils/attendance-utils';
 
 export default function AttendanceHistoryClient({
@@ -38,17 +36,13 @@ export default function AttendanceHistoryClient({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(initialError || '');
 
-  useEffect(() => {
-    loadAttendanceHistory();
-  }, [pagination.skip]);
-
-  const loadAttendanceHistory = async () => {
+  const loadAttendanceHistory = useCallback(async (skip = 0) => {
     setIsLoading(true);
     setError('');
     try {
-      const response = await studentApi.getAttendanceHistory();
+      const response = await studentApi.getAttendanceHistory(pagination.limit, skip);
       if (response) {
-        setRecords(response.records);
+        setRecords((previous) => skip ? [...previous, ...response.records] : response.records);
         setStatistics(response.statistics);
         setPagination(response.pagination);
       }
@@ -57,7 +51,11 @@ export default function AttendanceHistoryClient({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pagination.limit]);
+
+  useEffect(() => {
+    if (pagination.skip > 0) void loadAttendanceHistory(pagination.skip);
+  }, [pagination.skip, loadAttendanceHistory]);
 
   const handleLoadMore = () => {
     setPagination((prev) => ({
@@ -66,7 +64,7 @@ export default function AttendanceHistoryClient({
     }));
   };
 
-  const hasMore = pagination.skip + records.length < pagination.total;
+  const hasMore = records.length < pagination.total;
 
   return (
     <div className="portal-utility max-w-6xl mx-auto p-6">
@@ -132,6 +130,7 @@ export default function AttendanceHistoryClient({
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
           {error}
+          <button type="button" onClick={() => void loadAttendanceHistory(pagination.skip)} className="ml-3 font-semibold underline">Retry</button>
         </div>
       )}
 

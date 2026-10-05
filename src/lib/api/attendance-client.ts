@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   ApiResponse,
-  AttendanceSession,
   CreateScheduleForm,
   Department,
   OpenWindowForm,
   Schedule,
   SessionAttendanceData,
-  SessionWithAttendanceStatus,
   StudentAttendanceHistory,
 } from "../../types/global";
 
@@ -227,12 +225,12 @@ export const adminApi = {
 
 export const studentApi = {
   async getTodaysClasses() {
-    const res = await fetch('/api/attendance/classes');
-    console.log("Raw response from today's classes API:", res);
-    if (!res.ok) {
-      throw new Error("Failed to fetch today's classes");
-    }
+    const res = await fetch('/api/attendance/classes', { cache: 'no-store' });
     const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch today's classes");
+    }
+    if (!Array.isArray(data.classes)) throw new Error("The classes service returned invalid data");
     return data;
   },
 
@@ -253,62 +251,23 @@ export const studentApi = {
     return data;
   },
 
-  async getAttendanceHistory() {
-    const res = await fetch('/api/attendance/history');
-    console.log("Raw response from attendance history API:", res);
-    if (!res.ok) {
-      throw new Error("Failed to fetch attendance history");
-    }
+  async getAttendanceHistory(limit = 20, skip = 0) {
+    const res = await fetch(`/api/attendance/history?limit=${limit}&skip=${skip}`, { cache: 'no-store' });
     const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch attendance history");
+    }
+    if (!Array.isArray(data.records)) throw new Error("The attendance service returned invalid data");
     return data as StudentAttendanceHistory;
   },
 
   async getWeeklySchedule() {
-    const res = await fetch('/api/attendance/schedule');
-    console.log("Raw response from weekly schedule API:", res);
-    if (!res.ok) {
-      throw new Error("Failed to fetch weekly schedule");
-    }
+    const res = await fetch('/api/attendance/schedule', { cache: 'no-store' });
     const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch weekly schedule");
+    }
+    if (!Array.isArray(data)) throw new Error("The schedules service returned invalid data");
     return data;
-  },
-};
-
-export const serverApi = {
-  student: {
-    async getTodaysClasses() {
-        const res = await fetch(`/api/attendance/classes`);
-        console.log("Raw response from today's classes API:", res);
-        if (!res.ok) {
-          throw new Error("Failed to fetch today's classes");
-        }
-        const data = await res.json();
-        return data;
-    },
-
-    async getAttendanceHistory() {
-      const res = await fetch(`/api/attendance/history`);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || "Failed to fetch attendance history",
-        );
-      }
-      const data = await res.json();
-      return data as StudentAttendanceHistory;
-    },
-
-    async getWeeklySchedule() {
-        const res = await fetch(`/api/attendance/schedule`);
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(
-            errorData.message || "Failed to fetch weekly schedule",
-          );
-        }
-        const data = await res.json();
-        return data;
-      //   return fetchApiServer('/attendance/student/schedule/weekly');
-    },
   },
 };

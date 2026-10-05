@@ -1,8 +1,13 @@
-import { serverApi } from '../../lib/api/attendance-client';
+import { requestStudentAttendance } from '@/lib/api/attendance-server';
+import type { SessionWithAttendanceStatus } from '@/types/global';
 import TodaysClassesClient from './TodaysClasses';
 
 export default async function StudentTodayPage() {
-  const initialData = await serverApi.student.getTodaysClasses().catch(() => null);
-  return <TodaysClassesClient initialClasses={initialData} initialError={null} />;
+  const response = await requestStudentAttendance('/classes/today');
+  const payload = await response.json();
+  const valid = response.ok && Array.isArray(payload.classes);
+  return <TodaysClassesClient
+    initialClasses={valid ? payload.classes as SessionWithAttendanceStatus[] : []}
+    initialError={valid ? null : payload.message || "Unable to load today's classes"}
+  />;
 }
-export const dynamic = 'force-dynamic';

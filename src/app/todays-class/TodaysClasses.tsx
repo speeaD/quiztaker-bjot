@@ -28,10 +28,6 @@ export default function TodaysClassesClient({
   const [successMessage, setSuccessMessage] = useState('');
   const [markingAttendance, setMarkingAttendance] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadTodaysClasses();
-  }, []);
-
   // Poll for updates every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -46,7 +42,6 @@ export default function TodaysClassesClient({
     setError('');
     try {
       const response = await studentApi.getTodaysClasses();
-      console.log("Response from getTodaysClasses API:", response);
       setClasses(response?.classes || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load classes');
@@ -253,6 +248,7 @@ export default function TodaysClassesClient({
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>
           {error}
+          <button type="button" onClick={() => void loadTodaysClasses()} className="ml-3 font-semibold underline">Retry</button>
         </div>
       )}
 
@@ -286,8 +282,8 @@ export default function TodaysClassesClient({
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No Classes Today</h3>
-          <p className="text-sm sm:text-base text-gray-600">You don&apos;t have any scheduled classes for today.</p>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">{error ? 'Classes Unavailable' : 'No Classes Today'}</h3>
+          <p className="text-sm sm:text-base text-gray-600">{error ? 'Please retry loading your classes.' : "You don't have any scheduled classes for today."}</p>
         </div>
       ) : (
         <div className="space-y-3 sm:space-y-4">
