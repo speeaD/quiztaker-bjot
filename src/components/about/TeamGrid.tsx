@@ -2,7 +2,7 @@
 
 import { User } from "lucide-react";
 import { motion } from "framer-motion";
-import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
+import { Reveal } from "@/components/motion/Reveal";
 import type { StaffMember } from "@/lib/landing-content";
 
 const LOCAL_PHOTOS: Record<string, string> = {
@@ -27,9 +27,9 @@ export default function TeamGrid({ staff }: { staff: StaffMember[] }) {
           </p>
         </Reveal>
 
-        <StaggerGroup className="team-grid" stagger={0.1}>
+        <div className="team-grid">
           {staff.map((m) => (
-            <StaggerItem className="team-card" key={m.id} direction="up" distance={24}>
+            <article className="team-card" key={m.id}>
               <motion.div
                 className="team-card-photo"
                 whileHover={{ scale: 1.04 }}
@@ -52,9 +52,9 @@ export default function TeamGrid({ staff }: { staff: StaffMember[] }) {
                 <span className="team-card-role">{m.course || m.role}</span>
                 <p>{m.bio}</p>
               </div>
-            </StaggerItem>
+            </article>
           ))}
-        </StaggerGroup>
+        </div>
       </div>
     </section>
   );
