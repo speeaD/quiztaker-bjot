@@ -12,6 +12,7 @@ export const siteDescription =
 export const publicPages = [
   "/",
   "/about-us",
+  "/pricing",
   "/utme-preparation-guide",
   "/testimonials",
   "/support",

@@ -25,7 +25,7 @@ export async function proxy(request: NextRequest) {
   }
   
   // Define public routes
-  const publicRoutes = ['/', '/login', '/register', '/about-us', '/support', '/testimonials', '/free-mock', '/topic-test', '/utme-preparation-guide', '/privacy-policy', '/terms-of-use', '/robots.txt', '/sitemap.xml']
+  const publicRoutes = ['/', '/login', '/register', '/about-us', '/pricing', '/support', '/testimonials', '/free-mock', '/topic-test', '/utme-preparation-guide', '/privacy-policy', '/terms-of-use', '/robots.txt', '/sitemap.xml']
   const isPublicRoute = publicRoutes.includes(pathname)
   
   // Redirect to login if not authenticated and trying to access protected route

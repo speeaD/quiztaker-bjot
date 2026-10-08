@@ -9,6 +9,7 @@ import Footer from "@/components/landing/Footer";
 import YouTubeChannel from "@/components/landing/Youtubechannel";
 import { getLandingContent, section } from "@/lib/landing-content";
 import PreparationOverview from "@/components/landing/PreparationOverview";
+import PricingPreview from "@/components/landing/PricingPreview";
 import StructuredData from "@/components/seo/StructuredData";
 import {
   organizationSchema,
@@ -75,6 +76,7 @@ export default async function Home() {
       {section(content, "home.cta") && (
         <TeamCta content={section(content, "home.cta")!} />
       )}
+      <PricingPreview />
       {section(content, "global.footer") && (
         <Footer
           content={section(content, "global.footer")!}

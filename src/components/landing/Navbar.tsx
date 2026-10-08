@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-const LINKS = ["Home", "About Us", "Testimonials", "Support", "Free Mock"];
+const LINKS = ["Home", "About Us", "Pricing", "Testimonials", "Support", "Free Mock"];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
