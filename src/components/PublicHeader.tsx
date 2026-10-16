@@ -19,7 +19,7 @@ export default function PublicHeader({ exam }: PublicHeaderProps) {
         <nav className="flex items-center gap-4 text-xs text-[#445b7e]">
           <span className="hidden sm:inline">Already have an access key?</span>
           <a
-            href="/login"
+            href="/"
             className="rounded-lg border border-[#bdc8d1] px-4 py-2 font-bold tracking-wide text-[#092235] transition hover:border-[#0a4a37] hover:text-[#0a4a37]"
           >
             SIGN IN
