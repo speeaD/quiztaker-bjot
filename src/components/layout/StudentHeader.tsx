@@ -28,6 +28,7 @@ const navigation = [
     label: "CBT Simulator",
     routes: ["/cbt-simulator"],
   },
+  { href: "/jamb-past-questions", label: "JAMB Past Questions", routes: ["/jamb-past-questions"] },
   { href: "/study-hub", label: "Study Hub", routes: ["/study-hub"] },
   { href: "/game-hub", label: "Game Hub", routes: gameRoutes },
   { href: "/subject-test", label: "Subject Tests", routes: ["/subject-test"] },

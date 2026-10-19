@@ -35,22 +35,17 @@ interface Submission {
   type?: "mock" | "cbt" | "study";
 }
 interface AssignedQuiz {
-  _id: string;
-  quizId: {
-    _id: string;
-    settings: {
-      title: string;
-      duration?: { hours: number; minutes: number; seconds: number };
-    };
+  id: string;
+  quizId: string;
+  quiz?: {
+    title: string;
+    durationHours?: number;
+    durationMinutes?: number;
+    durationSeconds?: number;
   };
   status: "pending" | "in-progress" | "completed";
   assignedAt: string;
-  submissionId?: {
-    _id: string;
-    score: number;
-    totalPoints: number;
-    percentage: number;
-  };
+  submissions?: { id: string }[];
 }
 type Filter = "all" | "pending" | "in-progress" | "completed";
 
@@ -60,16 +55,14 @@ const formatDate = (value: string) =>
     day: "numeric",
     year: "numeric",
   });
-const formatDuration = (value?: {
-  hours: number;
-  minutes: number;
-  seconds: number;
-}) =>
-  !value
-    ? "Flexible time"
-    : value.hours
-      ? `${value.hours}h ${value.minutes}m`
-      : `${value.minutes}m`;
+const formatDuration = (quiz?: AssignedQuiz["quiz"]) => {
+  if (quiz?.durationHours === undefined || quiz.durationMinutes === undefined) {
+    return null;
+  }
+  return quiz.durationHours
+    ? `${quiz.durationHours}h ${quiz.durationMinutes}m`
+    : `${quiz.durationMinutes}m`;
+};
 const getGreeting = () => {
   const hour = new Date().getHours();
   if (hour < 12) return "Good Morning";
@@ -297,7 +290,7 @@ export default function QuizTakerDashboard() {
     setPremiumMessage(`Subscribe to the premium class to access ${feature}.`);
   const startQuiz = (quiz: AssignedQuiz) => {
     if (accountType !== "premium") return showPremium("assigned mocks");
-    window.location.href = `/assigned-quiz/${quiz.quizId._id}`;
+    window.location.href = `/assigned-quiz/${quiz.quizId}`;
   };
   const viewResults = (id: string) => {
     window.location.href = `/results/${id}`;
@@ -469,6 +462,14 @@ export default function QuizTakerDashboard() {
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <LearningCard
+                title="JAMB Past Questions"
+                description="Practise one exam year with Use of English and three other subjects."
+                action="Choose Year & Subjects"
+                href="/jamb-past-questions"
+                icon={BookOpen}
+                badge="Past papers"
+              />
               <LearningCard
                 title="CBT Simulator"
                 description={
@@ -690,12 +691,12 @@ export default function QuizTakerDashboard() {
                       <div className="space-y-2">
                         {filteredAssignments.slice(0, 3).map((quiz) => (
                           <article
-                            key={quiz._id}
+                            key={quiz.id}
                             className="rounded-lg bg-[#f2f6f3] p-3"
                           >
                             <div className="flex items-start justify-between gap-2">
                               <h3 className="text-[0.82875rem] font-extrabold leading-[1.105rem]">
-                                {quiz.quizId.settings.title || "Untitled quiz"}
+                                {quiz.quiz?.title || "Untitled quiz"}
                               </h3>
                               <span
                                 className={`shrink-0 rounded-full px-1.5 py-0.5 text-[0.6215625rem] font-bold ${quiz.status === "completed" ? "bg-[#d8eee0] text-[#236b46]" : quiz.status === "in-progress" ? "bg-[#e4edf7] text-[#25609a]" : "bg-[#fff0db] text-[#9a5a00]"}`}
@@ -705,16 +706,19 @@ export default function QuizTakerDashboard() {
                                   : quiz.status}
                               </span>
                             </div>
-                            <p className="mt-2 flex items-center gap-1 text-[0.690625rem] text-[#718078]">
-                              <Clock3 size={11} />
-                              {formatDuration(quiz.quizId.settings.duration)}
-                            </p>
+                            {formatDuration(quiz.quiz) && (
+                              <p className="mt-2 flex items-center gap-1 text-[0.690625rem] text-[#718078]">
+                                <Clock3 size={11} />
+                                {formatDuration(quiz.quiz)}
+                              </p>
+                            )}
                             {quiz.status === "completed" &&
-                            quiz.submissionId ? (
+                            quiz.submissions?.[0] ? (
                               <button
-                                onClick={() =>
-                                  viewResults(quiz.submissionId!._id)
-                                }
+                                onClick={() => {
+                                  const submissionId = quiz.submissions?.[0]?.id;
+                                  if (submissionId) viewResults(submissionId);
+                                }}
                                 className="mt-3 w-full rounded-md border border-[#c9d8cf] py-1.5 text-[0.690625rem] font-bold text-[#15513e]"
                               >
                                 View Results
