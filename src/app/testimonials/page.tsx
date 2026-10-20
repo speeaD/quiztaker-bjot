@@ -5,6 +5,7 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { getLandingContent, section } from "@/lib/landing-content";
 import { publicMetadata } from "@/lib/seo";
+import Link from "next/link";
 
 export async function generateMetadata() {
     const content = await getLandingContent();
@@ -21,6 +22,7 @@ export default async function TestimonialsPage() {
             <header className="wrap pt-16 text-center">
                 <h1 className="text-3xl font-bold sm:text-4xl">BJOT Student Testimonials</h1>
                 <p className="mt-4">Student experiences with Blast JAMB Online Tutorial.</p>
+                <p className="mt-3 text-sm">See how BJOT&apos;s <Link href="/jamb-results" className="underline">highest recorded UTME score and a verified student result</Link> compare.</p>
             </header>
             <VideoTestimonials testimonials={content.testimonials.filter((item) => item.type === "video")} />
             <PhotoTestimonials testimonials={content.testimonials.filter((item) => item.type === "written")} />

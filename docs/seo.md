@@ -9,23 +9,23 @@
 
 ## What is indexed
 
-The homepage, About / tutor page, UTME preparation guide, testimonials and support page each have their own title, description, canonical URL and sharing metadata. They are listed in `/sitemap.xml`, advertised by `/robots.txt`. Both endpoints and the guide are public in `src/proxy.ts`.
+The homepage, About / tutor page, UTME preparation guide, JAMB results page, testimonials and support page each have their own title, description, canonical URL and sharing metadata. They are listed in `/sitemap.xml`, advertised by `/robots.txt`. These public pages and the metadata endpoints are allowed in `src/proxy.ts`.
 
 The root layout defaults to `noindex, follow`, keeping login, registration, tests, results and student tools out of search listings. Public editorial pages opt into indexing through `publicMetadata`. Do not block portal HTML in robots.txt: crawlers must be able to see the noindex directive. Authentication remains separate from indexing controls.
 
-About, support and testimonials pages return noindex metadata if their CMS content cannot be loaded. The homepage and study guide retain useful static content during an outage. Never add empty, login-only or nonexistent routes to the sitemap.
+About, support and testimonials pages return noindex metadata if their CMS content cannot be loaded. The JAMB results page returns noindex when the recorded-score metric or Umukoro Oghenevovwero's verified 367/400 video testimonial is unavailable. The homepage and study guide retain useful static content during an outage. Never add empty, login-only or nonexistent routes to the sitemap.
 
 The homepage describes the organization and website with JSON-LD. About uses CMS staff names, roles and biographies for Person entities linked to visible tutor anchors. A staff member's `course` is an academic background field, so it is not treated as a subject they teach. No ratings, credentials or score guarantees are invented. JSON-LD escapes `<` before embedding CMS content.
 
-FAQ answers are included in server-rendered HTML even when collapsed. The hero text is initially visible. The guide and homepage overview provide useful content about study plans and choosing tutorials without asserting an unsupported “best in Nigeria” ranking.
+FAQ answers are included in server-rendered HTML even when collapsed. The hero text is initially visible. The guide and homepage overview explain how to choose an online JAMB tutorial. The JAMB results page distinguishes BJOT's verified 368/400 overall UTME record from Umukoro's named, published 367/400 testimonial. No exam year, result slip, rating, or score guarantee is implied. The recorded score is read from the CMS's `home.statistics` section; the featured story is read from a visible, verified testimonial.
 
 ## After publishing
 
-1. Check anonymous requests to `/`, `/about-us`, `/utme-preparation-guide`, `/support`, `/testimonials`, `/robots.txt` and `/sitemap.xml`. Confirm canonical URLs use the intended host and sitemap/robots return 200 without login redirects.
-2. Verify the production property in Google Search Console and submit `sitemap.xml`. Inspect the homepage, About and guide URLs, then request indexing.
+1. Check anonymous requests to `/`, `/about-us`, `/utme-preparation-guide`, `/jamb-results`, `/support`, `/testimonials`, `/robots.txt` and `/sitemap.xml`. Confirm canonical URLs use the intended host and sitemap/robots return 200 without login redirects. Confirm the results page is indexable only when both CMS records are present.
+2. Verify the production property in Google Search Console and submit `sitemap.xml`. Inspect the homepage, guide and results URLs, then request indexing.
 3. Check structured data using Google's Rich Results Test and Schema.org's validator. General Person and EducationalOrganization markup does not guarantee a rich result.
 4. Keep tutor names, roles, biographies and contact details accurate in the CMS. Add only genuine qualifications, teaching specialties and public profile links when available. Verify published testimonials and outcome claims.
-5. Use Search Console queries and page reports to see which BJOT, tutor and UTME searches bring impressions and clicks. Improve useful subject lessons and guides over time; avoid repetitive keyword pages.
+5. Use Search Console queries and page reports to track BJOT highest-score and online JAMB tutorial searches. Improve useful subject lessons and guides over time; avoid repetitive keyword pages.
 
 SEO supports discovery and understanding; search engines decide indexing, snippets and rankings. Sitemap order or a priority value cannot force higher placement.
 

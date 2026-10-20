@@ -14,6 +14,7 @@ export const publicPages = [
   "/about-us",
   "/pricing",
   "/utme-preparation-guide",
+  "/jamb-results",
   "/testimonials",
   "/support",
   "/privacy-policy",

@@ -11,6 +11,8 @@ import { getLandingContent, section } from "@/lib/landing-content";
 import PreparationOverview from "@/components/landing/PreparationOverview";
 import PricingPreview from "@/components/landing/PricingPreview";
 import StructuredData from "@/components/seo/StructuredData";
+import Link from "next/link";
+import { featuredJambResult, recordedUtmeScore } from "@/lib/jamb-results";
 import {
   organizationSchema,
   publicMetadata,
@@ -40,6 +42,8 @@ export default async function Home() {
       href: "/utme-preparation-guide",
     },
   };
+  const record = recordedUtmeScore(content);
+  const featured = featuredJambResult(content);
   return (
     <main>
       <Navbar />
@@ -60,7 +64,12 @@ export default async function Home() {
       {section(content, "home.statistics") && (
         <StatsBar content={section(content, "home.statistics")!} />
       )}
-      <PreparationOverview staff={content.staff} />
+      {record !== null && featured && (
+        <p className="wrap py-5 text-sm leading-relaxed">
+          BJOT&apos;s highest recorded UTME score is {record}/400. Watch {featured.studentName}&apos;s published {featured.score} student story on our <Link href="/jamb-results" className="font-semibold underline underline-offset-4">JAMB results page</Link>.
+        </p>
+      )}
+      <PreparationOverview />
 
       {section(content, "home.why-bjot") && (
         <Features content={section(content, "home.why-bjot")!} />

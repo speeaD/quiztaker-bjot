@@ -48,8 +48,8 @@ const steps = [
   {
     title: "Choose an online tutorial that fits your needs",
     paragraphs: [
-      "The best online UTME tutorial for you should offer clear teaching, a schedule you can attend, opportunities to ask questions, and useful feedback on practice. Read the tutor biographies, explore available lessons and ask what is included before joining.",
-      "With BJOT, you can explore the tutors and team, read student experiences and check the support page for details about classes and learning resources. Combine guided lessons with your own consistent revision; no tutorial can guarantee a particular examination score.",
+      "The best online JAMB tutorial for you should offer clear teaching, a schedule you can attend, opportunities to ask questions, and useful feedback on practice. Check whether lessons, CBT practice and mock exams are included in the plan you want before joining.",
+      "With BJOT, you can meet the tutors, compare class plans, read verified student experiences and check the support page for details about learning resources. Combine guided lessons with your own consistent revision; no tutorial can guarantee a particular examination score.",
     ],
   },
 ];
@@ -85,6 +85,8 @@ export default async function PreparationGuide() {
             <li><Link href="/about-us#tutors" className="underline">Meet the BJOT tutors and team</Link></li>
             <li><Link href="/free-mock" className="underline">Explore the BJOT free mock</Link></li>
             <li><Link href="/testimonials" className="underline">Read BJOT student experiences</Link></li>
+            <li><Link href="/jamb-results" className="underline">Understand BJOT JAMB results</Link></li>
+            <li><Link href="/pricing" className="underline">Compare BJOT tutorial plans</Link></li>
             <li><Link href="/support" className="underline">Find out how BJOT classes work</Link></li>
             <li><a href="https://www.jamb.gov.ng/" className="underline">Check official JAMB information</a></li>
           </ul>
