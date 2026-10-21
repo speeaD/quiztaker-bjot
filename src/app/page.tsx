@@ -66,7 +66,7 @@ export default async function Home() {
       )}
       {record !== null && featured && (
         <p className="wrap py-5 text-sm leading-relaxed">
-          BJOT&apos;s highest recorded UTME score is {record}/400. Watch {featured.studentName}&apos;s published {featured.score} student story on our <Link href="/jamb-results" className="font-semibold underline underline-offset-4">JAMB results page</Link>.
+          Watch {featured.studentName}&apos;s published {featured.score} student story on our <Link href="/jamb-results" className="font-semibold underline underline-offset-4">JAMB results page</Link>.
         </p>
       )}
       <PreparationOverview />
