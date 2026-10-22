@@ -80,7 +80,7 @@ export async function POST(
     // Return submission ID for redirect
     return NextResponse.json({
       success: true,
-      submissionId: data.submission.id,
+      submissionId: data.submission.submissionId,
       submission: data.submission,
     });
 

@@ -10,7 +10,7 @@ import PortalLogo from '@/components/PortalLogo';
 const API_BASE_URL = '/api/quiztaker';
 
 interface QuestionSet {
-  _id: string;
+  id: string;
   title: string;
   order: number;
   totalPoints: number;
@@ -18,7 +18,7 @@ interface QuestionSet {
 }
 
 interface Question {
-  _id: string;
+  id: string;
   type: string;
   question: string;
   passage?: string;           // NEW: Optional passage text
@@ -30,16 +30,13 @@ interface Question {
 }
 
 interface Quiz {
-  _id: string;
-  settings: {
-    title: string;
-    duration: {
-      hours: number;
-      minutes: number;
-      seconds: number;
-    };
-    displayCalculator: boolean;
-  };
+  id: string;
+  title: string;
+  durationHours: number;
+  durationMinutes: number;
+  durationSeconds: number;
+  displayCalculator: boolean;
+  looseFocus: boolean;
   questionSets: QuestionSet[];
   totalPoints: number;
 }
@@ -197,9 +194,6 @@ const AssignedQuizPage = () => {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [looseFocusEnabled, setLooseFocusEnabled] = useState(false);
   const [hasLostFocus, setHasLostFocus] = useState(false);
-  const userId = typeof window !== 'undefined' && localStorage.getItem('quizTaker')
-    ? localStorage.getItem('quizTaker') as string
-    : 'Guest';
   const getAllQuestions = useCallback(() => selectedOrder.flatMap(order => questionsBySetOrder[order] || []), [questionsBySetOrder, selectedOrder]);
 
 
@@ -217,11 +211,11 @@ const AssignedQuizPage = () => {
       console.log(`Auto-submitting quiz: ${reason}`);
     }
 
+    const localCompleted = new Set(completedSets);
     try {
       setIsDisabled(true);
       setPhase('submitting');
 
-      const localCompleted = new Set(completedSets);
       const unsubmittedOrders = selectedOrder.filter(order => !localCompleted.has(order));
 
       // 🔥 FIX: Submit ALL unsubmitted question sets, not just the current one
@@ -232,10 +226,10 @@ const AssignedQuizPage = () => {
         const isFinalSubmission = i === unsubmittedOrders.length - 1; // last one is always final
 
         const setAnswers = setQuestions
-          .map(q => ({ questionId: q._id, answer: answers[q._id] || '' }))
+          .map(q => ({ questionId: q.id, answer: answers[q.id] || '' }))
           .filter(a => a.answer);
 
-        await fetch(`${API_BASE_URL}/quiz/${quizId}/submit`, {
+        const response = await fetch(`${API_BASE_URL}/quiz/${quizId}/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -245,6 +239,11 @@ const AssignedQuizPage = () => {
           }),
         });
 
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || data.error || 'Failed to submit quiz');
+        }
+
         localCompleted.add(setOrder);
       }
 
@@ -253,7 +252,8 @@ const AssignedQuizPage = () => {
       }
       router.push('/dashboard');
     } catch (err) {
-      setError('Failed to submit quiz');
+      setError(err instanceof Error ? err.message : 'Failed to submit quiz');
+      setCompletedSets([...localCompleted]);
       setPhase('exam');
       setHasLostFocus(false);
     } finally {
@@ -398,41 +398,46 @@ const AssignedQuizPage = () => {
       const response = await fetch(`${API_BASE_URL}/quiz/${quizId}`);
       const data = await response.json();
 
-      if (!data.success) {
-        setError(data.message);
+      if (!response.ok || !data.success) {
+        setError(data.message || data.error || 'Unable to load quiz');
         return;
       }
 
-      setQuiz(data.quiz);
+      const quizData = data.quiz as Quiz;
+      if (!quizData || !Array.isArray(quizData.questionSets) || quizData.questionSets.length === 0) {
+        throw new Error('Quiz details are incomplete');
+      }
+      setQuiz(quizData);
 
       // Enable loose focus detection if quiz settings allow
-      if (data.quiz.settings.looseFocus === false) {
+      if (quizData.looseFocus === false) {
         setLooseFocusEnabled(true);
       }
 
       // Check if custom order already set
       if (data.selectedQuestionSetOrder && data.selectedQuestionSetOrder.length > 0) {
         setSelectedOrder(data.selectedQuestionSetOrder);
-        await startQuiz(data.selectedQuestionSetOrder, data.quiz);
+        await startQuiz(data.selectedQuestionSetOrder, quizData);
       } else {
-        const defaultOrder = data.quiz.questionSets.map((qs: QuestionSet) => qs.order);
+        const defaultOrder = quizData.questionSets.map((qs: QuestionSet) => qs.order);
         setSelectedOrder(defaultOrder);
 
         if (defaultOrder.length === 1) {
           // Single-subject: no need to show order selection, go straight in
-          await startQuiz(defaultOrder, data.quiz);
+          await startQuiz(defaultOrder, quizData);
         } else {
           setPhase('order-selection');
         }
       }
     } catch (err) {
-      setError('Failed to load quiz');
+      setError(err instanceof Error ? err.message : 'Failed to load quiz');
     }
   };
 
   const handleSetOrder = async () => {
     try {
       setLoading(true);
+      setError('');
       const response = await fetch(`${API_BASE_URL}/quiz/${quizId}/set-question-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -440,8 +445,8 @@ const AssignedQuizPage = () => {
       });
 
       const data = await response.json();
-      if (!data.success) {
-        setError(data.message);
+      if (!response.ok || !data.success) {
+        setError(data.message || data.error || 'Failed to set order');
         return;
       }
 
@@ -456,16 +461,17 @@ const AssignedQuizPage = () => {
   const startQuiz = async (order: number[], quizData?: Quiz) => {
     const resolvedQuiz = quizData || quiz; 
     try {
+      setError('');
       // Start the quiz
       const startResponse = await fetch(`${API_BASE_URL}/quiz/${quizId}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizTaker: userId }),
+        body: JSON.stringify({}),
       });
 
       const startData = await startResponse.json();
-      if (!startData.success) {
-        setError(startData.message);
+      if (!startResponse.ok || !startData.success) {
+        setError(startData.message || startData.error || 'Failed to start quiz');
         return;
       }
 
@@ -474,24 +480,25 @@ const AssignedQuizPage = () => {
       for (const setOrder of order) {
         const res = await fetch(`${API_BASE_URL}/quiz/${quizId}/question-set/${setOrder}`);
         const data = await res.json();
-        if (data.success) {
-          questionsData[setOrder] = data.questionSet.questions;
+        if (!res.ok || !data.success || !Array.isArray(data.questionSet?.questions)) {
+          throw new Error(data.message || data.error || 'Failed to load questions');
         }
+        questionsData[setOrder] = data.questionSet.questions;
       }
 
       setQuestionsBySetOrder(questionsData);
 
       // Set timer
-      if (resolvedQuiz?.settings.duration) {
-        const { hours, minutes, seconds } = resolvedQuiz.settings.duration;
-        const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-        setTimeRemaining(totalSeconds);
+      if (resolvedQuiz) {
+        const totalSeconds = (resolvedQuiz.durationHours * 3600) + (resolvedQuiz.durationMinutes * 60) + resolvedQuiz.durationSeconds;
+        const elapsedSeconds = startData.startedAt ? Math.floor((Date.now() - new Date(startData.startedAt).getTime()) / 1000) : 0;
+        setTimeRemaining(Math.max(0, totalSeconds - Math.max(0, elapsedSeconds)));
         setTimerStarted(true);
       }
 
       setPhase('exam');
     } catch (err) {
-      setError('Failed to start quiz');
+      setError(err instanceof Error ? err.message : 'Failed to start quiz');
     }
   };
 
@@ -508,7 +515,7 @@ const AssignedQuizPage = () => {
 
   const handleOptionSelect = (answer: string) => {
     const q = getCurrentQuestion();
-    if (q) setAnswers({ ...answers, [q._id]: answer });
+    if (q) setAnswers({ ...answers, [q.id]: answer });
   };
 
   const handleNext = () => {
@@ -532,49 +539,6 @@ const AssignedQuizPage = () => {
     }
   };
 
-  const handleSubmitQuestionSet = async () => {
-    const currentSetOrder = selectedOrder[currentQuestionSetIndex];
-    const currentSetQuestions = questionsBySetOrder[currentSetOrder] || [];
-
-    // Get answers for current question set only
-    const currentSetAnswers = currentSetQuestions
-      .map(q => ({
-        questionId: q._id,
-        answer: answers[q._id] || '',
-      }))
-      .filter(a => a.answer);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/quiz/${quizId}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          answers: currentSetAnswers,
-          questionSetOrder: currentSetOrder,
-          isFinalSubmission: true,
-        }),
-      });
-
-      const data = await response.json();
-      if (!data.success) {
-        setError(data.message);
-        return;
-      }
-
-      // Mark set as completed
-      setCompletedSets([...completedSets, currentSetOrder]);
-
-      // Move to next set
-      if (currentQuestionSetIndex < selectedOrder.length - 1) {
-        setCurrentQuestionSetIndex(currentQuestionSetIndex + 1);
-        setCurrentQuestionIndex(0);
-      }
-    } catch (err) {
-      setError('Failed to submit question set');
-    }
-  };
-
-
   const currentQuestion = getCurrentQuestion();
   const currentGlobalIndex = selectedOrder.slice(0, currentQuestionSetIndex)
     .reduce((sum, order) => sum + (questionsBySetOrder[order]?.length || 0), 0) + currentQuestionIndex;
@@ -584,12 +548,20 @@ const AssignedQuizPage = () => {
     return (
       <div className="portal-utility min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading quiz...</p>
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 rounded-lg">
+          {error ? (
+            <>
+              <AlertCircle className="w-10 h-10 text-red-600 mx-auto mb-4" />
               <p className="text-red-600">{error}</p>
-            </div>
+              <div className="mt-5 flex justify-center gap-3">
+                <button onClick={() => { setError(''); void fetchQuizDetails(); }} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Try again</button>
+                <button onClick={() => router.push('/dashboard')} className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700">Dashboard</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading quiz...</p>
+            </>
           )}
         </div>
       </div>
@@ -606,7 +578,7 @@ const AssignedQuizPage = () => {
               <div className="h-10 w-24 flex items-center justify-center">
                 <PortalLogo size={96} priority />
               </div>
-              <span className="font-semibold text-gray-900 text-sm sm:text-base">{quiz.settings.title}</span>
+              <span className="font-semibold text-gray-900 text-sm sm:text-base">{quiz.title}</span>
             </div>
           </header>
 
@@ -622,7 +594,7 @@ const AssignedQuizPage = () => {
                   const position = selectedOrder.indexOf(qs.order);
                   return (
                     <div
-                      key={qs._id}
+                      key={qs.id}
                       className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200"
                     >
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -669,6 +641,7 @@ const AssignedQuizPage = () => {
                 })}
               </div>
 
+              {error && <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>}
               <button
                 onClick={handleSetOrder}
                 disabled={loading}
@@ -706,11 +679,11 @@ const AssignedQuizPage = () => {
               <PortalLogo size={96} priority />
             </div>
             <span className="font-semibold text-sm sm:text-base truncate max-w-[150px] sm:max-w-none">
-              {quiz.settings.title}
+              {quiz.title}
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            {quiz.settings.displayCalculator && (
+            {quiz.displayCalculator && (
               <button
                 onClick={() => setShowCalculator(!showCalculator)}
                 className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors ${showCalculator
@@ -865,14 +838,14 @@ const AssignedQuizPage = () => {
                   <button
                     key={i}
                     onClick={() => handleOptionSelect(opt)}
-                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
+                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion.id] === opt
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
                       }`}
                   >
                     <div className="flex items-start gap-2 sm:gap-3">
                       <span
-                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
+                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion.id] === opt
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 text-gray-700'
                           }`}
@@ -893,14 +866,14 @@ const AssignedQuizPage = () => {
                   <button
                     key={opt}
                     onClick={() => handleOptionSelect(opt)}
-                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion._id] === opt
+                    className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all touch-manipulation ${answers[currentQuestion.id] === opt
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
                       }`}
                   >
                     <div className="flex items-center gap-3">
                       <span
-                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion._id] === opt
+                        className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold ${answers[currentQuestion.id] === opt
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 text-gray-700'
                           }`}
@@ -918,7 +891,7 @@ const AssignedQuizPage = () => {
             {(currentQuestion.type === 'fill-in-the-blanks' || currentQuestion.type === 'essay') && (
               <div className="mb-6 sm:mb-8">
                 <textarea
-                  value={answers[currentQuestion._id] || ''}
+                  value={answers[currentQuestion.id] || ''}
                   onChange={(e) => handleOptionSelect(e.target.value)}
                   placeholder={currentQuestion.type === 'essay' ? 'Type your answer here...' : 'Fill in the blank'}
                   rows={currentQuestion.type === 'essay' ? 6 : 2}
@@ -963,7 +936,7 @@ const AssignedQuizPage = () => {
       </main>
 
       {/* Calculator Widget */}
-      {showCalculator && quiz.settings.displayCalculator && (
+      {showCalculator && quiz.displayCalculator && (
         <CalculatorWidget onClose={() => setShowCalculator(false)} />
       )}
     </div>
