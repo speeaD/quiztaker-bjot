@@ -21,7 +21,7 @@ import {
 } from "@/lib/seo";
 
 export const metadata = publicMetadata(
-  "The Best Online JAMB Tutorial in Nigeria | BJOT",
+  "Blast 300+ with Blast JAMB Online Tutorial(BJOT) | The Best Online JAMB Tutorial in Nigeria | BJOT",
   siteDescription,
   "/",
 );

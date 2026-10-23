@@ -8,7 +8,7 @@ export const siteUrl = new URL(
 export const siteName = "BJOT";
 export const organizationName = "Blast JAMB Online Tutorial";
 export const siteDescription =
-  "BJOT is an online JAMB tutorial for students in Nigeria. Prepare for UTME with tutor-led lessons, CBT practice, mock exams and a practical study guide.";
+  "Blast JAMB Online Tutorial(BJOT) is an online JAMB tutorial for students in Nigeria. Prepare for UTME and WAEC with tutor-led lessons, CBT practice, mock exams and a practical study guide.";
 export const publicPages = [
   "/",
   "/about-us",
