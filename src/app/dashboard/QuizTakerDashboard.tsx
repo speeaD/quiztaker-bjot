@@ -324,9 +324,6 @@ export default function QuizTakerDashboard() {
         <main className="dashboard-main mx-auto max-w-[1210px] px-4 py-4 lg:px-8 lg:py-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-[0.690625rem] font-extrabold uppercase tracking-[0.16em] text-[#718078]">
-                Student command centre
-              </p>
               <h1 className="mt-1 text-[1.6575rem] font-black tracking-[-0.04em]">
                 Your dashboard
               </h1>
