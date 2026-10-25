@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { Star } from "lucide-react";
+import {
+  BookOpen,
+  ClipboardCheck,
+  Gamepad2,
+  House,
+  LibraryBig,
+  Star,
+} from "lucide-react";
 import PortalLogo from "@/components/PortalLogo";
 import styles from "./StudentHeader.module.css";
 
@@ -21,17 +28,19 @@ const navigation = [
   {
     href: "/dashboard",
     label: "Dashboard",
+    Icon: House,
     routes: ["/dashboard", ...classRoutes],
   },
   {
     href: "/cbt-simulator",
     label: "CBT Simulator",
+    Icon: ClipboardCheck,
     routes: ["/cbt-simulator"],
   },
-  { href: "/jamb-past-questions", label: "Past Questions", routes: ["/jamb-past-questions"] },
-  { href: "/study-hub", label: "Study Hub", routes: ["/study-hub"] },
-  { href: "/game-hub", label: "Game Hub", routes: gameRoutes },
-  { href: "/subject-test", label: "Subject Tests", routes: ["/subject-test"] },
+  { href: "/jamb-past-questions", label: "Past Questions", Icon: BookOpen, routes: ["/jamb-past-questions"] },
+  { href: "/study-hub", label: "Study Hub", Icon: LibraryBig, routes: ["/study-hub"] },
+  { href: "/game-hub", label: "Game Hub", Icon: Gamepad2, routes: gameRoutes },
+  { href: "/subject-test", label: "Subject Tests", Icon: ClipboardCheck, routes: ["/subject-test"] },
 ];
 const subscribe = (notify: () => void) => {
   window.addEventListener("storage", notify);
@@ -85,15 +94,19 @@ export function StudentHeader({
             const active = item.routes.some((route) =>
               matches(pathname, route),
             );
+            const Icon = item.Icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={active ? styles.navActive : undefined}
                 aria-current={active ? "page" : undefined}
+                aria-label={item.label}
+                title={item.label}
               >
                 {active && <i aria-hidden="true" />}
-                {item.label}
+                <Icon className={styles.navIcon} size={20} aria-hidden="true" />
+                <span className={styles.navLabel}>{item.label}</span>
               </Link>
             );
           })}
