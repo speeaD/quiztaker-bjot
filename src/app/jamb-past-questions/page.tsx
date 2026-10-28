@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Award, Clock3, RotateCcw } from "lucide-react";
 import ExamWorkspace from "@/components/cbt/ExamWorkspace";
 import SimulatorHeader from "@/components/cbt/SimulatorHeader";
@@ -12,6 +13,7 @@ import {
 } from "@/components/cbt/CompletionReview";
 import type { CbtQuestion, CbtQuestionSet } from "@/components/cbt/types";
 import { isEnglishSubject } from "@/lib/registration-subjects";
+import MaintenanceDialog from "@/components/MaintenanceDialog";
 
 type Paper = {
   id: string;
@@ -72,7 +74,7 @@ async function request<T>(
 const formatTime = (seconds: number) =>
   `${Math.floor(seconds / 3600)}:${String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
-export default function JambPastQuestions() {
+export function JambPastQuestionsPractice() {
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [active, setActive] = useState<Active[]>([]);
   const [year, setYear] = useState<number | null>(null);
@@ -514,5 +516,25 @@ export default function JambPastQuestions() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function JambPastQuestions() {
+  const router = useRouter();
+  return (
+    <main className="grid min-h-screen place-items-center bg-[#f5f8f6] px-4 py-12 text-center">
+      <div>
+        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#9a5a00]">
+          Scheduled maintenance
+        </p>
+        <h1 className="mt-3 text-3xl font-black text-[#17231e]">
+          JAMB Practice is temporarily unavailable
+        </h1>
+        <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-[#64726a]">
+          We’re working on this feature. Please check back later; your other learning tools are still available.
+        </p>
+      </div>
+      <MaintenanceDialog open onClose={() => router.replace("/dashboard")} />
+    </main>
   );
 }

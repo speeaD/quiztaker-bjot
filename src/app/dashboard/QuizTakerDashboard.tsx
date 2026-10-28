@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import DashboardLogoutButton from "@/components/dashboard/DashboardLogoutButton";
 import LearningStreak from "@/components/dashboard/LearningStreak";
 import { StudentHeader } from "@/components/layout/StudentHeader";
+import MaintenanceDialog from "@/components/MaintenanceDialog";
 
 interface Submission {
   id: string;
@@ -153,6 +154,7 @@ export default function QuizTakerDashboard() {
     null,
   );
   const [premiumMessage, setPremiumMessage] = useState("");
+  const [maintenanceOpen, setMaintenanceOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [assignedLoading, setAssignedLoading] = useState(true);
   const [error, setError] = useState("");
@@ -298,27 +300,53 @@ export default function QuizTakerDashboard() {
   return (
     <>
       <StudentHeader displayName={studentName || "Student"} />
+      <MaintenanceDialog
+        open={maintenanceOpen}
+        onClose={() => setMaintenanceOpen(false)}
+      />
       <div className="portal-page text-[1.105rem] text-[#17231e]">
         {premiumMessage && (
           <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Premium class required"
-            className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"
+            className="fixed inset-0 z-[100] grid place-items-center bg-[#101a15]/60 p-4 backdrop-blur-sm"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setPremiumMessage("");
+            }}
           >
-            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-              <Lock className="text-[#a76000]" />
-              <h2 className="mt-3 text-lg font-black">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="premium-required-title"
+              aria-describedby="premium-required-description"
+              className="relative w-full max-w-md rounded-2xl border border-[#dce5df] bg-white p-6 shadow-2xl sm:p-8"
+            >
+              <button
+                type="button"
+                onClick={() => setPremiumMessage("")}
+                aria-label="Close premium access dialog"
+                className="absolute right-4 top-4 rounded-full p-2 text-[#718078] transition hover:bg-[#edf3ef] hover:text-[#0d3b2e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#15513e]"
+              >
+                <X size={18} />
+              </button>
+              <span className="grid size-12 place-items-center rounded-xl bg-[#fff2d1] text-[#9a5a00]">
+                <Lock size={23} />
+              </span>
+              <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.16em] text-[#9a5a00]">
+                Premium access
+              </p>
+              <h2 id="premium-required-title" className="mt-2 text-2xl font-black tracking-tight text-[#17231e]">
                 Premium class required
               </h2>
-              <p className="mt-2 text-sm text-[#64726a]">{premiumMessage}</p>
+              <p id="premium-required-description" className="mt-3 text-sm leading-6 text-[#64726a]">
+                {premiumMessage}
+              </p>
               <button
+                type="button"
                 onClick={() => setPremiumMessage("")}
-                className="mt-5 rounded-md bg-[#0d3b2e] px-4 py-2 text-sm font-bold text-white"
+                className="mt-6 w-full rounded-lg bg-[#0d3b2e] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#15513e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#15513e]"
               >
                 Got it
               </button>
-            </div>
+            </section>
           </div>
         )}
         <main className="dashboard-main mx-auto max-w-[1210px] px-4 py-4 lg:px-8 lg:py-5">
@@ -462,10 +490,12 @@ export default function QuizTakerDashboard() {
               <LearningCard
                 title="JAMB Past Questions"
                 description="Practise one exam year with Use of English and three other subjects."
-                action="Choose Year & Subjects"
+                action="Under maintenance"
                 href="/jamb-past-questions"
                 icon={BookOpen}
                 badge="Past papers"
+                locked
+                onLocked={() => setMaintenanceOpen(true)}
               />
               <LearningCard
                 title="CBT Simulator"

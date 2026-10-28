@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   BookOpen,
   ClipboardCheck,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import PortalLogo from "@/components/PortalLogo";
 import styles from "./StudentHeader.module.css";
+import MaintenanceDialog from "@/components/MaintenanceDialog";
 
 const gameRoutes = [
   "/game-hub",
@@ -63,6 +64,7 @@ export function StudentHeader({
   weeklyScore?: number;
 }) {
   const pathname = usePathname();
+  const [maintenanceOpen, setMaintenanceOpen] = useState(false);
   const savedName = useSyncExternalStore(subscribe, storedName, serverName);
   const name = displayName || savedName || "BJOT Scholar";
   const initials = name
@@ -95,6 +97,22 @@ export function StudentHeader({
               matches(pathname, route),
             );
             const Icon = item.Icon;
+            if (item.href === "/jamb-past-questions") {
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => setMaintenanceOpen(true)}
+                  className={`${styles.navButton} ${active ? styles.navActive : ""}`}
+                  aria-label={`${item.label}, currently under maintenance`}
+                  title={`${item.label} — Under maintenance`}
+                >
+                  {active && <i aria-hidden="true" />}
+                  <Icon className={styles.navIcon} size={20} aria-hidden="true" />
+                  <span className={styles.navLabel}>{item.label}</span>
+                </button>
+              );
+            }
             return (
               <Link
                 key={item.href}
@@ -139,6 +157,7 @@ export function StudentHeader({
           </Link>
         </div>
       </div>
+      <MaintenanceDialog open={maintenanceOpen} onClose={() => setMaintenanceOpen(false)} />
     </header>
   );
 }
