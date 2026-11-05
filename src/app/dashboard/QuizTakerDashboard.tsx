@@ -44,6 +44,8 @@ interface AssignedQuiz {
     durationHours?: number;
     durationMinutes?: number;
     durationSeconds?: number;
+    multipleAttempts?: boolean;
+    isActive?: boolean;
   };
   status: "pending" | "in-progress" | "completed";
   assignedAt: string;
@@ -753,7 +755,7 @@ export default function QuizTakerDashboard() {
                               </p>
                             )}
                             {quiz.status === "completed" &&
-                            quiz.submissions?.[0] ? (
+                            quiz.submissions?.[0] && (
                               <button
                                 onClick={() => {
                                   const submissionId = quiz.submissions?.[0]?.id;
@@ -763,13 +765,16 @@ export default function QuizTakerDashboard() {
                               >
                                 View Results
                               </button>
-                            ) : (
+                            )}
+                            {(quiz.status !== "completed" || (quiz.quiz?.multipleAttempts && quiz.quiz.isActive)) && (
                               <button
                                 onClick={() => startQuiz(quiz)}
                                 className="mt-3 flex w-full items-center justify-center gap-1 rounded-md bg-[#0d3b2e] py-1.5 text-[0.690625rem] font-bold text-white"
                               >
                                 <Play size={11} fill="currentColor" />
-                                {quiz.status === "in-progress"
+                                {quiz.status === "completed"
+                                  ? "Retake Exam"
+                                  : quiz.status === "in-progress"
                                   ? "Continue Exam"
                                   : "Start Exam"}
                               </button>

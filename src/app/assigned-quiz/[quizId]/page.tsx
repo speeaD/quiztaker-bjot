@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Clock, ChevronLeft, ChevronRight, Calculator, XCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import PortalLogo from '@/components/PortalLogo';
+import { watchExamFocus } from '@/lib/exam-focus';
 
 const API_BASE_URL = '/api/quiztaker';
 
@@ -177,7 +178,7 @@ const AssignedQuizPage = () => {
   const router = useRouter();
   const quizId = params.quizId as string;
 
-  const [phase, setPhase] = useState<'loading' | 'order-selection' | 'exam' | 'submitting'>('loading');
+  const [phase, setPhase] = useState<'loading' | 'order-selection' | 'exam' | 'submitting' | 'submission-error'>('loading');
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [isDisabled, setIsDisabled] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -192,21 +193,20 @@ const AssignedQuizPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [completedSets, setCompletedSets] = useState<number[]>([]);
-  const [looseFocusEnabled, setLooseFocusEnabled] = useState(false);
-  const [hasLostFocus, setHasLostFocus] = useState(false);
+  const enforceFocus = quiz?.looseFocus === false;
+  const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
+  const submissionInProgress = useRef(false);
+  const submissionReason = useRef<string | undefined>(undefined);
   const getAllQuestions = useCallback(() => selectedOrder.flatMap(order => questionsBySetOrder[order] || []), [questionsBySetOrder, selectedOrder]);
 
 
   const handleSubmitQuiz = useCallback(async (isAuto = false, reason?: string) => {
-    if (isDisabled) return;
-    const all = getAllQuestions();
+    if (submissionInProgress.current) return;
+    submissionInProgress.current = true;
+    submissionReason.current = reason;
+    setShowSubmitConfirmation(false);
 
-    // Show different messages based on reason
-    if (!isAuto) {
-      if (!window.confirm(`Submit ${Object.keys(answers).length}/${all.length} answered questions?`)) {
-        return;
-      }
-    } else if (reason) {
+    if (isAuto && reason) {
       // Auto-submit due to focus loss or time up
       console.log(`Auto-submitting quiz: ${reason}`);
     }
@@ -254,12 +254,17 @@ const AssignedQuizPage = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit quiz');
       setCompletedSets([...localCompleted]);
-      setPhase('exam');
-      setHasLostFocus(false);
+      setPhase('submission-error');
+      submissionInProgress.current = false;
     } finally {
       setIsDisabled(false);
     }
-  }, [isDisabled, getAllQuestions, answers, selectedOrder, completedSets, router, questionsBySetOrder, quizId]);
+  }, [answers, selectedOrder, completedSets, router, questionsBySetOrder, quizId]);
+
+  const submitQuizRef = useRef(handleSubmitQuiz);
+  useEffect(() => {
+    submitQuizRef.current = handleSubmitQuiz;
+  }, [handleSubmitQuiz]);
 
   const ImageModal: React.FC<{ imageUrl: string; altText: string; onClose: () => void }> = ({
     imageUrl,
@@ -319,55 +324,13 @@ const AssignedQuizPage = () => {
 
 
 
-  // Focus loss detection - AUTO SUBMIT (FIXED VERSION)
+  // Keep listeners stable while answers change, and always submit current answers.
   useEffect(() => {
-    if (phase !== 'exam' || !looseFocusEnabled || hasLostFocus) return;
+    if (phase !== 'exam' || !enforceFocus) return;
 
-    // Track if the user has genuinely switched tabs/apps
-    let wasVisible = true;
-    let focusLostTimeout: NodeJS.Timeout | null = null;
-
-    const handleVisibilityChange = () => {
-      // Mobile: document.hidden can be true when screen turns off
-      // Desktop: document.hidden is true when tab is switched
-
-      if (document.hidden) {
-        wasVisible = false;
-
-        // Give a grace period to distinguish screen-off from tab-switch
-        // On mobile, screen-off typically triggers multiple rapid visibility changes
-        // On desktop/genuine tab switch, the page stays hidden
-        focusLostTimeout = setTimeout(() => {
-          // Only trigger if still hidden after delay
-          if (document.hidden && !document.hasFocus()) {
-            console.log('Tab/window switched - triggering auto-submit');
-            setHasLostFocus(true);
-            handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
-          }
-        }, 2500); // 300ms grace period
-      } else {
-        // Page became visible again - cancel any pending submission
-        if (focusLostTimeout) {
-          clearTimeout(focusLostTimeout);
-          focusLostTimeout = null;
-        }
-        wasVisible = true;
-      }
-    };
-
-    // Alternative approach: Use both visibility and focus together
-    const handleFocusLoss = () => {
-      // Only submit if BOTH conditions are true:
-      // 1. Document is hidden (tab switched)
-      // 2. Window doesn't have focus
-      setTimeout(() => {
-        if (document.hidden && !document.hasFocus()) {
-          console.log('Focus lost - triggering auto-submit');
-          setHasLostFocus(true);
-          handleSubmitQuiz(true, 'Focus lost - switched tabs or windows');
-        }
-      }, 200);
-    };
+    const stopWatching = watchExamFocus(() => {
+      void submitQuizRef.current(true, 'Focus lost - switched tabs or windows');
+    });
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Warn user before closing/refreshing
@@ -376,22 +339,12 @@ const AssignedQuizPage = () => {
       return e.returnValue;
     };
 
-    // Add event listeners - Use visibilitychange instead of blur
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-
-    console.log('Focus loss detection enabled');
-
-    // Cleanup
     return () => {
-      if (focusLostTimeout) {
-        clearTimeout(focusLostTimeout);
-      }
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      stopWatching();
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      console.log('Focus loss detection disabled');
     };
-  }, [phase, looseFocusEnabled, hasLostFocus, handleSubmitQuiz]);
+  }, [phase, enforceFocus]);
 
   const fetchQuizDetails = async () => {
     try {
@@ -408,11 +361,6 @@ const AssignedQuizPage = () => {
         throw new Error('Quiz details are incomplete');
       }
       setQuiz(quizData);
-
-      // Enable loose focus detection if quiz settings allow
-      if (quizData.looseFocus === false) {
-        setLooseFocusEnabled(true);
-      }
 
       // Check if custom order already set
       if (data.selectedQuestionSetOrder && data.selectedQuestionSetOrder.length > 0) {
@@ -657,6 +605,21 @@ const AssignedQuizPage = () => {
   }
 
   // Submitting Phase
+  if (phase === 'submission-error') {
+    return (
+      <div className="portal-utility min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md text-center">
+          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <h1 className="text-lg font-bold text-gray-900">Unable to submit your exam</h1>
+          <p className="mt-3 text-sm text-gray-600">{error}</p>
+          <p className="mt-3 text-sm text-gray-600">Your answers are kept on this page. Retry when your connection is available.</p>
+          <button onClick={() => void handleSubmitQuiz(true, submissionReason.current)} className="mt-5 rounded-lg bg-blue-700 px-5 py-2 font-semibold text-white">Retry submission</button>
+          <button onClick={() => router.push('/dashboard')} className="mt-3 block w-full text-sm text-gray-600">Back to dashboard</button>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === 'submitting') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -696,7 +659,7 @@ const AssignedQuizPage = () => {
               </button>
             )}
             <button
-              onClick={() => handleSubmitQuiz()} disabled={isDisabled}
+              onClick={() => setShowSubmitConfirmation(true)} disabled={isDisabled}
               className="bg-red-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-red-700 active:bg-red-800 transition-colors touch-manipulation"
             >
               Submit
@@ -715,10 +678,10 @@ const AssignedQuizPage = () => {
                 {formatTime(timeRemaining)}
               </span>
             </div>
-            {looseFocusEnabled && (
+            {enforceFocus && (
               <div className="flex items-center gap-2 text-xs sm:text-sm text-orange-600 bg-orange-50 px-2 sm:px-3 py-1 rounded-full">
                 <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Don&apos;t switch tabs - auto-submit enabled</span>
+                <span className="hidden sm:inline">Switching tabs or windows submits your exam</span>
                 <span className="sm:hidden">Stay focused</span>
               </div>
             )}
@@ -934,6 +897,19 @@ const AssignedQuizPage = () => {
         )}
 
       </main>
+
+      {showSubmitConfirmation && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
+          <section role="dialog" aria-modal="true" aria-labelledby="submit-confirmation-title" className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h2 id="submit-confirmation-title" className="text-lg font-bold text-gray-900">Submit exam?</h2>
+            <p className="mt-3 text-sm text-gray-600">You have answered {Object.keys(answers).length} of {getAllQuestions().length} questions.</p>
+            <div className="mt-6 flex gap-3">
+              <button onClick={() => setShowSubmitConfirmation(false)} className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-gray-700">Keep working</button>
+              <button onClick={() => void handleSubmitQuiz()} className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">Submit exam</button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* Calculator Widget */}
       {showCalculator && quiz.displayCalculator && (
