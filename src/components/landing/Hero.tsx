@@ -1,121 +1,40 @@
 "use client";
 
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import type { SectionContent, Testimonial } from "@/lib/landing-content";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowDown, BookOpen, ChartNoAxesCombined, Clock3 } from "lucide-react";
+import type { Testimonial } from "@/lib/landing-content";
+import { trackLandingEvent } from "@/lib/landing-tracking";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-
-const container: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
-};
-
-const item: Variants = {
-  hidden: { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
-};
-
-export default function Hero({
-  content,
-  highlight,
-  testimonials,
-}: {
-  content: SectionContent;
-  highlight?: { value: string; label: string };
-  testimonials: Testimonial[];
-}) {
-  const prefersReducedMotion = useReducedMotion();
-  const portraits = testimonials
-    .flatMap((testimonial) => {
-      const src =
-        typeof testimonial.imageUrl === "string"
-          ? testimonial.imageUrl.trim()
-          : "";
-      return src
-        ? [{ id: testimonial.id, name: testimonial.studentName, src }]
-        : [];
-    })
-    .slice(0, 4);
-
+export default function Hero({ proof }: { proof: Testimonial | null }) {
   return (
-    <section className="hero" style={{ padding: 0 }}>
-      <div className="hero-inner">
-        <motion.div
-          className="hero-content"
-          initial={false}
-          animate={prefersReducedMotion ? undefined : "visible"}
-          variants={container}
-        >
-          <motion.p className="eyebrow" variants={item}>
-            {content.eyebrow}
-          </motion.p>
-          <motion.h1 variants={item}>{content.heading}</motion.h1>
-          <motion.p variants={item}>{content.description}</motion.p>
-          <motion.div className="hero-ctas" variants={item}>
-            {content.primaryCta && (
-              <a href="/register" className="btn btn-primary">
-                Join BJOT
-              </a>
-            )}
-            {content.secondaryCta && (
-              <a href="/free-mock" className="btn btn-gold">
-                Free BJOT Mock
-              </a>
-            )}
-          </motion.div>
-          <motion.div className="hero-trust" variants={item}>
-            {portraits.length > 0 && (
-              <div className="avatar-stack">
-                {portraits.map(({ id, name, src }, i) => (
-                  <motion.img
-                    key={id}
-                    src={src}
-                    alt={name}
-                    initial={
-                      prefersReducedMotion
-                        ? undefined
-                        : { opacity: 0, scale: 0.6 }
-                    }
-                    animate={
-                      prefersReducedMotion
-                        ? undefined
-                        : { opacity: 1, scale: 1 }
-                    }
-                    transition={{
-                      duration: 0.4,
-                      delay: 0.7 + i * 0.08,
-                      ease: EASE,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-            <div className="trust-text">{content.trustText}</div>
-          </motion.div>
-          <motion.p className="hero-rc" variants={item}>
-            RC No. 8892827
-          </motion.p>
-        </motion.div>
-      </div>
-      {highlight && (
-        <motion.div
-          className="hero-badge"
-          initial={
-            prefersReducedMotion
-              ? undefined
-              : { opacity: 0, scale: 0.7, rotate: -8 }
-          }
-          animate={
-            prefersReducedMotion
-              ? undefined
-              : { opacity: 1, scale: 1, rotate: 0 }
-          }
-          transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
-        >
-          <div className="num">{highlight.value}</div>
-          <div className="lbl">{highlight.label}</div>
-        </motion.div>
-      )}
-    </section>
+    <>
+      <section className="home-hero" aria-labelledby="home-hero-heading">
+        <div className="home-hero-inner">
+          <div className="home-hero-copy">
+            <p className="home-eyebrow">YOUR DIGITAL CLASSROOM FOR UTME SUCCESS</p>
+            <h1 id="home-hero-heading">Your 300+ goal deserves a complete preparation system.</h1>
+            <p className="home-hero-lede">Learn with expert tutors, master difficult topics, practise timed CBT exams, and track what to improve—all inside your BJOT Student Dashboard.</p>
+            <div className="home-hero-actions">
+              <Link href="/pricing" className="home-button home-button-primary" onClick={() => trackLandingEvent("premium_cta_click", { placement: "hero" })}>Join Premium Class</Link>
+              <a href="#digital-classroom" className="home-button home-button-secondary">Explore the Dashboard <ArrowDown size={16} aria-hidden="true" /></a>
+            </div>
+            <p className="home-goal-note">A focused preparation goal—not a promised score.</p>
+            {proof && <a className="home-hero-proof" href="/jamb-results"><span className="proof-score">{proof.score}</span><span><strong>{proof.studentName}</strong><small>Published student result · See the evidence</small></span></a>}
+          </div>
+          <div className="home-hero-visual">
+            <div className="hero-product-frame">
+              <Image src="/dashboard-previews/dashboard-premium.png" alt="BJOT premium dashboard preview with sample account readiness, learning streak, and study tools" width={996} height={1756} priority sizes="(max-width: 850px) 94vw, 52vw" />
+              <span className="hero-product-pill"><span aria-hidden="true" className="live-dot" />Premium dashboard preview · Sample account</span>
+            </div>
+            <div className="hero-feature-labels" aria-label="Dashboard features">
+              <span><BookOpen size={15} aria-hidden="true" />Study Hub</span>
+              <span><Clock3 size={15} aria-hidden="true" />Timed CBT</span>
+              <span><ChartNoAxesCombined size={15} aria-hidden="true" />Performance Tracker</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

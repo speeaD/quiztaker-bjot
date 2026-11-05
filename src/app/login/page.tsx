@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
+import { billingReturn, billingAuthLink } from "@/lib/billing";
 import PortalLogo from "@/components/PortalLogo";
 
 export default function Login() {
@@ -48,7 +49,7 @@ export default function Login() {
       if (!cookieResponse.ok) throw new Error("Unable to secure your session.");
       localStorage.setItem("quizTaker", data.quizTaker.id);
       localStorage.setItem("quizTakerEmail", data.quizTaker.email);
-      window.location.assign("/dashboard");
+      window.location.assign(billingReturn(new URLSearchParams(window.location.search).get("next")) || "/dashboard");
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -177,12 +178,13 @@ export default function Login() {
               </button>
               <div className="mt-7 rounded-md bg-[#f6f7f8] px-5 py-4 text-center text-sm text-[#56605b]">
                 <p>
-                  Don&apos;t have an access key?{" "}
+                  New to BJOT?{" "}
                   <a
-                    href="https://wa.me/2349164896938"
+                    href="/register"
+                    onClick={(event) => { event.preventDefault(); window.location.assign(billingAuthLink("register")); }}
                     className="font-extrabold text-[#a76000] hover:underline"
                   >
-                    Contact Study Coordinator
+                    Create a free student account
                   </a>
                 </p>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-xs font-medium">

@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { billingAuthLink } from "@/lib/billing";
 import PublicHeader from "@/components/PublicHeader";
 import { isEnglishSubject, normalizeRegistrationSubjects, validRegistrationCombination, type RegistrationSubject } from "@/lib/registration-subjects";
 
@@ -130,7 +131,7 @@ export default function RegisterPage() {
               <code className="mt-2 block select-all text-2xl font-black tracking-[0.16em] text-[#084635]">{accessCode}</code>
             </div>
             <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(accessCode); setCodeCopied(true); } catch { setCodeCopied(false); } }} className="mt-5 inline-flex items-center gap-2 rounded-lg border border-[#b8d4c4] px-4 py-2 text-sm font-bold text-[#084635]"><ClipboardCopy size={16} />{codeCopied ? "Copied" : "Copy code"}</button>
-            <a href="/login" className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#084635] px-5 py-3 text-sm font-extrabold text-white">Continue to login <ArrowRight size={17} /></a>
+            <a href="/login" onClick={(event) => { event.preventDefault(); window.location.assign(billingAuthLink("login")); }} className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#084635] px-5 py-3 text-sm font-extrabold text-white">Continue to login <ArrowRight size={17} /></a>
           </div>
         </section>
       </main>
@@ -383,7 +384,7 @@ export default function RegisterPage() {
                 <p className="mt-2 text-[11px] text-[#8a9ab2]">
                   Already registered?{" "}
                   <a
-                    href="/login"
+                    href="/login" onClick={(event) => { event.preventDefault(); window.location.assign(billingAuthLink("login")); }}
                     className="font-bold text-[#0a261e] hover:underline"
                   >
                     Sign In with Student Access Code

@@ -1,3 +1,4 @@
+import { billingReturn } from "@/lib/billing";
 import { NextRequest, NextResponse } from "next/server"
 
 export async function proxy(request: NextRequest) {
@@ -6,14 +7,18 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const premiumRoutes = ['/study-hub', '/subject-test', '/time-attack', '/sudden-death', '/schedule', '/attendance', '/todays-class', '/assigned-quiz', '/results']
   const premiumPage = premiumRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))
+  const proPage = pathname === "/jamb-past-questions" || pathname.startsWith("/jamb-past-questions/")
   const premiumApi = pathname === '/api/attendance' || pathname.startsWith('/api/attendance/')
-  if (isAuthenticated && (premiumPage || premiumApi)) {
+  if (isAuthenticated && (premiumPage || premiumApi || proPage)) {
     try {
       const response = await fetch(`${process.env.BACKEND_URL || 'http://localhost:5004/api'}/quiztaker/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }, cache: 'no-store',
       })
       if (!response.ok) throw new Error('Unable to verify membership')
       const data = await response.json()
+      if (proPage && data.quizTaker?.subscription?.hasProAccess !== true) {
+        return NextResponse.redirect(new URL('/dashboard?pro=required', request.url))
+      }
       if (data.quizTaker?.accountType !== 'premium') {
         if (premiumApi) return NextResponse.json({ error: 'Subscribe to the premium class to access this feature' }, { status: 403 })
         return NextResponse.redirect(new URL('/dashboard?premium=required', request.url))
@@ -30,12 +35,17 @@ export async function proxy(request: NextRequest) {
   
   // Redirect to login if not authenticated and trying to access protected route
   if (!isAuthenticated && !isPublicRoute) {
+    if (pathname === '/billing' || pathname === '/billing/callback') {
+      const login = new URL('/login', request.url)
+      login.searchParams.set('next', pathname + request.nextUrl.search)
+      return NextResponse.redirect(login)
+    }
     return NextResponse.redirect(new URL('/', request.url))
   }
   
   // Redirect to home if authenticated and trying to access auth pages
   if (isAuthenticated && ['/login', '/register'].includes(pathname)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL(billingReturn(request.nextUrl.searchParams.get('next')) || '/dashboard', request.url))
   }
   
   return NextResponse.next()

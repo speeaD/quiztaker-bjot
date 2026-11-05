@@ -9,8 +9,9 @@ export default function PricingPreview() {
         <div className="section-head">
           <p className="eyebrow">CHOOSE YOUR PREPARATION</p>
           <h2 id="pricing-preview-heading">BJOT plans at a glance</h2>
-          <p>Explore the features in each level for Science and Art &amp; Commercial, then compare prices on the full pricing page.</p>
+          <p>Create a regular student account for free, then choose a paid premium class plan separately. Published plans list tutor-led support and study benefits; Pro adds BJOT CBT practice. Compare the current price and plan details for your department.</p>
         </div>
+        <p className="mb-5 text-center text-xs text-[#65746a]">Lite plans list tutor classes, biweekly mocks, data support, video tutorials, and a recommended textbook list. Proprietary manuals are included only where a specific plan lists them.</p>
         <div className="grid gap-5 md:grid-cols-3">
           {tierDetails.map((tier) => (
             <article key={tier.key} className="rounded-3xl border border-[#dbe4dc] bg-white p-6 shadow-sm">
@@ -18,8 +19,9 @@ export default function PricingPreview() {
               <h3 className="mt-2 text-2xl font-bold text-[#0f3d2c]">{tier.name}</h3>
               <div className="mt-5 border-t border-[#e3e9e3] pt-5 text-sm text-[#42554a]">
                 <p className="font-semibold text-[#0f3d2c]">Lite includes</p>
+                <p className="mt-1 text-xs leading-5 text-[#617167]">Class duration, biweekly mocks, data support, video tutorials, and a recommended textbook list.</p>
                 <ul className="mt-3 space-y-2">
-                  {tier.features.slice(1).map((feature) => <li key={feature} className="flex items-start gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#17805a]" aria-hidden="true" />{feature}</li>)}
+                  <li className="flex items-start gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#17805a]" aria-hidden="true" />{tier.features[0]}</li>
                 </ul>
                 <p className="mt-5 border-t border-[#e3e9e3] pt-4"><strong className="text-[#0f3d2c]">Pro adds:</strong> {proExtra}</p>
               </div>
@@ -30,11 +32,11 @@ export default function PricingPreview() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#f4be56]">Final preparation</p>
                 <h3 className="mt-2 text-2xl font-bold">Ultimate Pro Max</h3>
-                <p className="mt-2 text-sm text-white/80">Builds on Ultimate Pro with focused preparation before JAMB.</p>
+              <p className="mt-2 text-sm text-white/80">Builds on Ultimate Pro with focused preparation before JAMB.</p>
               </div>
               <div className="grid gap-4 text-sm sm:grid-cols-2">
-                <div><p className="font-bold text-[#f4be56]">Science</p><p className="mt-2 leading-6 text-white/85">Full tutorial period, Organic Chemistry classes, Physics bootcamp and final revision class.</p></div>
-                <div><p className="font-bold text-[#f4be56]">Art &amp; Commercial</p><p className="mt-2 leading-6 text-white/85">Everything in Ultimate Pro, plus the final revision class.</p></div>
+                <div><p className="font-bold text-[#f4be56]">Science</p><p className="mt-2 leading-6 text-white/85">Full tutorial period, Organic Chemistry classes, Physics bootcamp, final revision class, Organic Chemistry manual PDF, and Physics Formula Bank.</p></div>
+                <div><p className="font-bold text-[#f4be56]">Art &amp; Commercial</p><p className="mt-2 leading-6 text-white/85">Everything in Ultimate Pro, plus the final revision class. No physical textbook is listed as included.</p></div>
               </div>
             </div>
           </article>

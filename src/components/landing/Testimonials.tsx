@@ -11,8 +11,8 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
       <div className="wrap">
         <Reveal className="section-head">
           <div className="eyebrow">Testimonials</div>
-          <h2>Real Students, Real Results</h2>
-          <p>Hear from students who transformed their scores with BJOT.</p>
+          <h2>Real students. Published scores and stories.</h2>
+          <p>Read student experiences and review the available score evidence.</p>
         </Reveal>
         <StaggerGroup className="test-grid" stagger={0.13}>
           {testimonials.slice(0, 3).map((t) => (
@@ -23,8 +23,8 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                 <div className="who">
                   {t.studentName} <span>{[t.course, t.school].filter(Boolean).join(", ")}</span>
                 </div>
-                <a href="/register" className="test-enroll">
-                  Enroll now <ArrowUpRight size={16} aria-hidden="true" />
+                <a href="/pricing" className="test-enroll">
+                  Compare plans <ArrowUpRight size={16} aria-hidden="true" />
                 </a>
               </div>
             </StaggerItem>

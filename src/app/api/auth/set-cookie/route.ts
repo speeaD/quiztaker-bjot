@@ -11,7 +11,7 @@ export async function POST(request: Request) {
             cookies()).set('auth-token', token, {
             httpOnly: true,  // Cannot be accessed by JavaScript
             secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-            sameSite: 'strict', // CSRF protection
+            sameSite: 'lax', // Allow the top-level redirect back from payment checkout.
             maxAge: 60 * 60 * 24 * 7, // 7 days
             path: '/',
         });
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
             cookies()).set('quizTaker', JSON.stringify(quizTaker), {
             httpOnly: false, // Accessible by JavaScript if needed
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'lax',
             maxAge: 60 * 60 * 24 * 7,
             path: '/',
         });

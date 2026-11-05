@@ -1,28 +1,24 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import StatsBar from "@/components/landing/StatsBar";
-import Features from "@/components/landing/Features";
 import Testimonials from "@/components/landing/Testimonials";
-import HowItWorks from "@/components/landing/HowItWorks";
-import TeamCta from "@/components/landing/TeamCta";
 import Footer from "@/components/landing/Footer";
 import YouTubeChannel from "@/components/landing/Youtubechannel";
 import { getLandingContent, section } from "@/lib/landing-content";
 import PreparationOverview from "@/components/landing/PreparationOverview";
 import PricingPreview from "@/components/landing/PricingPreview";
+import DashboardWalkthrough, { FinalCta } from "@/components/landing/DashboardWalkthrough";
 import StructuredData from "@/components/seo/StructuredData";
-import Link from "next/link";
 import { featuredJambResult, recordedUtmeScore } from "@/lib/jamb-results";
 import {
   organizationSchema,
   publicMetadata,
-  siteDescription,
   websiteSchema,
 } from "@/lib/seo";
 
 export const metadata = publicMetadata(
-  "Blast 300+ with Blast JAMB Online Tutorial(BJOT) | The Best Online JAMB Tutorial in Nigeria | BJOT",
-  siteDescription,
+  "BJOT Student Dashboard | UTME Preparation, CBT Practice & Tutor-Led Classes",
+  "Prepare toward your UTME goal with BJOT: tutor-led lessons, topic notes, timed CBT practice, biweekly mocks, and performance reviews in one student dashboard.",
   "/",
 );
 
@@ -33,16 +29,6 @@ export default async function Home() {
     testimonials: [],
     contact: null,
   };
-  const hero = section(content, "home.hero") ?? {
-    heading: "BJOT: Online JAMB tutorials and UTME preparation",
-    description: siteDescription,
-    primaryCta: { label: "Join BJOT", href: "/register" },
-    secondaryCta: {
-      label: "UTME preparation guide",
-      href: "/utme-preparation-guide",
-    },
-  };
-  const record = recordedUtmeScore(content);
   const featured = featuredJambResult(content);
   return (
     <main>
@@ -53,39 +39,22 @@ export default async function Home() {
           "@graph": [organizationSchema(content), websiteSchema()],
         }}
       />
-      <Hero
-        content={hero}
-        highlight={section(content, "home.statistics")?.items?.[1]}
-        testimonials={content.testimonials}
-      />
+      <Hero proof={recordedUtmeScore(content) !== null ? featured : null} />
       {content.testimonials.length > 0 && (
         <Testimonials testimonials={content.testimonials} />
       )}
       {section(content, "home.statistics") && (
         <StatsBar content={section(content, "home.statistics")!} />
       )}
-      {record !== null && featured && (
-        <p className="wrap py-5 text-sm leading-relaxed">
-          Watch {featured.studentName}&apos;s published {featured.score} student story on our <Link href="/jamb-results" className="font-semibold underline underline-offset-4">JAMB results page</Link>.
-        </p>
-      )}
+      <DashboardWalkthrough />
+      
+      
       <PreparationOverview />
-
-      {section(content, "home.why-bjot") && (
-        <Features content={section(content, "home.why-bjot")!} />
-      )}
-      
-      
-      {section(content, "home.how-it-works") && (
-        <HowItWorks content={section(content, "home.how-it-works")!} />
-      )}
       {section(content, "home.youtube") && (
         <YouTubeChannel content={section(content, "home.youtube")!} />
       )}
-      {section(content, "home.cta") && (
-        <TeamCta content={section(content, "home.cta")!} />
-      )}
       <PricingPreview />
+      <FinalCta />
       {section(content, "global.footer") && (
         <Footer
           content={section(content, "global.footer")!}

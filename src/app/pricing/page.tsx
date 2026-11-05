@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Check, ArrowRight } from "lucide-react";
+import { Check } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { getLandingContent, section } from "@/lib/landing-content";
 import { publicMetadata } from "@/lib/seo";
 import { formatNaira, pricing, proExtra, scienceMaxFeatures, tierDetails, type Track } from "@/lib/pricing";
+import EnrollLink from "@/components/billing/EnrollLink";
+import PricingVisitTracker from "@/components/landing/PricingVisitTracker";
 
 export const metadata = publicMetadata(
   "BJOT Pricing Plans | Science and Art & Commercial",
@@ -14,11 +16,6 @@ export const metadata = publicMetadata(
 
 function Feature({ children }: { children: React.ReactNode }) {
   return <li className="flex items-start gap-2 text-sm leading-6 text-[#42554a]"><Check size={17} className="mt-1 shrink-0 text-[#17805a]" aria-hidden="true" /><span>{children}</span></li>;
-}
-
-function enrollmentWhatsAppUrl(track: Track, plan: string, price: number) {
-  const message = `Hello BJOT, I would like to enroll in and pay for the ${track} ${plan} premium class (${formatNaira(price)}). Please send me the payment details and enrollment steps.`;
-  return `https://wa.me/2349164896938?text=${encodeURIComponent(message)}`;
 }
 
 function TrackPlans({ track }: { track: Track }) {
@@ -39,8 +36,8 @@ function TrackPlans({ track }: { track: Track }) {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a66b00]">{tier.duration} programme</p>
               <h3 className="mt-2 text-2xl font-bold text-[#0f3d2c]">{tier.name}</h3>
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-[#eef5ef] p-3"><p className="text-xs font-semibold text-[#42554a]">Lite</p><p className="mt-1 text-xl font-bold text-[#0f3d2c]">{formatNaira(prices[tier.key].lite)}</p><a href={enrollmentWhatsAppUrl(track, `${tier.name} Lite`, prices[tier.key].lite)} target="_blank" rel="noopener noreferrer" aria-label={`Enroll now in ${track} ${tier.name} Lite on WhatsApp`} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#0f3d2c] underline underline-offset-4 hover:text-[#1a5c41]">Enroll now <ArrowRight size={14} aria-hidden="true" /></a></div>
-                <div className="rounded-2xl bg-[#0f3d2c] p-3"><p className="text-xs font-semibold text-white/75">Pro</p><p className="mt-1 text-xl font-bold text-white">{formatNaira(prices[tier.key].pro)}</p><a href={enrollmentWhatsAppUrl(track, `${tier.name} Pro`, prices[tier.key].pro)} target="_blank" rel="noopener noreferrer" aria-label={`Enroll now in ${track} ${tier.name} Pro on WhatsApp`} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#f4be56] underline underline-offset-4 hover:text-white">Enroll now <ArrowRight size={14} aria-hidden="true" /></a></div>
+                <div className="rounded-2xl bg-[#eef5ef] p-3"><p className="text-xs font-semibold text-[#42554a]">Lite</p><p className="mt-1 text-xl font-bold text-[#0f3d2c]">{formatNaira(prices[tier.key].lite)}</p><EnrollLink planId={`${id}-${tier.key}-lite`} label={`Enroll in ${track} ${tier.name} Lite`} placement={`${track}_${tier.name}_lite`} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#0f3d2c] underline underline-offset-4 hover:text-[#1a5c41]" /></div>
+                <div className="rounded-2xl bg-[#0f3d2c] p-3"><p className="text-xs font-semibold text-white/75">Pro</p><p className="mt-1 text-xl font-bold text-white">{formatNaira(prices[tier.key].pro)}</p><EnrollLink planId={`${id}-${tier.key}-pro`} label={`Enroll in ${track} ${tier.name} Pro`} placement={`${track}_${tier.name}_pro`} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#f4be56] underline underline-offset-4 hover:text-white" /></div>
               </div>
               <p className="mt-6 text-xs font-bold uppercase tracking-[0.14em] text-[#607167]">Lite includes</p>
               <ul className="mt-3 space-y-2">{tier.features.map((feature) => <Feature key={feature}>{feature}</Feature>)}</ul>
@@ -54,7 +51,7 @@ function TrackPlans({ track }: { track: Track }) {
             <h3 className="mt-2 text-3xl font-bold">Ultimate Pro Max</h3>
             <p className="mt-3 text-4xl font-bold text-[#f4be56]">{formatNaira(prices.max)}</p>
             <p className="mt-4 text-sm leading-7 text-white/80">{isScience ? "Full support through the JAMB tutorial period, with focused final preparation." : "Everything in Ultimate Pro, plus a final revision class."}</p>
-            <a href={enrollmentWhatsAppUrl(track, "Ultimate Pro Max", prices.max)} target="_blank" rel="noopener noreferrer" aria-label={`Enroll now in ${track} Ultimate Pro Max on WhatsApp`} className="mt-6 inline-flex w-fit items-center gap-2 text-sm font-bold text-[#f4be56] underline underline-offset-4 transition hover:text-white">Enroll now <ArrowRight size={16} aria-hidden="true" /></a>
+            <EnrollLink planId={`${id}-ultimate-pro-max`} label={`Enroll in ${track} Ultimate Pro Max`} placement={`${track}_ultimate_pro_max`} className="mt-6 inline-flex w-fit items-center gap-2 text-sm font-bold text-[#f4be56] underline underline-offset-4 transition hover:text-white" />
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/70">What&apos;s included</p>
@@ -63,7 +60,7 @@ function TrackPlans({ track }: { track: Track }) {
                 <li key={feature} className="flex items-start gap-2 text-sm leading-6"><Check size={17} className="mt-1 shrink-0 text-[#f4be56]" aria-hidden="true" />{feature}</li>
               ))}
             </ul>
-            {!isScience && <p className="mt-5 rounded-xl border border-white/20 p-3 text-sm leading-6 text-white/85">No physical textbook is included in this {formatNaira(prices.max)} plan.</p>}
+            {!isScience && <p className="mt-5 rounded-xl border border-white/20 p-3 text-sm leading-6 text-white/85">No digital manual or physical textbook is listed in this {formatNaira(prices.max)} plan.</p>}
           </div>
         </article>
       </div>
@@ -75,6 +72,7 @@ export default async function PricingPage() {
   const content = await getLandingContent();
   return <>
     <Navbar />
+    <PricingVisitTracker />
     <main>
       <section className="bg-[#0b2b1f] py-20 text-white">
         <div className="wrap max-w-5xl text-center">
@@ -86,7 +84,7 @@ export default async function PricingPage() {
       </section>
       <TrackPlans track="Science" />
       <TrackPlans track="Art & Commercial" />
-      <section className="bg-[#f6f4ee] py-14"><div className="wrap max-w-4xl rounded-3xl border border-[#dbe4dc] bg-white p-7 text-center sm:p-10"><h2 className="text-2xl font-bold text-[#0f3d2c]">Ready to prepare with BJOT?</h2><p className="mt-3 text-sm leading-7 text-[#42554a]">The recommended textbook list is reading guidance; physical textbooks are not included unless a plan explicitly says so.</p><Link href="/register" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0f3d2c] px-6 py-3 text-sm font-bold text-white hover:bg-[#1a5c41]">Join BJOT <ArrowRight size={17} aria-hidden="true" /></Link></div></section>
+      <section className="bg-[#f6f4ee] py-14"><div className="wrap max-w-4xl rounded-3xl border border-[#dbe4dc] bg-white p-7 text-center sm:p-10"><h2 className="text-2xl font-bold text-[#0f3d2c]">Ready to prepare with BJOT?</h2><p className="mt-3 text-sm leading-7 text-[#42554a]">Create a regular student account for free. Choose a department and plan above, sign in, and pay securely to upgrade to premium. The recommended textbook list is reading guidance; digital manuals are included only when a plan explicitly lists them.</p><Link href="/register" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0f3d2c] px-6 py-3 text-sm font-bold text-white hover:bg-[#1a5c41]">Create free account</Link></div></section>
     </main>
     {content && section(content, "global.footer") && <Footer content={section(content, "global.footer")!} contact={content.contact} />}
   </>;

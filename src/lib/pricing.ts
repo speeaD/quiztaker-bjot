@@ -21,7 +21,7 @@ export const tierDetails = [
   { key: "ultimate", name: "Ultimate", duration: "3 months", features: ["3 months of intensive classes", "Biweekly mock exams", "Data support", "Video tutorials", "Recommended JAMB textbook list"] },
 ] as const;
 
-export const proExtra = "Access to BJOT JAMB CBT practice";
+export const proExtra = "Access to BJOT JAMB past questions and CBT practice";
 
 export const scienceMaxFeatures = [
   "Full tutorial period until JAMB starts",

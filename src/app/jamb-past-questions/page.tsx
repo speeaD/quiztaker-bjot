@@ -74,7 +74,7 @@ async function request<T>(
 const formatTime = (seconds: number) =>
   `${Math.floor(seconds / 3600)}:${String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
-export function JambPastQuestionsPractice() {
+function JambPastQuestionsPractice() {
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [active, setActive] = useState<Active[]>([]);
   const [year, setYear] = useState<number | null>(null);

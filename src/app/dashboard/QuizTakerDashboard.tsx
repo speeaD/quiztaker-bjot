@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import DashboardLogoutButton from "@/components/dashboard/DashboardLogoutButton";
 import LearningStreak from "@/components/dashboard/LearningStreak";
 import { StudentHeader } from "@/components/layout/StudentHeader";
+import { formatExpiry, type Subscription } from "@/lib/billing";
 import MaintenanceDialog from "@/components/MaintenanceDialog";
 
 interface Submission {
@@ -153,6 +154,7 @@ export default function QuizTakerDashboard() {
   const [accountType, setAccountType] = useState<"premium" | "regular" | null>(
     null,
   );
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [premiumMessage, setPremiumMessage] = useState("");
   const [maintenanceOpen, setMaintenanceOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -218,6 +220,7 @@ export default function QuizTakerDashboard() {
       setAccountType(
         data.quizTaker?.accountType === "premium" ? "premium" : "regular",
       );
+      setSubscription(data.quizTaker?.subscription || null);
       setAssignedQuizzes(
         data.success ? data.quizTaker?.assignedQuizzes || [] : [],
       );
@@ -240,6 +243,10 @@ export default function QuizTakerDashboard() {
       setPremiumMessage(
         "Subscribe to the premium class to access this feature.",
       );
+      window.history.replaceState(null, "", "/dashboard");
+    }
+    if (new URLSearchParams(window.location.search).get("pro") === "required") {
+      setPremiumMessage("Choose an active Pro or Pro Max plan to access JAMB past questions. Lite plans do not include this feature.");
       window.history.replaceState(null, "", "/dashboard");
     }
     const reason = sessionStorage.getItem("quizSubmitReason");
@@ -334,18 +341,17 @@ export default function QuizTakerDashboard() {
                 Premium access
               </p>
               <h2 id="premium-required-title" className="mt-2 text-2xl font-black tracking-tight text-[#17231e]">
-                Premium class required
+                Upgrade your plan
               </h2>
               <p id="premium-required-description" className="mt-3 text-sm leading-6 text-[#64726a]">
                 {premiumMessage}
               </p>
-              <button
-                type="button"
-                onClick={() => setPremiumMessage("")}
-                className="mt-6 w-full rounded-lg bg-[#0d3b2e] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#15513e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#15513e]"
+              <Link
+                href="/billing"
+                className="mt-6 block w-full text-center rounded-lg bg-[#0d3b2e] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#15513e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#15513e]"
               >
-                Got it
-              </button>
+                View plans and upgrade
+              </Link>
             </section>
           </div>
         )}
@@ -356,9 +362,16 @@ export default function QuizTakerDashboard() {
                 Your dashboard
               </h1>
             </div>
-            <DashboardLogoutButton />
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/billing" className="rounded-lg bg-[#0d3b2e] px-4 py-2 text-sm font-bold text-white">{accountType === "premium" ? "Manage plan" : "Upgrade to premium"}</Link>
+              <DashboardLogoutButton />
+            </div>
           </div>
 
+          {subscription && <p className="mb-4 text-sm text-[#64726a]">
+            {subscription.accountType === "premium" ? `Premium${subscription.planLevel ? ` · ${subscription.planLevel === "pro-max" ? "Pro Max" : subscription.planLevel === "pro" ? "Pro" : "Lite"}` : ""}` : "Regular account"}
+            {subscription.accountType === "premium" && subscription.expiresAt ? ` · Active until ${formatExpiry(subscription.expiresAt)}` : ""}
+          </p>}
           {submitNotification && (
             <div className="mb-3 flex items-start gap-3 rounded-lg border border-[#f1c779] bg-[#fff8e8] p-3 text-[0.966875rem] text-[#744700]">
               <AlertCircle size={18} />
@@ -490,12 +503,12 @@ export default function QuizTakerDashboard() {
               <LearningCard
                 title="JAMB Past Questions"
                 description="Practise one exam year with Use of English and three other subjects."
-                action="Under maintenance"
+                action={subscription?.hasProAccess ? "Under maintenance" : "Upgrade to Pro"}
                 href="/jamb-past-questions"
                 icon={BookOpen}
-                badge="Past papers"
+                badge="Pro plans"
                 locked
-                onLocked={() => setMaintenanceOpen(true)}
+                onLocked={() => subscription?.hasProAccess ? setMaintenanceOpen(true) : setPremiumMessage("Choose an active Pro or Pro Max plan to access JAMB past questions. Lite plans do not include this feature.")}
               />
               <LearningCard
                 title="CBT Simulator"
