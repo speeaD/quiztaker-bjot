@@ -1,6 +1,7 @@
 import VideoTestimonials from "@/components/testimonials/VideoTestimonials";
 import PhotoTestimonials from "@/components/testimonials/PhotoTestimonials";
 import TestimonialsCTA from "@/components/testimonials/TestimonialsCta";
+import TopScorersCarousel from "@/components/testimonials/TopScorersCarousel";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { getLandingContent, section } from "@/lib/landing-content";
@@ -15,19 +16,21 @@ export async function generateMetadata() {
 
 export default async function TestimonialsPage() {
     const content = await getLandingContent();
-    if (!content) return <main className="wrap py-20">Page content is temporarily unavailable. Please try again shortly.</main>;
     return (
         <>
             <Navbar />
-            <header className="wrap pt-16 text-center">
+            <header className="wrap pt-16 pb-12 text-center">
                 <h1 className="text-3xl font-bold sm:text-4xl">BJOT Student Testimonials</h1>
                 <p className="mt-4">Student experiences with Blast JAMB Online Tutorial.</p>
                 <p className="mt-3 text-sm">See how BJOT&apos;s <Link href="/jamb-results" className="underline">highest recorded UTME score and a verified student result</Link> compare.</p>
             </header>
-            <VideoTestimonials testimonials={content.testimonials.filter((item) => item.type === "video")} />
-            <PhotoTestimonials testimonials={content.testimonials.filter((item) => item.type === "written")} />
-            {section(content, "home.cta") && <TestimonialsCTA content={section(content, "home.cta")!} />}
-            {section(content, "global.footer") && <Footer content={section(content, "global.footer")!} contact={content.contact} />}
+            <TopScorersCarousel />
+            <div id="student-stories" className="scroll-mt-24">{content && <>
+                <VideoTestimonials testimonials={content.testimonials.filter((item) => item.type === "video")} />
+                <PhotoTestimonials testimonials={content.testimonials.filter((item) => item.type === "written")} />
+                {section(content, "home.cta") && <TestimonialsCTA content={section(content, "home.cta")!} />}
+                {section(content, "global.footer") && <Footer content={section(content, "global.footer")!} contact={content.contact} />}
+            </>}</div>
         </>
     );
 }

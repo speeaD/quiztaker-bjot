@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { BookOpen, ChevronRight } from 'lucide-react';
 
-type Topic = { id: string; name: string; _count: { studyMaterials: number; questions: number } };
+type Topic = { id: string; name: string; coverImageUrl?: string | null; _count: { studyMaterials: number; questions: number } };
 type Subject = { id: string; title: string; topics: Topic[] };
 
 export default function StudyHubPage() {
@@ -25,6 +26,9 @@ export default function StudyHubPage() {
     {loading && <p className="mt-6 text-sm">Loading your subjects…</p>}
     {error && <p role="alert" className="mt-6 rounded-lg bg-red-50 p-4 text-sm text-red-700">{error}</p>}
     {!loading && !error && !subjects.length && <p className="mt-6 rounded-xl bg-white p-6 text-sm">No subjects are assigned to your account yet.</p>}
-    <div className="mt-6 space-y-5">{subjects.map((subject) => <section key={subject.id} className="rounded-xl border border-[#dce5df] bg-white p-5"><h2 className="text-xl font-black">{subject.title}</h2><div className="mt-4 grid gap-3 sm:grid-cols-2">{subject.topics.map((topic) => <Link key={topic.id} href={`/study-hub/${topic.id}`} className="flex items-center gap-3 rounded-lg border border-[#e0e9e3] p-4 hover:bg-[#f2f8f4]"><span className="min-w-0 flex-1"><strong className="block truncate text-sm">{topic.name}</strong><small className="mt-1 block text-[#64726a]">{topic._count.studyMaterials} materials · {topic._count.questions} questions</small></span><ChevronRight size={18} /></Link>)}</div>{!subject.topics.length && <p className="mt-3 text-sm text-slate-500">No active topics yet.</p>}</section>)}</div>
+    <div className="mt-6 space-y-5">{subjects.map((subject) => <section key={subject.id} className="rounded-xl border border-[#dce5df] bg-white p-5"><h2 className="text-xl font-black">{subject.title}</h2><div className="mt-4 grid items-start gap-3 sm:grid-cols-2">{subject.topics.map((topic) => <Link key={topic.id} href={`/study-hub/${topic.id}`} className="overflow-hidden rounded-lg border border-[#e0e9e3] hover:bg-[#f2f8f4]">
+      {topic.coverImageUrl && <Image unoptimized src={topic.coverImageUrl} alt="" width={800} height={450} className="aspect-video h-auto w-full object-cover" />}
+      <div className="flex items-center gap-3 p-4"><span className="min-w-0 flex-1"><strong className="block truncate text-sm">{topic.name}</strong><small className="mt-1 block text-[#64726a]">{topic._count.studyMaterials} materials · {topic._count.questions} questions</small></span><ChevronRight size={18} /></div>
+    </Link>)}</div>{!subject.topics.length && <p className="mt-3 text-sm text-slate-500">No active topics yet.</p>}</section>)}</div>
   </div></main>;
 }

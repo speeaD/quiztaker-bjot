@@ -47,12 +47,12 @@ export default async function Home() {
         <StatsBar content={section(content, "home.statistics")!} />
       )}
       <DashboardWalkthrough />
-      
-      
-      <PreparationOverview />
       {section(content, "home.youtube") && (
         <YouTubeChannel content={section(content, "home.youtube")!} />
       )}
+      
+      <PreparationOverview />
+      
       <PricingPreview />
       <FinalCta />
       {section(content, "global.footer") && (

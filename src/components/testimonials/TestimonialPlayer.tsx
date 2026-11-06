@@ -54,7 +54,8 @@ export default function TestimonialPlayer({ testimonial: t }: { testimonial: Tes
 
     const seekToThumbnail = () => {
       if (Number.isFinite(video.duration) && video.duration > 0) {
-        video.currentTime = Math.min(Math.max(video.duration * 0.1, 2), 8, video.duration / 2);
+        // Shorter clips have the same opening title sequence as longer ones.
+        video.currentTime = Math.min(8, video.duration / 2);
       }
     };
 

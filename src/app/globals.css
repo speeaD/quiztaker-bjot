@@ -1303,6 +1303,35 @@ section {
   display: grid;
   gap: 18px;
 }
+.yt-channel-name { display: inline-flex; align-items: center; gap: 11px; margin-top: 20px; color: #fff; font-size: 12px; font-weight: 600; }
+.yt-channel-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #ffffff0d; color: #f3d079; }
+.yt-channel-name small { display: block; margin-top: 3px; color: #a4b9aa; font-size: 10px; font-weight: 400; }
+.yt-video { display: grid; grid-template-columns: 170px minmax(0, 1fr); overflow: hidden; height: 100%; border: 1px solid #ffffff20; border-radius: 14px; background: #ffffff08; color: #fff; transition: border-color .2s, background .2s; }
+.yt-video:hover { border-color: #d8b85888; background: #ffffff0d; }
+.yt-video:focus-visible, .yt-channel-name:focus-visible, .yt-channel-fallback:focus-visible { outline: 3px solid #d8b858; outline-offset: 4px; }
+.yt-video-image { position: relative; min-height: 160px; background: #071a12; }
+.yt-video-image img { width: 100%; height: 100%; object-fit: contain; }
+.yt-video-type { position: absolute; top: 9px; left: 9px; padding: 4px 7px; border-radius: 4px; background: #102819e8; color: #f1dfaa; font-size: 8px; font-weight: 600; }
+.yt-video-play { position: absolute; right: 10px; bottom: 10px; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: #0008; color: #fff; }
+.yt-video-body { align-self: center; min-width: 0; padding: 18px; }
+.yt-video-body h3 { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; margin: 0; font-size: 12px; font-weight: 600; line-height: 1.65; }
+.yt-video-body p { margin-top: 12px; color: #a4b9aa; font-size: 9px; line-height: 1.8; }
+.yt-channel-fallback { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 17px; min-height: 280px; padding: 35px; border: 1px solid #ffffff20; border-radius: 16px; background: #ffffff08; color: #fff; text-align: center; }
+.yt-channel-fallback > svg { color: #e4bd50; }
+.yt-channel-fallback > strong { font-size: 20px; }
+.yt-channel-fallback > span { display: flex; align-items: center; gap: 5px; color: #b9c4bc; font-size: 12px; }
+
+@media (min-width: 561px) and (max-width: 1100px) {
+  .yt-video { grid-template-columns: minmax(0, 1fr); }
+  .yt-video-image { aspect-ratio: 16 / 9; min-height: 0; }
+}
+
+@media (max-width: 560px) {
+  .yt-video { grid-template-columns: 120px minmax(0, 1fr); }
+  .yt-video-body { padding: 13px; }
+  .yt-video-body h3 { font-size: 11px; }
+  .yt-video-image { min-height: 150px; }
+}
 .yt-photo {
   position: relative;
   height: 200px;

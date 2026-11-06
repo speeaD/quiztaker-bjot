@@ -17,7 +17,7 @@ export default function Hero({ proof }: { proof: Testimonial | null }) {
             <p className="home-hero-lede">Learn with expert tutors, master difficult topics, practise timed CBT exams, and track what to improve—all inside your BJOT Student Dashboard.</p>
             <div className="home-hero-actions">
               <Link href="/pricing" className="home-button home-button-primary" onClick={() => trackLandingEvent("premium_cta_click", { placement: "hero" })}>Join Premium Class</Link>
-              <a href="#digital-classroom" className="home-button home-button-secondary">Explore the Dashboard <ArrowDown size={16} aria-hidden="true" /></a>
+              <Link href="/free-mock" className="home-button home-button-secondary">Take Free Mock <ArrowDown size={16} aria-hidden="true" /></Link>
             </div>
             <p className="home-goal-note">A focused preparation goal—not a promised score.</p>
             {proof && <a className="home-hero-proof" href="/jamb-results"><span className="proof-score">{proof.score}</span><span><strong>{proof.studentName}</strong><small>Published student result · See the evidence</small></span></a>}
