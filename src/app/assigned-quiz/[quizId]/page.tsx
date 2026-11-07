@@ -445,7 +445,9 @@ const AssignedQuizPage = () => {
       if (resolvedQuiz) {
         const totalSeconds = (resolvedQuiz.durationHours * 3600) + (resolvedQuiz.durationMinutes * 60) + resolvedQuiz.durationSeconds;
         const elapsedSeconds = startData.startedAt ? Math.floor((Date.now() - new Date(startData.startedAt).getTime()) / 1000) : 0;
-        setTimeRemaining(Math.max(0, totalSeconds - Math.max(0, elapsedSeconds)));
+        const remainingSeconds = Number.isSafeInteger(startData.remainingSeconds) && startData.remainingSeconds >= 0
+          ? startData.remainingSeconds : Math.max(0, totalSeconds - Math.max(0, elapsedSeconds));
+        setTimeRemaining(remainingSeconds);
         setTimerStarted(true);
       }
 
