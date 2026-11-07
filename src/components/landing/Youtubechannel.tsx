@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Suspense } from 'react';
-import { Youtube, Video, Users, PlayCircle, ArrowUpRight } from "lucide-react";
+import { Youtube, Video, Users, PlayCircle } from "lucide-react";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Reveal";
 import type { SectionContent } from "@/lib/landing-content";
 import { getYouTubeChannel } from '@/lib/youtube-channel';
@@ -31,7 +31,6 @@ function ChannelSection({ content, channel }: { content: SectionContent; channel
           <a className="yt-channel-name" href={youtubeChannelUrl} target="_blank" rel="noopener noreferrer">
             <span className="yt-channel-mark"><Youtube size={20} aria-hidden="true" /></span>
             <span>{channel?.title || 'BJOT OFFICIAL'}<small>@BJOTOFFICIAL</small></span>
-            <ArrowUpRight size={15} aria-hidden="true" />
           </a>
 
           <div className="yt-stats">
@@ -82,7 +81,7 @@ function ChannelSection({ content, channel }: { content: SectionContent; channel
           {!videos.length && <a className="yt-channel-fallback" href={`${youtubeChannelUrl}/videos`} target="_blank" rel="noopener noreferrer">
             <Youtube size={46} aria-hidden="true" />
             <strong>Explore BJOT OFFICIAL</strong>
-            <span>Watch our videos on YouTube <ArrowUpRight size={15} aria-hidden="true" /></span>
+            <span>Watch our videos on YouTube</span>
           </a>}
         </StaggerGroup>
       </div>

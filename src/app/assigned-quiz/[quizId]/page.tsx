@@ -7,6 +7,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import PortalLogo from '@/components/PortalLogo';
 import { watchExamFocus } from '@/lib/exam-focus';
+import MockSubjectSelection from '@/components/MockSubjectSelection';
+import { isEnglishSubject } from '@/lib/registration-subjects';
 
 const API_BASE_URL = '/api/quiztaker';
 
@@ -38,6 +40,7 @@ interface Quiz {
   durationSeconds: number;
   displayCalculator: boolean;
   looseFocus: boolean;
+  studentSelectsSubjects?: boolean;
   questionSets: QuestionSet[];
   totalPoints: number;
 }
@@ -363,14 +366,16 @@ const AssignedQuizPage = () => {
       setQuiz(quizData);
 
       // Check if custom order already set
-      if (data.selectedQuestionSetOrder && data.selectedQuestionSetOrder.length > 0) {
+      if (data.selectedQuestionSetOrder?.length > 0 && (!quizData.studentSelectsSubjects || data.assignmentStatus === 'in-progress')) {
         setSelectedOrder(data.selectedQuestionSetOrder);
         await startQuiz(data.selectedQuestionSetOrder, quizData);
       } else {
-        const defaultOrder = quizData.questionSets.map((qs: QuestionSet) => qs.order);
+        const defaultOrder = quizData.studentSelectsSubjects
+          ? quizData.questionSets.filter((qs) => isEnglishSubject(qs.title)).map((qs) => qs.order)
+          : quizData.questionSets.map((qs: QuestionSet) => qs.order);
         setSelectedOrder(defaultOrder);
 
-        if (defaultOrder.length === 1) {
+        if (defaultOrder.length === 1 && !quizData.studentSelectsSubjects) {
           // Single-subject: no need to show order selection, go straight in
           await startQuiz(defaultOrder, quizData);
         } else {
@@ -532,13 +537,13 @@ const AssignedQuizPage = () => {
 
           <main className="flex items-center justify-center px-2 sm:px-6 py-2">
             <div className="w-full max-w-3xl bg-white rounded-lg shadow-sm p-4 sm:p-8">
-              <h1 className="text-xl sm:text-2xl font-bold mb-2">Choose Your Question Order</h1>
-              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-                Drag to reorder or tap to select the sequence you prefer
-              </p>
+              <h1 className="text-xl sm:text-2xl font-bold mb-2">{quiz.studentSelectsSubjects ? 'Prepare your mock exam' : 'Choose Your Question Order'}</h1>
+              {quiz.studentSelectsSubjects ? <MockSubjectSelection subjects={quiz.questionSets.map((set) => ({ id: String(set.order), title: set.title, questionCount: set.questionCount }))} selectedIds={selectedOrder.map(String)} englishId={quiz.questionSets.find((set) => isEnglishSubject(set.title))?.order.toString()} disabled={loading}
+                onToggle={(id) => setSelectedOrder((current) => current.includes(Number(id)) ? current.filter((value) => value !== Number(id)) : current.length < 4 ? [...current, Number(id)] : current)} /> : <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Use the controls to select the sequence you prefer.</p>}
+              {quiz.studentSelectsSubjects && <p className="mb-4 text-sm text-gray-600">You can adjust the order of your selected subjects below.</p>}
 
               <div className="space-y-3 mb-6 sm:mb-8">
-                {quiz.questionSets.map((qs) => {
+                {selectedOrder.map((order) => quiz.questionSets.find((set) => set.order === order)!).map((qs) => {
                   const position = selectedOrder.indexOf(qs.order);
                   return (
                     <div
@@ -578,7 +583,7 @@ const AssignedQuizPage = () => {
                               setSelectedOrder(newOrder);
                             }
                           }}
-                          disabled={position === quiz.questionSets.length - 1}
+                          disabled={position === selectedOrder.length - 1}
                           className="px-2 py-1 bg-gray-200 rounded text-xs disabled:opacity-30"
                         >
                           ↓
@@ -592,7 +597,7 @@ const AssignedQuizPage = () => {
               {error && <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>}
               <button
                 onClick={handleSetOrder}
-                disabled={loading}
+                disabled={loading || (quiz.studentSelectsSubjects && (selectedOrder.length !== 4 || !quiz.questionSets.some((set) => selectedOrder.includes(set.order) && isEnglishSubject(set.title))))}
                 className="w-full py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900 transition-all touch-manipulation"
               >
                 {loading ? 'Starting...' : 'Start Quiz'}

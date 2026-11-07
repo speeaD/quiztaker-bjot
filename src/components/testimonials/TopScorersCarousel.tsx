@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Trophy } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, Trophy } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
 import { scorerPosters, scorerYears } from '@/lib/top-scorers';
 import styles from './TopScorersCarousel.module.css';
@@ -111,7 +111,7 @@ export default function TopScorersCarousel() {
           <div className={styles.intro}>
             <p>Meet our UTME top scorers. Four years of students turning their preparation into something to be proud of.</p>
             <p className={styles.scrollPrompt}><ArrowDown size={14} aria-hidden="true" /> Scroll down to explore the years</p>
-            <a className={styles.skipLink} href="#student-stories">Skip to student stories <ArrowUpRight size={12} aria-hidden="true" /></a>
+            <a className={styles.skipLink} href="#student-stories">Skip to student stories</a>
           </div>
         </div>
 
@@ -165,7 +165,7 @@ export default function TopScorersCarousel() {
               <div className={styles.galleryFooter}>
                 <div className={styles.caption}>
                   <p aria-live="polite" aria-atomic="true">{active.year} <span>· Board {active.number} of {active.posters}</span></p>
-                  <a href={active.src} target="_blank" rel="noreferrer">View full-size poster <ArrowUpRight size={14} aria-hidden="true" /></a>
+                  <a href={active.src} target="_blank" rel="noreferrer">View full-size poster</a>
                 </div>
                 <div className={styles.thumbnails} role="group" aria-label={`${active.year} scorer posters`}>
                   {postersByYear[activeYear].map((poster, index) => (

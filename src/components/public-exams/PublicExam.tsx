@@ -5,10 +5,12 @@ import { Corrections, ScoreMeme, type ReviewedAnswer } from "@/components/cbt/Co
 import PublicHeader from "@/components/PublicHeader";
 import type { CbtQuestion, CbtQuestionSet } from "@/components/cbt/types";
 import { useCallback, useEffect, useRef, useState } from "react";
+import MockSubjectSelection from '@/components/MockSubjectSelection';
+import { validRegistrationCombination } from '@/lib/registration-subjects';
 
 type Result = { score: number; totalPoints: number; percentage: number };
 type Mode = "mock" | "topic";
-type Mock = { id: string; title: string; questionSetIds: string[]; questionCount: number; durationSeconds: number };
+type Mock = { id: string; title: string; questionSetIds: string[]; questionCount: number; durationSeconds: number; studentSelectsSubjects?: boolean; compulsoryQuestionSetId?: string };
 type MockResponse = {
   session: {
     id: string;
@@ -71,6 +73,9 @@ export default function PublicExam({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const autoSubmitted = useRef(false);
+  const selectedMock = mocks.find((mock) => mock.id === selectedMockId);
+  const selectableSubjects = sets.filter((set) => selectedMock?.questionSetIds.includes(set._id));
+  const validSubjects = selectedMock?.studentSelectsSubjects ? validRegistrationCombination(selected, selectableSubjects) : selected.length === 4;
 
   useEffect(() => {
     let active = true;
@@ -204,8 +209,8 @@ export default function PublicExam({
         setError("Enter your name, a valid email, and choose a free mock.");
         return;
       }
-      if (!mocks.some((mock) => mock.id === selectedMockId && mock.questionSetIds.length === 4)) {
-        setError("This free mock is no longer available. Choose another exam.");
+      if (!selectedMock || !validSubjects) {
+        setError("Choose compulsory English and three other subjects for this mock.");
         return;
       }
     } else if (!topicData?.questions.length) {
@@ -223,6 +228,7 @@ export default function PublicExam({
         });
         if (
           !data.session?.id ||
+          !Number.isInteger(data.session.durationSeconds) || data.session.durationSeconds <= 0 ||
           selected.some((id) => !data.session.questionsBySet?.[id]?.length)
         )
           throw new Error(
@@ -230,7 +236,7 @@ export default function PublicExam({
           );
         setSessionId(data.session.id);
         setQuestionsBySet(data.session.questionsBySet);
-        setSeconds(data.session.durationSeconds || 3200);
+        setSeconds(data.session.durationSeconds);
       } else if (topicData) {
         setSets([topicData.questionSet]);
         setSelected([topicData.questionSet._id]);
@@ -333,7 +339,7 @@ export default function PublicExam({
                       aria-pressed={selectedMockId === mock.id}
                       onClick={() => {
                         setSelectedMockId(mock.id);
-                        setSelected(mock.questionSetIds);
+                        setSelected(mock.studentSelectsSubjects ? (mock.compulsoryQuestionSetId ? [mock.compulsoryQuestionSetId] : []) : mock.questionSetIds);
                       }}
                       className={`rounded-lg border p-4 text-left text-sm ${selectedMockId === mock.id ? "border-[#0d3b2e] bg-[#edf7f0]" : "border-[#dce5df]"}`}
                     >
@@ -342,11 +348,13 @@ export default function PublicExam({
                         {mock.questionSetIds.map((id) => sets.find((set) => set._id === id)?.title || id).join(" · ")}
                       </span>
                       <span className="mt-1 block text-[#64726a]">
-                        {mock.questionCount} questions · {Math.ceil(mock.durationSeconds / 60)} minutes
+                        {mock.studentSelectsSubjects ? `${mock.questionSetIds.length} subjects available` : `${mock.questionCount} questions`} · {Math.ceil(mock.durationSeconds / 60)} minutes
                       </span>
                     </button>
                   ))}
                 </div>
+                {selectedMock?.studentSelectsSubjects && <MockSubjectSelection subjects={selectableSubjects.map((set) => ({ id: set._id, title: set.title }))} selectedIds={selected} englishId={selectedMock.compulsoryQuestionSetId} disabled={busy}
+                  onToggle={(id) => setSelected((current) => id === selectedMock.compulsoryQuestionSetId ? current : current.includes(id) ? current.filter((value) => value !== id) : current.length < 4 ? [...current, id] : current)} />}
               </>
             )}
             {mode === "topic" && topicData && (
@@ -361,7 +369,7 @@ export default function PublicExam({
                 busy ||
                 loading ||
                 (mode === "mock"
-                  ? !selectedMockId
+                  ? !selectedMockId || !validSubjects
                   : !topicData)
               }
               onClick={() => void start()}
