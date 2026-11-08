@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MockSubjectSelection from '@/components/MockSubjectSelection';
 import { validRegistrationCombination } from '@/lib/registration-subjects';
 import { watchExamFocus } from '@/lib/exam-focus';
+import ExamErrorDialog from './ExamErrorDialog';
 
 type Result = { score: number; totalPoints: number; percentage: number };
 type Mode = "mock" | "topic";
@@ -82,6 +83,8 @@ export default function PublicExam({
   const [submissionReason, setSubmissionReason] = useState<"focus" | "time" | null>(null);
   const autoSubmitted = useRef(false);
   const submissionInProgress = useRef(false);
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+  const retryButtonRef = useRef<HTMLButtonElement>(null);
   const selectedMock = mocks.find((mock) => mock.id === selectedMockId);
   const selectableSubjects = sets.filter((set) => selectedMock?.questionSetIds.includes(set._id));
   const validSubjects = selectedMock?.studentSelectsSubjects ? validRegistrationCombination(selected, selectableSubjects) : selected.length === 4;
@@ -294,14 +297,10 @@ export default function PublicExam({
         onSubmit: () => setShowSubmitConfirmation(true),
         submitting: busy,
       } : undefined} />
-      {error && (
-        <p
-          role="alert"
-          className="mx-auto mt-4 max-w-5xl rounded-lg bg-[#fff0ec] p-4 text-sm text-[#a8451f]"
-        >
-          {error}
-        </p>
-      )}
+      {error && <ExamErrorDialog message={error} onClose={() => {
+        setError("");
+        (phase === "submission-error" ? retryButtonRef : startButtonRef).current?.focus();
+      }} />}
       {phase === "setup" && (
         <main className="mx-auto max-w-5xl px-4 py-8">
           <section className="rounded-xl bg-white p-6 shadow-sm sm:p-8">
@@ -386,6 +385,7 @@ export default function PublicExam({
               </p>
             )}
             <button
+              ref={startButtonRef}
               type="button"
               disabled={
                 busy ||
@@ -448,7 +448,7 @@ export default function PublicExam({
         <section className="rounded-xl bg-white p-8 text-center shadow-sm" aria-live="polite">
           <h1 className="text-2xl font-black">{phase === "submitting" ? "Submitting your test…" : "Your test is locked for submission"}</h1>
           {submissionReason && <p className="mt-4 text-sm">{submissionReason === "focus" ? "You left the exam tab or window. Your answers have been locked for automatic submission." : "Time is up. Your answers have been locked for submission."}</p>}
-          {phase === "submission-error" && <><p className="mt-4 text-sm">Your answers are saved on this page. Retry submitting to complete your test.</p><button type="button" onClick={() => void submit()} className="mt-6 rounded-md bg-[#0d3b2e] px-6 py-3 text-sm font-bold text-white">Retry submission</button></>}
+          {phase === "submission-error" && <><p className="mt-4 text-sm">Your answers are saved on this page. Retry submitting to complete your test.</p><button ref={retryButtonRef} type="button" onClick={() => void submit()} className="mt-6 rounded-md bg-[#0d3b2e] px-6 py-3 text-sm font-bold text-white">Retry submission</button></>}
         </section>
       </main>}
       {phase === "exam" && showSubmitConfirmation && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
