@@ -7,15 +7,20 @@ import type { CbtQuestion, CbtQuestionSet } from "@/components/cbt/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import MockSubjectSelection from '@/components/MockSubjectSelection';
 import { validRegistrationCombination } from '@/lib/registration-subjects';
+import { watchExamFocus } from '@/lib/exam-focus';
 
 type Result = { score: number; totalPoints: number; percentage: number };
 type Mode = "mock" | "topic";
-type Mock = { id: string; title: string; questionSetIds: string[]; questionCount: number; durationSeconds: number; studentSelectsSubjects?: boolean; compulsoryQuestionSetId?: string };
+type Mock = { id: string; title: string; questionSetIds: string[]; questionCount: number; durationSeconds: number; multipleAttempts: boolean; looseFocus: boolean; studentSelectsSubjects?: boolean; compulsoryQuestionSetId?: string };
 type MockResponse = {
   session: {
     id: string;
     title: string;
     durationSeconds: number;
+    remainingSeconds: number;
+    questionSetIds: string[];
+    multipleAttempts: boolean;
+    looseFocus: boolean;
     questionsBySet: Record<string, CbtQuestion[]>;
   };
 };
@@ -49,7 +54,7 @@ export default function PublicExam({
   questionSetId?: string;
   topic?: string;
 }) {
-  const [phase, setPhase] = useState<"setup" | "exam" | "result">("setup");
+  const [phase, setPhase] = useState<"setup" | "exam" | "submitting" | "submission-error" | "result">("setup");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [sets, setSets] = useState<CbtQuestionSet[]>([]);
@@ -72,7 +77,11 @@ export default function PublicExam({
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [settings, setSettings] = useState({ multipleAttempts: false, looseFocus: false });
+  const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
+  const [submissionReason, setSubmissionReason] = useState<"focus" | "time" | null>(null);
   const autoSubmitted = useRef(false);
+  const submissionInProgress = useRef(false);
   const selectedMock = mocks.find((mock) => mock.id === selectedMockId);
   const selectableSubjects = sets.filter((set) => selectedMock?.questionSetIds.includes(set._id));
   const validSubjects = selectedMock?.studentSelectsSubjects ? validRegistrationCombination(selected, selectableSubjects) : selected.length === 4;
@@ -139,19 +148,12 @@ export default function PublicExam({
   }, [phase]);
 
   const submit = useCallback(
-    async (automatic = false) => {
-      if (busy || phase !== "exam") return;
-      const total = Object.values(questionsBySet).reduce(
-        (sum, questions) => sum + questions.length,
-        0,
-      );
-      if (
-        !automatic &&
-        !window.confirm(
-          `Submit ${Object.keys(answers).length}/${total} answered questions?`,
-        )
-      )
-        return;
+    async (reason?: "focus" | "time") => {
+      if (submissionInProgress.current || (phase !== "exam" && phase !== "submission-error")) return;
+      submissionInProgress.current = true;
+      if (reason) setSubmissionReason(reason);
+      setShowSubmitConfirmation(false);
+      setPhase("submitting");
       setBusy(true);
       setError("");
       try {
@@ -183,17 +185,27 @@ export default function PublicExam({
         setPhase("result");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to submit");
+        setPhase("submission-error");
       } finally {
+        submissionInProgress.current = false;
         setBusy(false);
       }
     },
-    [answers, busy, mode, phase, questionsBySet, sessionId, topicData],
+    [answers, mode, phase, sessionId, topicData],
   );
+
+  const submitRef = useRef(submit);
+  useEffect(() => { submitRef.current = submit; }, [submit]);
+
+  useEffect(() => {
+    if (mode !== "mock" || phase !== "exam" || settings.looseFocus) return;
+    return watchExamFocus(() => { void submitRef.current("focus"); });
+  }, [mode, phase, settings.looseFocus]);
 
   useEffect(() => {
     if (phase === "exam" && seconds === 0 && !autoSubmitted.current) {
       autoSubmitted.current = true;
-      void submit(true);
+      void submit("time");
     }
   }, [phase, seconds, submit]);
 
@@ -229,14 +241,18 @@ export default function PublicExam({
         if (
           !data.session?.id ||
           !Number.isInteger(data.session.durationSeconds) || data.session.durationSeconds <= 0 ||
-          selected.some((id) => !data.session.questionsBySet?.[id]?.length)
+          !Number.isInteger(data.session.remainingSeconds) || data.session.remainingSeconds < 0 ||
+          !Array.isArray(data.session.questionSetIds) || data.session.questionSetIds.length !== 4 ||
+          data.session.questionSetIds.some((id) => !data.session.questionsBySet?.[id]?.length)
         )
           throw new Error(
             "The exam has no questions for one or more selected subjects.",
           );
         setSessionId(data.session.id);
+        setSelected(data.session.questionSetIds);
+        setSettings({ multipleAttempts: data.session.multipleAttempts === true, looseFocus: data.session.looseFocus === true });
         setQuestionsBySet(data.session.questionsBySet);
-        setSeconds(data.session.durationSeconds);
+        setSeconds(data.session.remainingSeconds);
       } else if (topicData) {
         setSets([topicData.questionSet]);
         setSelected([topicData.questionSet._id]);
@@ -244,6 +260,8 @@ export default function PublicExam({
         setSeconds(Math.max(600, topicData.questions.length * 90));
       }
       autoSubmitted.current = false;
+      submissionInProgress.current = false;
+      setSubmissionReason(null);
       setAnswers({});
       setSetIndex(0);
       setQuestionIndex(0);
@@ -273,7 +291,7 @@ export default function PublicExam({
     <div className="min-h-screen bg-[#f4f7f5]">
       <PublicHeader exam={phase === "exam" ? {
         timer: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
-        onSubmit: () => void submit(),
+        onSubmit: () => setShowSubmitConfirmation(true),
         submitting: busy,
       } : undefined} />
       {error && (
@@ -355,6 +373,10 @@ export default function PublicExam({
                 </div>
                 {selectedMock?.studentSelectsSubjects && <MockSubjectSelection subjects={selectableSubjects.map((set) => ({ id: set._id, title: set.title }))} selectedIds={selected} englishId={selectedMock.compulsoryQuestionSetId} disabled={busy}
                   onToggle={(id) => setSelected((current) => id === selectedMock.compulsoryQuestionSetId ? current : current.includes(id) ? current.filter((value) => value !== id) : current.length < 4 ? [...current, id] : current)} />}
+                {selectedMock && <p className="mt-4 rounded-lg bg-[#edf3ef] p-4 text-sm text-[#293830]">
+                  {selectedMock.multipleAttempts ? "Retakes are allowed." : "Only one attempt is allowed for this mock."}{" "}
+                  {selectedMock.looseFocus ? "You may switch tabs or windows." : "Switching tabs or windows will submit your exam immediately."}
+                </p>}
               </>
             )}
             {mode === "topic" && topicData && (
@@ -382,6 +404,7 @@ export default function PublicExam({
       )}
       {phase === "exam" && (
         <>
+          {mode === "mock" && !settings.looseFocus && <p role="status" className="mx-auto mt-4 max-w-7xl px-4 text-sm font-bold text-[#a8451f]">Stay on this page. Switching tabs or windows submits your exam.</p>}
           <ExamWorkspace
             questionSets={sets}
             selectedIds={selected}
@@ -419,9 +442,22 @@ export default function PublicExam({
               }
             }}
           />
-          {busy && <p className="text-center text-sm">Submitting your test…</p>}
         </>
       )}
+      {(phase === "submitting" || phase === "submission-error") && <main className="mx-auto max-w-2xl px-4 py-12">
+        <section className="rounded-xl bg-white p-8 text-center shadow-sm" aria-live="polite">
+          <h1 className="text-2xl font-black">{phase === "submitting" ? "Submitting your test…" : "Your test is locked for submission"}</h1>
+          {submissionReason && <p className="mt-4 text-sm">{submissionReason === "focus" ? "You left the exam tab or window. Your answers have been locked for automatic submission." : "Time is up. Your answers have been locked for submission."}</p>}
+          {phase === "submission-error" && <><p className="mt-4 text-sm">Your answers are saved on this page. Retry submitting to complete your test.</p><button type="button" onClick={() => void submit()} className="mt-6 rounded-md bg-[#0d3b2e] px-6 py-3 text-sm font-bold text-white">Retry submission</button></>}
+        </section>
+      </main>}
+      {phase === "exam" && showSubmitConfirmation && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <section role="dialog" aria-modal="true" aria-labelledby="public-submit-title" className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <h2 id="public-submit-title" className="text-lg font-bold">Submit exam?</h2>
+          <p className="mt-3 text-sm text-[#64726a]">You have answered {Object.keys(answers).length} of {totalQuestions} questions.</p>
+          <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setShowSubmitConfirmation(false)} className="rounded-md border border-[#c9d8cf] px-4 py-2 text-sm font-bold">Keep working</button><button type="button" onClick={() => void submit()} className="rounded-md bg-[#0d3b2e] px-4 py-2 text-sm font-bold text-white">Submit now</button></div>
+        </section>
+      </div>}
       {phase === "result" && result && (
         <main className="mx-auto max-w-2xl px-4 py-12">
           <section className="rounded-xl bg-white p-8 text-center shadow-sm">
@@ -442,15 +478,21 @@ export default function PublicExam({
           </section>
           <ScoreMeme percentage={result.percentage} />
           <Corrections answers={review} />
+          {submissionReason && <p className="mt-5 text-sm">{submissionReason === "focus" ? "Your exam was submitted because you switched tabs or windows." : "Your exam was submitted because time ran out."}</p>}
+          {mode === "mock" && !settings.multipleAttempts && <p className="mt-5 text-sm">Retakes are disabled for this mock by the administrator.</p>}
           <button
               type="button"
               onClick={() => {
                 setResult(null);
+                if (mode === "mock" && !settings.multipleAttempts) {
+                  setSelectedMockId("");
+                  setSelected([]);
+                }
                 setPhase("setup");
               }}
               className="mt-7 rounded-md bg-[#0d3b2e] px-5 py-3 text-sm font-bold text-white"
             >
-              {mode === "mock" ? "Retake exam" : "Retry topic test"}
+              {mode === "mock" ? settings.multipleAttempts ? "Retake exam" : "Choose another mock" : "Retry topic test"}
             </button>
         </main>
       )}
