@@ -374,7 +374,7 @@ export default function PublicExam({
                 {selectedMock?.studentSelectsSubjects && <MockSubjectSelection subjects={selectableSubjects.map((set) => ({ id: set._id, title: set.title }))} selectedIds={selected} englishId={selectedMock.compulsoryQuestionSetId} disabled={busy}
                   onToggle={(id) => setSelected((current) => id === selectedMock.compulsoryQuestionSetId ? current : current.includes(id) ? current.filter((value) => value !== id) : current.length < 4 ? [...current, id] : current)} />}
                 {selectedMock && <p className="mt-4 rounded-lg bg-[#edf3ef] p-4 text-sm text-[#293830]">
-                  {selectedMock.multipleAttempts ? "Retakes are allowed." : "Only one attempt is allowed for this mock."}{" "}
+                  {selectedMock.multipleAttempts ? "Retakes are allowed." : "Only one attempt per device and email is allowed for this mock."}{" "}
                   {selectedMock.looseFocus ? "You may switch tabs or windows." : "Switching tabs or windows will submit your exam immediately."}
                 </p>}
               </>
