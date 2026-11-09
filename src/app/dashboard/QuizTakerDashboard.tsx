@@ -24,7 +24,6 @@ import DashboardLogoutButton from "@/components/dashboard/DashboardLogoutButton"
 import LearningStreak from "@/components/dashboard/LearningStreak";
 import { StudentHeader } from "@/components/layout/StudentHeader";
 import { formatExpiry, type Subscription } from "@/lib/billing";
-import MaintenanceDialog from "@/components/MaintenanceDialog";
 
 interface Submission {
   id: string;
@@ -158,7 +157,6 @@ export default function QuizTakerDashboard() {
   );
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [premiumMessage, setPremiumMessage] = useState("");
-  const [maintenanceOpen, setMaintenanceOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [assignedLoading, setAssignedLoading] = useState(true);
   const [error, setError] = useState("");
@@ -309,10 +307,6 @@ export default function QuizTakerDashboard() {
   return (
     <>
       <StudentHeader displayName={studentName || "Student"} />
-      <MaintenanceDialog
-        open={maintenanceOpen}
-        onClose={() => setMaintenanceOpen(false)}
-      />
       <div className="portal-page text-[1.105rem] text-[#17231e]">
         {premiumMessage && (
           <div
@@ -505,12 +499,12 @@ export default function QuizTakerDashboard() {
               <LearningCard
                 title="JAMB Past Questions"
                 description="Practise one exam year with Use of English and three other subjects."
-                action={subscription?.hasProAccess ? "Under maintenance" : "Upgrade to Pro"}
+                action={subscription?.hasProAccess ? "Start JAMB practice" : "Upgrade to Pro"}
                 href="/jamb-past-questions"
                 icon={BookOpen}
                 badge="Pro plans"
-                locked
-                onLocked={() => subscription?.hasProAccess ? setMaintenanceOpen(true) : setPremiumMessage("Choose an active Pro or Pro Max plan to access JAMB past questions. Lite plans do not include this feature.")}
+                locked={!subscription?.hasProAccess}
+                onLocked={() => setPremiumMessage("Choose an active Pro or Pro Max plan to access JAMB past questions. Lite plans do not include this feature.")}
               />
               <LearningCard
                 title="CBT Simulator"
