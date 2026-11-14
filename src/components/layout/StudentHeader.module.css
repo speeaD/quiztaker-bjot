@@ -43,7 +43,7 @@
   .profile > div { display: none; }
 }
 @media (max-width: 650px) {
-  :global(body):has(.header) { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  :global(body).withStudentHeader { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   .headerInner { padding: 10px 16px; gap: 10px; }
   .brand img { width: 34px; height: 34px; }
   .brand strong { font-size: 14px; }

@@ -1,5 +1,26 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Mobile CSS compatibility
+
+The student portal intentionally uses Tailwind CSS 3.4 with Autoprefixer. Tailwind 4
+requires newer browser features (native CSS layers, modern color functions and
+registered custom properties) that can leave older phones with missing styles.
+Keep the 3.4 version constraint unless the supported devices are reviewed first.
+
+The CSS build targets Chrome/Edge 90+, Firefox 88+, Safari 14.1+ and iOS 14.5+
+through `browserslist` in `package.json`. Theme extensions live in
+`tailwind.config.js`. Custom `@layer base` rules are flattened at build time;
+do not ship native CSS layers or v4-only `@theme` rules to these browsers.
+New viewport units should have a `vh` fallback, and essential layout should not
+depend on `:has()` selectors.
+
+Run `npm run test:css` to check that the compiled stylesheet stays compatible
+and retains the portal's core styles and mobile height fallbacks.
+
+These are CSS compilation targets, not a guarantee that every app feature runs
+on those browsers. Next.js 16 officially supports Chrome/Edge/Firefox 111+ and
+Safari 16.4+; verify affected devices when testing the complete application.
+
 ## Getting Started
 
 First, run the development server:

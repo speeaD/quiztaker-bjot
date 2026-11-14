@@ -39,7 +39,7 @@ export default function ExamErrorDialog({
         event.preventDefault();
         dismiss();
       }}
-      className="fixed m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-[#dce5df] bg-white p-6 text-[#17231e] shadow-2xl backdrop:bg-[#101a15]/60 backdrop:backdrop-blur-sm sm:p-8"
+      className="fixed m-auto max-h-[calc(100vh-2rem)] supports-[height:100dvh]:max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-[#dce5df] bg-white p-6 text-[#17231e] shadow-2xl backdrop:bg-[#101a15]/60 backdrop:backdrop-blur-sm sm:p-8"
     >
       <button
         type="button"

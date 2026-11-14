@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
   BookOpen,
   ClipboardCheck,
@@ -64,6 +64,11 @@ export function StudentHeader({
 }) {
   const pathname = usePathname();
   const savedName = useSyncExternalStore(subscribe, storedName, serverName);
+  useEffect(() => {
+    // Reserve space for the fixed mobile navigation without requiring :has().
+    document.body.classList.add(styles.withStudentHeader);
+    return () => document.body.classList.remove(styles.withStudentHeader);
+  }, []);
   const name = displayName || savedName || "BJOT Scholar";
   const initials = name
     .split(/[\s._-]+/)
