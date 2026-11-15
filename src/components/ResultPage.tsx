@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Loader2, AlertCircle, CheckCircle, XCircle, Clock, Award, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, XCircle, Home, ChevronDown, ChevronUp } from 'lucide-react';
 import PortalLogo from '@/components/PortalLogo';
 import { ScoreMeme } from '@/components/cbt/CompletionReview';
+import ResultSummary, { resultPercentage, type ExamResult } from '@/components/cbt/ResultSummary';
 
 const API_BASE_URL = '/api/quiztaker';
 
@@ -25,7 +26,7 @@ interface QuestionSetAnswers {
   answers: Answer[];
 }
 
-interface Submission {
+interface Submission extends ExamResult {
   id: string;
   score: number;
   totalPoints: number;
@@ -72,17 +73,6 @@ const ResultsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-      return `${hours}h ${mins}m ${secs}s`;
-    }
-    return `${mins}m ${secs}s`;
   };
 
   const toggleSet = (order: number) => {
@@ -143,10 +133,7 @@ const ResultsPage = () => {
     );
   }
 
-  const statusColor = getStatusColor(submission.percentage);
-  const scaledScore = submission.totalPoints > 0
-    ? Math.round((submission.score / submission.totalPoints) * 400)
-    : 0;
+  const statusColor = getStatusColor(resultPercentage(submission));
 
   return (
     <div className="portal-utility min-h-screen bg-gray-50">
@@ -178,7 +165,7 @@ const ResultsPage = () => {
             <span className={`text-2xl sm:text-3xl font-bold ${
               statusColor === 'green' ? 'text-green-600' : statusColor === 'yellow' ? 'text-yellow-600' : 'text-red-600'
             }`}>
-              {submission.percentage}%
+              {submission.scoreOutOf400 ?? `${submission.percentage}%`}
             </span>
           </div>
 
@@ -187,34 +174,7 @@ const ResultsPage = () => {
             {getStatusBadge(submission.status)}
           </div>
 
-          {/* Statistics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Award className="w-5 h-5 text-blue-600" />
-                <div className="text-2xl font-bold text-gray-900">{scaledScore}</div>
-              </div>
-              <div className="text-xs sm:text-sm text-gray-600">Score (out of 400)</div>
-            </div>
-            
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <div className="text-2xl font-bold text-gray-900">
-                  {submission.score}/{submission.totalPoints}
-                </div>
-              </div>
-              <div className="text-xs sm:text-sm text-gray-600">Actual Points</div>
-            </div>
-            
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-purple-600" />
-                <div className="text-2xl font-bold text-gray-900">{formatTime(submission.timeTaken)}</div>
-              </div>
-              <div className="text-xs sm:text-sm text-gray-600">Time Taken</div>
-            </div>
-          </div>
+          <ResultSummary result={submission} />
 
           {/* Feedback */}
           {submission.feedback && (
@@ -225,7 +185,7 @@ const ResultsPage = () => {
           )}
         </div>
 
-        <ScoreMeme percentage={submission.percentage} />
+        <ScoreMeme percentage={resultPercentage(submission)} />
 
         {/* Detailed Answers by Question Set */}
         {submission.answersByQuestionSet && submission.answersByQuestionSet.length > 0 && (
@@ -240,7 +200,8 @@ const ResultsPage = () => {
                 const isExpanded = expandedSets.includes(questionSet.order);
                 const correctCount = questionSet.answers.filter(a => a.isCorrect === true).length;
                 const totalQuestions = questionSet.answers.length;
-                const setPercentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+                const subjectScore = submission.subjectScores?.find((subject) => subject.subjectTitle === questionSet.questionSetTitle);
+                const setPercentage = subjectScore?.percentage ?? (totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0);
 
                 return (
                   <div key={questionSet.order} className="bg-white">
@@ -259,7 +220,7 @@ const ResultsPage = () => {
                             setPercentage >= 70 ? 'text-green-600' :
                             setPercentage >= 50 ? 'text-yellow-600' : 'text-red-600'
                           }`}>
-                            {setPercentage}%
+                            {subjectScore?.scoreOutOf100 !== undefined ? `${subjectScore.scoreOutOf100}/100` : `${setPercentage}%`}
                           </span>
                         </div>
                       </div>

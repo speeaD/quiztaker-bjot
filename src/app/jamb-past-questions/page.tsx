@@ -5,6 +5,7 @@ import { Award, Clock3, RotateCcw } from "lucide-react";
 import ExamWorkspace from "@/components/cbt/ExamWorkspace";
 import SimulatorHeader from "@/components/cbt/SimulatorHeader";
 import CalculatorWidget from "@/components/cbt/CalculatorWidget";
+import ResultSummary, { resultScore, resultPercentage, type SubjectScore } from "@/components/cbt/ResultSummary";
 import {
   Corrections,
   ScoreMeme,
@@ -48,6 +49,8 @@ type Result = {
   totalPoints: number;
   percentage: number;
   timeTaken: number;
+  subjectScores?: SubjectScore[];
+  scoreOutOf400?: number;
   review: ReviewedAnswer[];
 };
 type Active = { id: string; year: number; expiresAt: string };
@@ -278,12 +281,9 @@ export default function JambPastQuestionsPractice() {
               JAMB {result.year} past questions
             </p>
             <h1 className="mt-2 text-3xl font-black">
-              {result.percentage}% score
+              {resultScore(result)}
             </h1>
-            <p className="mt-2 text-sm">
-              {result.score} of {result.totalPoints} correct ·{" "}
-              {Math.floor(result.timeTaken / 60)} minutes
-            </p>
+            <ResultSummary result={result} />
             <button
               className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#0d3b2e] px-5 py-3 font-bold text-white"
               onClick={() => {
@@ -294,7 +294,7 @@ export default function JambPastQuestionsPractice() {
               <RotateCcw size={17} /> Practise another year
             </button>
           </section>
-          <ScoreMeme percentage={result.percentage} />
+          <ScoreMeme percentage={resultPercentage(result)} />
           <Corrections answers={result.review} />
         </main>
       </div>

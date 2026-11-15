@@ -1,6 +1,7 @@
 "use client";
 
 import CalculatorWidget from "@/components/cbt/CalculatorWidget";
+import ResultSummary, { resultScore, resultPercentage, type SubjectScore } from "@/components/cbt/ResultSummary";
 import { Corrections, ScoreMeme, type ReviewedAnswer } from "@/components/cbt/CompletionReview";
 import ExamWorkspace from "@/components/cbt/ExamWorkspace";
 import SimulatorHeader from "@/components/cbt/SimulatorHeader";
@@ -17,6 +18,8 @@ interface SubmissionResult {
   totalPoints: number;
   percentage: number;
   timeTaken: number;
+  subjectScores?: SubjectScore[];
+  scoreOutOf400?: number;
   review: ReviewedAnswer[];
 }
 
@@ -224,11 +227,6 @@ export default function CBTSimulator() {
   }
 
   if (phase === "result" && submissionResult) {
-    const scaledScore = submissionResult.totalPoints
-      ? Math.round(
-          (submissionResult.score / submissionResult.totalPoints) * 400,
-        )
-      : 0;
     return (
       <div className="portal-page">
         <SimulatorHeader mode="result" />
@@ -241,32 +239,13 @@ export default function CBTSimulator() {
               CBT simulation complete
             </p>
             <h1 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#17231e]">
-              {submissionResult.percentage}% score
+              {resultScore(submissionResult)}
             </h1>
             <p className="mt-2 text-sm text-[#64726a]">
               You have completed your exam. Review your score and keep
               practising.
             </p>
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              {[
-                [scaledScore, "Score out of 400"],
-                [submissionResult.totalPoints, "Total points"],
-                [
-                  `${Math.floor(submissionResult.timeTaken / 60)}m`,
-                  "Time taken",
-                ],
-              ].map(([value, label]) => (
-                <div
-                  key={label as string}
-                  className="rounded-lg bg-[#edf3ef] p-4"
-                >
-                  <strong className="block text-2xl text-[#0d3b2e]">
-                    {value}
-                  </strong>
-                  <small className="text-[11px] text-[#64726a]">{label}</small>
-                </div>
-              ))}
-            </div>
+            <ResultSummary result={submissionResult} />
             <button
               onClick={() => window.location.reload()}
               className="mt-7 inline-flex items-center gap-2 rounded-md bg-[#0d3b2e] px-5 py-3 text-sm font-bold text-white hover:bg-[#14513c]"
@@ -275,7 +254,7 @@ export default function CBTSimulator() {
               Take another exam
             </button>
           </section>
-          <ScoreMeme percentage={submissionResult.percentage} />
+          <ScoreMeme percentage={resultPercentage(submissionResult)} />
           <Corrections answers={submissionResult.review || []} />
         </main>
       </div>

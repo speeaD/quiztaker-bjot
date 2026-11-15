@@ -1,6 +1,8 @@
 "use client";
 
 import ExamWorkspace from "@/components/cbt/ExamWorkspace";
+import CalculatorWidget from "@/components/cbt/CalculatorWidget";
+import ResultSummary, { resultScore, resultPercentage, type ExamResult } from "@/components/cbt/ResultSummary";
 import { Corrections, ScoreMeme, type ReviewedAnswer } from "@/components/cbt/CompletionReview";
 import PublicHeader from "@/components/PublicHeader";
 import type { CbtQuestion, CbtQuestionSet } from "@/components/cbt/types";
@@ -10,7 +12,7 @@ import { validRegistrationCombination } from '@/lib/registration-subjects';
 import { watchExamFocus } from '@/lib/exam-focus';
 import ExamErrorDialog from './ExamErrorDialog';
 
-type Result = { score: number; totalPoints: number; percentage: number };
+type Result = ExamResult;
 type Mode = "mock" | "topic";
 type Mock = { id: string; title: string; questionSetIds: string[]; questionCount: number; durationSeconds: number; multipleAttempts: boolean; looseFocus: boolean; studentSelectsSubjects?: boolean; compulsoryQuestionSetId?: string };
 type MockResponse = {
@@ -22,6 +24,7 @@ type MockResponse = {
     questionSetIds: string[];
     multipleAttempts: boolean;
     looseFocus: boolean;
+    displayCalculator: boolean;
     questionsBySet: Record<string, CbtQuestion[]>;
   };
 };
@@ -78,7 +81,10 @@ export default function PublicExam({
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [settings, setSettings] = useState({ multipleAttempts: false, looseFocus: false });
+  const [settings, setSettings] = useState({ multipleAttempts: false, looseFocus: false, displayCalculator: false });
+  const [showCalculator, setShowCalculator] = useState(false);
+  const topicStartedAt = useRef(0);
+  const topicTimeTaken = useRef<number | null>(null);
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
   const [submissionReason, setSubmissionReason] = useState<"focus" | "time" | null>(null);
   const autoSubmitted = useRef(false);
@@ -157,6 +163,7 @@ export default function PublicExam({
       if (reason) setSubmissionReason(reason);
       setShowSubmitConfirmation(false);
       setPhase("submitting");
+      setShowCalculator(false);
       setBusy(true);
       setError("");
       try {
@@ -178,11 +185,12 @@ export default function PublicExam({
           setCountsForGrade(data.countsForGrade);
           setReview(data.review || []);
         } else {
+          topicTimeTaken.current ??= Math.max(0, Math.floor((Date.now() - topicStartedAt.current) / 1000));
           const data = await api<{ result: Result; review: ReviewedAnswer[] }>("topic/submit", {
             ...payload,
             topicId: topicData?.topic.id,
           });
-          setResult(data.result);
+          setResult({ ...data.result, timeTaken: topicTimeTaken.current });
           setReview(data.review || []);
         }
         setPhase("result");
@@ -253,7 +261,7 @@ export default function PublicExam({
           );
         setSessionId(data.session.id);
         setSelected(data.session.questionSetIds);
-        setSettings({ multipleAttempts: data.session.multipleAttempts === true, looseFocus: data.session.looseFocus === true });
+        setSettings({ multipleAttempts: data.session.multipleAttempts === true, looseFocus: data.session.looseFocus === true, displayCalculator: data.session.displayCalculator === true });
         setQuestionsBySet(data.session.questionsBySet);
         setSeconds(data.session.remainingSeconds);
       } else if (topicData) {
@@ -261,6 +269,8 @@ export default function PublicExam({
         setSelected([topicData.questionSet._id]);
         setQuestionsBySet({ [topicData.questionSet._id]: topicData.questions });
         setSeconds(Math.max(600, topicData.questions.length * 90));
+        topicStartedAt.current = Date.now();
+        topicTimeTaken.current = null;
       }
       autoSubmitted.current = false;
       submissionInProgress.current = false;
@@ -270,6 +280,7 @@ export default function PublicExam({
       setQuestionIndex(0);
       setResult(null);
       setReview([]);
+      setShowCalculator(false);
       setPhase("exam");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to start the test");
@@ -296,6 +307,8 @@ export default function PublicExam({
         timer: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
         onSubmit: () => setShowSubmitConfirmation(true),
         submitting: busy,
+        showCalculator,
+        onCalculatorToggle: mode === "mock" && settings.displayCalculator ? () => setShowCalculator((value) => !value) : undefined,
       } : undefined} />
       {error && <ExamErrorDialog message={error} onClose={() => {
         setError("");
@@ -442,6 +455,7 @@ export default function PublicExam({
               }
             }}
           />
+          {showCalculator && settings.displayCalculator && <CalculatorWidget onClose={() => setShowCalculator(false)} />}
         </>
       )}
       {(phase === "submitting" || phase === "submission-error") && <main className="mx-auto max-w-2xl px-4 py-12">
@@ -463,20 +477,18 @@ export default function PublicExam({
           <section className="rounded-xl bg-white p-8 text-center shadow-sm">
             <h1 className="text-2xl font-black">Test complete</h1>
             <p className="mt-5 text-4xl font-black text-[#0d3b2e]">
-              {result.percentage}%
+              {mode === 'mock' ? resultScore(result) : `${result.percentage}%`}
             </p>
-            <p className="mt-2 text-sm">
-              This attempt: {result.score}/{result.totalPoints} points
-            </p>
+            <ResultSummary result={result} />
             {mode === "mock" && gradedResult && (
               <p className="mt-4 rounded-lg bg-[#edf7f0] p-4 text-sm font-bold">
                 {countsForGrade
                   ? "This is your graded first score."
-                  : `Your first score remains graded: ${gradedResult.score}/${gradedResult.totalPoints} (${gradedResult.percentage}%).`}
+                  : `Your first score remains graded: ${resultScore(gradedResult)}.`}
               </p>
             )}
           </section>
-          <ScoreMeme percentage={result.percentage} />
+          <ScoreMeme percentage={resultPercentage(result)} />
           <Corrections answers={review} />
           {submissionReason && <p className="mt-5 text-sm">{submissionReason === "focus" ? "Your exam was submitted because you switched tabs or windows." : "Your exam was submitted because time ran out."}</p>}
           {mode === "mock" && !settings.multipleAttempts && <p className="mt-5 text-sm">Retakes are disabled for this mock by the administrator.</p>}
