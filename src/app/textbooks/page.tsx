@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BookOpen, ExternalLink, Lock } from "lucide-react";
+import { BookOpen, ChevronRight, Lock } from "lucide-react";
 
 type Textbook = { id: string; title: string; description: string; fileSize: number; subject: { id: string; title: string } };
 
@@ -54,8 +54,8 @@ export default function TextbooksPage() {
           <p className="text-xs font-bold uppercase tracking-wide text-[#15513e]">{book.subject.title}</p>
           <h2 className="mt-2 break-words text-xl font-bold">{book.title}</h2>
           {book.description && <p className="mt-3 whitespace-pre-wrap break-words text-sm text-[#64726a]">{book.description}</p>}
-          <p className="mb-5 mt-3 text-xs text-[#64726a]">PDF · {(book.fileSize / 1024 / 1024).toFixed(1)} MB</p>
-          <a href={`/api/textbooks/books/${book.id}/download`} target="_blank" rel="noreferrer" className="mt-auto inline-flex w-fit items-center gap-2 rounded-lg bg-[#0d3b2e] px-4 py-2.5 text-sm font-bold text-white" aria-label={`Read ${book.title} (opens in a new tab)`}>Read textbook <ExternalLink size={15} aria-hidden="true" /></a>
+          <p className="mb-5 mt-3 text-xs text-[#64726a]">Online reader</p>
+          <Link href={`/textbooks/${book.id}`} className="mt-auto inline-flex w-fit items-center gap-2 rounded-lg bg-[#0d3b2e] px-4 py-2.5 text-sm font-bold text-white" aria-label={`Read ${book.title}`}>Read textbook <ChevronRight size={15} aria-hidden="true" /></Link>
         </article>)}</div>
       </section>)}
   </div></main>;
