@@ -28,7 +28,7 @@ function TrackPlans({ track }: { track: Track }) {
         <div className="mb-8 max-w-2xl">
           <p className="eyebrow">{isScience ? "SCIENCE" : "ART & COMMERCIAL"}</p>
           <h2 id={`${id}-heading`} className="mt-2 text-3xl font-bold text-[#0f3d2c]">{track} plans</h2>
-          <p className="mt-3 text-sm leading-7 text-[#42554a]">Choose Lite for classes and study support, or Pro for those features plus BJOT JAMB CBT practice.</p>
+          <p className="mt-3 text-sm leading-7 text-[#42554a]">Choose Lite for classes and study support, or Pro for those features plus BJOT JAMB CBT practice and PDF textbooks for your subjects.</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
           {tierDetails.map((tier) => (
@@ -56,11 +56,10 @@ function TrackPlans({ track }: { track: Track }) {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/70">What&apos;s included</p>
             <ul className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-              {(isScience ? scienceMaxFeatures : ["Everything in Ultimate Pro", "Final revision class"]).map((feature) => (
+              {(isScience ? scienceMaxFeatures : ["Everything in Ultimate Pro", "PDF textbook library for your subjects", "Final revision class"]).map((feature) => (
                 <li key={feature} className="flex items-start gap-2 text-sm leading-6"><Check size={17} className="mt-1 shrink-0 text-[#f4be56]" aria-hidden="true" />{feature}</li>
               ))}
             </ul>
-            {!isScience && <p className="mt-5 rounded-xl border border-white/20 p-3 text-sm leading-6 text-white/85">No digital manual or physical textbook is listed in this {formatNaira(prices.max)} plan.</p>}
           </div>
         </article>
       </div>
@@ -84,7 +83,7 @@ export default async function PricingPage() {
       </section>
       <TrackPlans track="Science" />
       <TrackPlans track="Art & Commercial" />
-      <section className="bg-[#f6f4ee] py-14"><div className="wrap max-w-4xl rounded-3xl border border-[#dbe4dc] bg-white p-7 text-center sm:p-10"><h2 className="text-2xl font-bold text-[#0f3d2c]">Ready to prepare with BJOT?</h2><p className="mt-3 text-sm leading-7 text-[#42554a]">Create a regular student account for free. Choose a department and plan above, sign in, and pay securely to upgrade to premium. The recommended textbook list is reading guidance; digital manuals are included only when a plan explicitly lists them.</p><Link href="/register" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0f3d2c] px-6 py-3 text-sm font-bold text-white hover:bg-[#1a5c41]">Create free account</Link></div></section>
+      <section className="bg-[#f6f4ee] py-14"><div className="wrap max-w-4xl rounded-3xl border border-[#dbe4dc] bg-white p-7 text-center sm:p-10"><h2 className="text-2xl font-bold text-[#0f3d2c]">Ready to prepare with BJOT?</h2><p className="mt-3 text-sm leading-7 text-[#42554a]">Create a regular student account for free. Choose a department and plan above, sign in, and pay securely to upgrade to premium. Pro and Pro Max include access to published PDF textbooks for your assigned subjects.</p><Link href="/register" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0f3d2c] px-6 py-3 text-sm font-bold text-white hover:bg-[#1a5c41]">Create free account</Link></div></section>
     </main>
     {content && section(content, "global.footer") && <Footer content={section(content, "global.footer")!} contact={content.contact} />}
   </>;

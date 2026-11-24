@@ -39,6 +39,7 @@ const navigation = [
   },
   { href: "/jamb-past-questions", label: "Past Questions", Icon: BookOpen, routes: ["/jamb-past-questions"] },
   { href: "/study-hub", label: "Study Hub", Icon: LibraryBig, routes: ["/study-hub"] },
+  { href: "/textbooks", label: "Textbooks", Icon: BookOpen, routes: ["/textbooks"] },
   { href: "/game-hub", label: "Game Hub", Icon: Gamepad2, routes: gameRoutes },
   { href: "/subject-test", label: "Subject Tests", Icon: ClipboardCheck, routes: ["/subject-test"] },
 ];

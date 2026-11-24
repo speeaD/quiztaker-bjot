@@ -533,6 +533,16 @@ export default function QuizTakerDashboard() {
                 onLocked={() => showPremium("Study Hub")}
               />
               <LearningCard
+                title="Textbooks"
+                description="Read textbooks selected for the subjects you offer."
+                action={subscription?.hasProAccess ? "Browse textbooks" : "Upgrade to Pro"}
+                href="/textbooks"
+                icon={BookOpen}
+                badge="Pro plans"
+                locked={!subscription?.hasProAccess}
+                onLocked={() => setPremiumMessage("Choose an active Pro or Pro Max plan to access textbooks for your subjects.")}
+              />
+              <LearningCard
                 title="Subject Tests"
                 description="Choose a topic and practise focused questions at your pace."
                 action="Choose Topic & Drill"
