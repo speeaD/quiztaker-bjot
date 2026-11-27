@@ -8,6 +8,7 @@ import { formatExpiry, type Subscription } from "@/lib/billing";
 export default function PaymentResult({ reference }: { reference: string }) {
   const [status, setStatus] = useState<"checking" | "success" | "pending" | "error">("checking");
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [onboarding, setOnboarding] = useState<{ emailStatus: "sent" | "pending"; whatsappUrl: string | null } | null>(null);
   const [message, setMessage] = useState("");
   const validReference = /^[a-zA-Z0-9_-]{1,100}$/.test(reference);
   const verify = useCallback(async () => {
@@ -24,6 +25,7 @@ export default function PaymentResult({ reference }: { reference: string }) {
       if (!response.ok || !data.success) throw new Error(data.message || "Unable to confirm this payment yet.");
       if (data.status === "success") {
         setSubscription(data.subscription);
+        setOnboarding(data.onboarding || null);
         setStatus("success");
       } else {
         setStatus("pending");
@@ -42,7 +44,13 @@ export default function PaymentResult({ reference }: { reference: string }) {
         {status === "success" && <CheckCircle2 className="mx-auto text-[#17805a]" size={42} />}
         <h1 className="mt-4 text-2xl font-black">{status === "checking" ? "Confirming your payment…" : status === "success" ? "Payment confirmed" : status === "pending" ? "Payment awaiting confirmation" : "We could not confirm your payment"}</h1>
         {status === "success" ? <><p className="mt-4 leading-7 text-[#42554a]">{subscription?.accountType === "premium" ? "Your premium plan is active. Your dashboard reflects your current access." : "This payment has been received. Your account currently has regular access; view your plans to renew."}</p>{subscription?.accountType === "premium" && subscription.expiresAt && <p className="mt-3 text-sm">Access until {formatExpiry(subscription.expiresAt)}</p>}<p className="mt-3 text-sm text-[#42554a]">{subscription?.hasProAccess ? "Your plan includes JAMB past questions, available when practice reopens after maintenance." : "JAMB past questions require an active Pro or Pro Max plan."}</p></> : <p className="mt-4 text-sm leading-7 text-[#42554a]">{message || "Please keep this page open while we check your payment."}</p>}
-        <p className="mt-5 break-all text-xs text-[#607167]">Reference: {reference}</p>
+        {status === "success" && onboarding && <div className="mt-6 rounded-2xl bg-[#f0f7f2] p-5 text-left">
+          <h2 className="text-lg font-bold">Complete your premium onboarding</h2>
+          <p className="mt-2 text-sm leading-6 text-[#42554a]">{onboarding.emailStatus === "sent" ? "We’ve emailed your receipt and next steps. Check your inbox or spam folder." : "Your payment is confirmed, but your onboarding email is still pending. You can continue with support now."}</p>
+          <p className="mt-2 text-sm leading-6 text-[#42554a]">Message BJOT support to join the class groups and other channels included in your plan. Your WhatsApp message includes your receipt reference.</p>
+          {onboarding.whatsappUrl ? <a href={onboarding.whatsappUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block rounded-full bg-[#0f3d2c] px-6 py-3 text-sm font-bold text-white">Continue on WhatsApp</a> : <p className="mt-3 text-sm">Contact BJOT support with the receipt reference below for your next steps.</p>}
+        </div>}
+        <p className="mt-5 break-all text-sm text-[#607167]">Receipt reference: {reference}</p>
         {(status === "pending" || status === "error") && <button onClick={() => void verify()} className="mt-6 rounded-full bg-[#0f3d2c] px-6 py-3 text-sm font-bold text-white">Check payment again</button>}
       </>}
       <div className="mt-7 flex flex-wrap justify-center gap-4 text-sm font-bold"><Link href="/dashboard" className="underline">Go to dashboard</Link><Link href="/billing" className="underline">View plans</Link></div>

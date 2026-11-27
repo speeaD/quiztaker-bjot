@@ -248,6 +248,8 @@ const AssignedQuizPage = () => {
         }
 
         localCompleted.add(setOrder);
+        // A response may have been lost after the final save already committed.
+        if (data.submission?.alreadySubmitted) break;
       }
 
       if (reason) {
@@ -619,7 +621,7 @@ const AssignedQuizPage = () => {
           <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
           <h1 className="text-lg font-bold text-gray-900">Unable to submit your exam</h1>
           <p className="mt-3 text-sm text-gray-600">{error}</p>
-          <p className="mt-3 text-sm text-gray-600">Your answers are kept on this page. Retry when your connection is available.</p>
+          <p className="mt-3 text-sm text-gray-600">Your answers are kept on this page. Retry without closing or refreshing this page.</p>
           <button onClick={() => void handleSubmitQuiz(true, submissionReason.current)} className="mt-5 rounded-lg bg-blue-700 px-5 py-2 font-semibold text-white">Retry submission</button>
           <button onClick={() => router.push('/dashboard')} className="mt-3 block w-full text-sm text-gray-600">Back to dashboard</button>
         </div>
